@@ -178,6 +178,21 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   it creates a fresh database per test, applies the migrations, and injects a
   `PgPool` (or `PgConnection`). Point `DATABASE_URL` at the compose Postgres
   when running the suite. Do **not** use `testcontainers`.
+- When a crate embeds migrations with `sqlx::migrate!(...)`, **add a `build.rs`**
+  that re-runs on migration changes. The macro embeds the migrations at compile
+  time, so adding a new `.sql` file does not, on its own, make Cargo rebuild the
+  crate — the macro keeps expanding to the stale set and tests fail with
+  confusing "relation does not exist" errors against the just-added schema. The
+  fix is one line:
+  ```rust
+  // build.rs
+  fn main() {
+      // Recompile (re-expanding sqlx::migrate!) whenever a migration changes.
+      println!("cargo:rerun-if-changed=migrations");
+  }
+  ```
+  Create this `build.rs` as soon as the crate calls `sqlx::migrate!`, not after
+  the first stale-migration surprise.
 - Use `mockall` for test doubles. Define collaborators as traits, annotate
   them with `#[cfg_attr(test, mockall::automock)]` (or `mock!` when you
   cannot own the trait), and inject the mock in unit tests. Keep production

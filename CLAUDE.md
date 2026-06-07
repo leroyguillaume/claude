@@ -82,6 +82,8 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   fields, level-controlled verbosity, standard logging library.
 - **`yaml-conventions`** — block style only, never flow style (`{...}` /
   `[...]`), in any YAML file or snippet.
+- **`sql-conventions`** — always lint SQL with `sqlfluff` (pre-commit hook),
+  for both queries and migrations; reformat rather than disable rules.
 - **`api-boundary-conventions`** — dedicated request/response DTOs, no domain
   models on the wire, `camelCase` JSON, `<entity>Id` FK naming, tagged
   operations.
