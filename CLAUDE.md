@@ -84,9 +84,9 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   `[...]`), in any YAML file or snippet.
 - **`sql-conventions`** — always lint SQL with `sqlfluff` (pre-commit hook),
   for both queries and migrations; reformat rather than disable rules.
-- **`api-boundary-conventions`** — dedicated request/response DTOs, no domain
+- **`api-conventions`** — dedicated request/response DTOs, no domain
   models on the wire, `camelCase` JSON, `<entity>Id` FK naming, tagged
-  operations.
+  operations, mandatory pagination of list endpoints.
 - **`signal-handling-conventions`** — `SIGTERM`/`SIGINT`, graceful drain,
   idempotent units of work, for any server / worker / daemon.
 - **`project-metadata-conventions`** — derive author/repository fields from
