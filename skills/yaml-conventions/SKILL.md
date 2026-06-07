@@ -25,3 +25,17 @@ workflows, docs, and example snippets in `README.md`.
 
   not `kubeflow: { enabled: true }`. The only acceptable inline form is an
   intentionally empty collection (`{}` / `[]`).
+
+- **Never write inline arrays.** A sequence must use block style, one item per
+  line with a leading `- `, even for a single element. Write
+
+  ```yaml
+  ports:
+    - "11434:11434"
+  command:
+    - /bin/sh
+    - -c
+  ```
+
+  not `ports: ["11434:11434"]` or `command: ["/bin/sh", "-c"]`. The only
+  exception is an intentionally empty list (`[]`).
