@@ -49,6 +49,15 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   must be settable via an environment variable: always give each `clap`
   argument an `env = "..."` attribute — there is no config knob that can
   only be passed on the command line.
+- Prefer `default_value_t = <typed value>` over a stringly-typed
+  `default_value = "..."` whenever the field's type is anything other than a
+  `String`/`&str` — enums, integers, paths, durations, etc. `default_value_t`
+  takes a real value of the field's type (compile-time checked, rendered via
+  `Display`), so the default cannot drift out of sync with the type and a typo
+  is a build error rather than a runtime parse failure. (A plain `String` flag
+  may keep `default_value = "info"`.) A custom enum used as a default therefore
+  needs a `Display` impl mirroring its `FromStr`, e.g.
+  `#[arg(long, env = "...", default_value_t = Mode::Auto)]`.
 - Use `tokio` as the async runtime.
 - Apply the **Signal handling and graceful shutdown** rules from `CLAUDE.md`.
   Rust mechanics: enable tokio's `signal` feature and write one
