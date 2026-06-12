@@ -38,8 +38,13 @@ This is the non-negotiable core rule.
      — the API `reason` / response `message`, *not* just an HTTP status code,
      and never the raw stack trace as the only signal.
   2. **Emit a Kubernetes Warning event** on the object so it shows up in
-     `kubectl describe`. kopf does this automatically on a raised error when
-     `settings.posting.enabled = True` (set it in the startup handler).
+     `kubectl describe`. **Do not assume the framework does this for free on a
+     raised error.** In kopf specifically, `settings.posting.enabled = True`
+     only enables *explicit* `kopf.event(...)` calls — a raised
+     `TemporaryError` posts **no** event unless `settings.posting.loggers` is
+     also on (it defaults to `False`). Post the event explicitly (e.g. a
+     `ProvisioningFailed` Warning from a reconcile wrapper). See the
+     `kopf-conventions` skill for the full posting model and the gotcha.
   3. **Requeue** with a sensible delay.
 - **Tune the requeue delay by error class**, but always requeue:
   - **Transient** (`5xx`, `429`, network/timeout): retry **quickly** (e.g. 30s).

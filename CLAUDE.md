@@ -115,6 +115,11 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   (always requeue, never `PermanentError`), Warning events, idempotency
   (`409`/`404` as success), `ownerReference`/finalizer teardown, structured
   logging (no secrets). Applies to kopf / controller-runtime / Operator SDK.
+- **`kopf-conventions`** — kopf-specific wiring: event posting
+  (`posting.enabled` vs `posting.loggers` — `TemporaryError` does **not**
+  auto-post), explicit `kopf.event` lifecycle events, cluster-scoped event
+  namespacing, status-based progress storage, `on.resume` rollouts, handler
+  argument injection, timers. Python/kopf operators only.
 - **`ollama-conventions`** — never recommend a local model from memory;
   research current web benchmarks for the user's task first, match to
   hardware/quant, cite the evidence, and pin an exact reproducible tag
