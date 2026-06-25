@@ -98,6 +98,20 @@ the job that needs it).
   GitHub auto-generated-notes config (categorise PRs by label, exclude noise).
   `gh release create --generate-notes` reads it.
 
+## Path filters — don't trigger for nothing
+
+- A workflow triggered on `push`/`pull_request` must carry a **`paths:`** (or
+  `paths-ignore:`) filter so it only runs when files that actually affect it
+  change. A multi-arch image `build` must not fire on a docs-only or
+  chart-only change; scope it to its real inputs (e.g. `src/**`, `Cargo.toml`,
+  `Cargo.lock`, `Dockerfile`, `.dockerignore`, and the workflow file itself).
+- **Exception — the `quality` workflow (pre-commit + tests) is never
+  path-filtered.** It is the universal gate and must run on every push and pull
+  request, whatever changed.
+- Tag-triggered workflows (`chart` on `chart-*`, `release` on `v*`) and
+  `workflow_dispatch` / `workflow_call` take **no** `paths` — path filters do
+  not apply to those events.
+
 ## Cache deliberately, and pragmatically
 
 Cache what is expensive to **recompute**, not what is cheap to **re-download**.
