@@ -13,6 +13,16 @@ description: Python project conventions (uv, ruff, typer, pydantic, Pylance).
 
 **Always:**
 
+- Name every variable, function, method, attribute, and **model field** in
+  `snake_case` (PEP 8). This holds for Pydantic models too — never declare
+  literal `camelCase` field names. When a model serialises to a wire format
+  that wants `camelCase` (a Kubernetes CRD, a `camelCase` JSON API), keep the
+  Python fields `snake_case` and let an alias bridge the gap: set
+  `alias_generator=to_camel` + `populate_by_name=True` on the base model, so
+  `endpoint_url` becomes `endpointUrl` on the wire while Python stays
+  idiomatic. Serialise with `by_alias=True` (and accept either spelling on the
+  way in). Leave ruff's `N815` (mixed-case class variable) **enabled** — it is
+  the guard that catches a stray `camelCase` field; never add it to `ignore`.
 - Use `pyproject.toml` as the single source of truth for metadata,
   dependencies, and tool configuration (`ruff`, `pytest`, etc.).
 - Use `uv` for dependency and environment management: `uv init`, `uv add`,

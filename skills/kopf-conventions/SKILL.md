@@ -116,6 +116,30 @@ genuinely want per-line mirroring. Don't half-set it (`enabled` without
   suspecting your code.
 - **Messages are truncated** to 1024 chars by kopf; keep them short.
 
+## RBAC — the operator needs more than its own CRs
+
+The (Cluster)Role must grant, beyond the obvious verbs on your own custom
+resources:
+
+- **`apiextensions.k8s.io` / `customresourcedefinitions` — `get, list, watch`
+  (cluster scope).** kopf scans CRDs **at startup** to resolve every handled
+  resource. Missing this, the operator never starts and crash-loops with
+  `customresourcedefinitions.apiextensions.k8s.io is forbidden: User
+  "system:serviceaccount:…" cannot list resource "customresourcedefinitions"
+  … at the cluster scope`. This is the single most common first-boot RBAC
+  failure — add the rule by default whenever you scaffold an operator chart.
+- **`""` / `events` — `create, patch`** (post status events; see above).
+- **`""` / `namespaces` — `list, watch`** when running cluster-wide
+  (`clusterwide=True` / cluster-scoped CRs), so kopf can enumerate namespaces.
+- **Peering** (if enabled): `get, list, watch, patch` on
+  `kopf.dev/clusterkopfpeerings` (or `zalando.org/clusterkopfpeerings`).
+  Disable peering (`settings.peering.standalone = True`) to avoid needing it.
+
+Put these in `values.yaml` as `rbac.rules` (plus `extraRules: []`), never
+hardcoded in the template (see `helm-conventions`). When debugging a
+crash-looping operator, **read the first lines of the pod log** — an RBAC
+`forbidden` at boot points straight at a missing rule above.
+
 ## Lifecycle events vs status conditions
 
 Use **explicit `kopf.event`** for *transitions* (provisioned, created,
