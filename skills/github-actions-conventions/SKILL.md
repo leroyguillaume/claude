@@ -24,6 +24,18 @@ Apply these when the repo is hosted on GitHub.
   parsers and `actionlint` handle the YAML truthiness of `on` fine.)
 - Block style only, consistent with `yaml-conventions`.
 
+## Step naming
+
+- **Every step has a `name:`** — mandatory for `uses:` steps, and expected on
+  `run:` steps too. A nameless action step reads as a bare SHA in the UI.
+- Step names start with a **lowercase letter** (not sentence-cased): `name: set
+  up the Rust toolchain`, not `name: Set up the Rust toolchain`. Proper nouns
+  inside the name keep their capitals (`Rust`, `GHCR`, `GitHub`).
+- Keep step names **static** — never interpolate a `${{ }}` expression into a
+  `name:`. A conditional/templated label adds noise for no real benefit; pick
+  one fixed name (`name: build the image`, not
+  `name: build${{ inputs.push && ' and push' || '' }}`).
+
 ## Pin actions by SHA
 
 - Pin **every** `uses:` to a full commit SHA, with a trailing comment naming
@@ -56,23 +68,32 @@ the job that needs it).
   boolean input) or invoked via `workflow_call` with `push: true`. On a plain
   push/PR it builds **without** pushing (validation only). Expose `push` and
   `version` as `workflow_call`/`workflow_dispatch` inputs. Multi-arch Rust:
-  one **native runner per architecture** (`ubuntu-24.04` for `amd64`,
-  `ubuntu-24.04-arm` for `arm64`), build/push **by digest**, then assemble the
-  manifest in a final job (only when pushing). Never QEMU-emulate a Rust build.
+  always a **static `matrix` over both architectures** — `amd64` on
+  `ubuntu-24.04` and `arm64` on `ubuntu-24.04-arm` — each on its **own native
+  runner**. Never QEMU-emulate a Rust build, and never drop an architecture
+  from the matrix on PRs (validate both). When pushing, each arch job
+  build/pushes **by digest** and a final `manifest` job assembles the
+  multi-arch manifest (that job runs only when pushing). Derive image
+  **tags and labels with `docker/metadata-action`** — labels on each per-arch
+  build, tags in the `manifest` job (consumed from `DOCKER_METADATA_OUTPUT_JSON`
+  by `docker buildx imagetools create`). Never hand-roll tag strings.
 - **`chart`** — when a Helm chart exists. **Publishes** the chart as an **OCI
-  artifact** to GHCR (`helm push` → `oci://ghcr.io/<owner>/charts`). Triggered
-  only by `workflow_call` / `workflow_dispatch` (never on PR — PR validation is
-  `helm lint` inside `pre-commit`). Take a `version` input and pass it to
-  `helm package --version <v> --app-version <v>`.
-- **`release`** — always (it is the orchestrator). Triggered by pushing a git
-  tag `vX.Y.Z`. It: (1) derives the version from the tag (strip the leading
-  `v` for SemVer chart/image versions); (2) calls **`build`** with
-  `push: true` and the version, and **`chart`** with the version; (3) creates
-  a **GitHub Release** with auto-generated notes
-  (`gh release create "$TAG" --generate-notes`). The version flows from the
-  tag into the image tag and `helm package --version/--app-version` **at build
-  time** — never edit a `version`/`appVersion` field in a file to cut a
-  release.
+  artifact** to GHCR (`helm push` → `oci://ghcr.io/<owner>/charts`). The chart
+  has its **own release lifecycle, decoupled from the app**: trigger it on a
+  dedicated tag namespace **`chart-*`** (plus `workflow_dispatch` for manual
+  publishes), never on PR (PR validation is `helm lint` inside `pre-commit`).
+  Derive the chart version from the `chart-X.Y.Z` tag and pass it to
+  `helm package --version <v>`; leave `appVersion` to `Chart.yaml` (the app
+  image the chart targets evolves independently of the chart's own version).
+  The `release` workflow does **not** publish the chart.
+- **`release`** — always (the app-release orchestrator). Triggered by pushing a
+  git tag `vX.Y.Z`. It: (1) derives the version from the tag (strip the leading
+  `v` for a SemVer image tag); (2) calls **`build`** with `push: true` and the
+  version; (3) creates a **GitHub Release** with auto-generated notes
+  (`gh release create "$TAG" --generate-notes`). The version flows from the tag
+  into the image tag **at build time** — never edit a `version`/`appVersion`
+  field in a file to cut a release. **Release the chart separately** via its
+  `chart-*` tag — the app and the chart version independently.
 - **`.github/release.yaml`** — always, when a `release` workflow exists. The
   GitHub auto-generated-notes config (categorise PRs by label, exclude noise).
   `gh release create --generate-notes` reads it.
