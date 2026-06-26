@@ -98,8 +98,11 @@ description: Helm chart conventions (values structure, security context,
   database:
     # -- (string) Connection string. Unset → built from the managed cluster.
     url: ~
-    # -- (string) Name of a pre-existing Secret holding key `DATABASE_URL`.
-    existingSecret: ~
+    existingSecret:
+      # -- (string) Name of a pre-existing Secret holding the connection string. Set → takes precedence over the generated one.
+      name: ~
+      # -- Key in that Secret holding the connection string.
+      key: DATABASE_URL
     # -- Maximum size of the connection pool.
     maxConns: 25
     # -- Minimum number of idle pooled connections.
@@ -111,6 +114,20 @@ description: Helm chart conventions (values structure, security context,
   shape still maps cleanly onto its env vars / flags at the template
   boundary (e.g. `database.maxConns` → `DATABASE_MAX_CONNS`); grouping is a
   `values.yaml` ergonomics rule, it does not change the wire/env contract.
+- **An `existingSecret` value is always an object `{ name, key }`, never a
+  bare string.** Whenever a chart lets the user point at a pre-existing
+  Secret instead of generating one, model it as a nested object: `name`
+  (default `~` — unset means "generate the Secret from the inline value")
+  and `key` (the entry to read, defaulting to the same key the generated
+  Secret would use, e.g. `DATABASE_URL` / `UPSTREAM_HEADERS`). A bare
+  `existingSecret: ~` string hardcodes the key and cannot consume a Secret
+  whose entry is named differently — which is exactly the case
+  pre-existing Secrets (sealed-secrets, External Secrets, cloud-synced
+  ones) hit. Wire it through two template helpers — a `…SecretName` (the
+  existing `name`, else the generated name) and a `…SecretKey` (the
+  existing `key`, else the generated default) — and reference both in the
+  `secretKeyRef`. Gate the generated-Secret template and any
+  `checksum/…` annotation on `not .Values.<path>.existingSecret.name`.
 - Expose RBAC `rules` (and an appended `extraRules: []`) in `values.yaml`,
   not hardcoded in the `ClusterRole` template.
 - Document **every** key in `values.yaml` with a `helm-docs` `# --`
