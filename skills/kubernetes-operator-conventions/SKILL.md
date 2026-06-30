@@ -168,6 +168,15 @@ writes, then re-check.
   just logs — the spec author sees `kubectl describe`, not the operator's pod
   logs.
 
+## Log format — default to `text`, not `json`
+
+- **Default the operator's log format to `text`, never `json`.** A human
+  running `kubectl logs` reads key=value far more easily than one JSON object
+  per line. JSON is opt-in for clusters with a log pipeline that parses it.
+- Drive it off `LOG_FORMAT` (default `text`) and keep the **binary's default
+  and the chart's default in sync** — don't ship a chart whose `logging.format`
+  default disagrees with what the operator does on its own.
+
 ## Documentation
 
 - Document failure/retry semantics in the project `README.md` (a
