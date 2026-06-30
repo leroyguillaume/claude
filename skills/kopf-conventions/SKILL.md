@@ -202,6 +202,18 @@ Child/external health changes *after* the create/update events have fired. Use
 any reconcile error (see `kubernetes-operator-conventions`) — but don't have it
 post an event every tick (spam; use status for ongoing state).
 
+## Memory footprint — size the Pod above the kopf baseline
+
+kopf carries a real resting memory cost: the framework plus the Kubernetes
+client and its watch/peering caches idle well above a naive `128Mi`, so a
+chart that ships that as the limit gets the operator `OOMKilled` under normal
+watch load — before any work happens.
+
+- Default the Pod's **memory request to `256Mi`** and **limit to `512Mi`**.
+  CPU stays uncapped (compressible) — set only a request (e.g. `100m`).
+- If the Pod restarts with reason `OOMKilled`, raise the memory limit first;
+  don't chase a leak prematurely — it's usually just the kopf baseline.
+
 ## Anti-patterns to fix on sight
 
 - Assuming `TemporaryError` posts an event with only `posting.enabled` set.
