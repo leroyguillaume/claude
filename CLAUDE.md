@@ -69,8 +69,13 @@ technology present in the repo.
   `MYAPP_BIND_ADDR` / `ZYNDECK_BIND_ADDR`. A process owns its own
   environment; the prefix is noise and does not actually prevent collisions.
 - Honour the established standard name when one already exists
-  (`DATABASE_URL`, `RUST_LOG`, `NO_COLOR`, `HTTP_PROXY`, …) instead of
-  inventing a variant.
+  (`DATABASE_URL`, `NO_COLOR`, `HTTP_PROXY`, …) instead of inventing a
+  variant.
+- **Exception: `RUST_LOG`.** Use `LOG_FILTER` instead. The name of a knob
+  should describe the knob, not the language the binary happens to be
+  written in — and `RUST_LOG` is read implicitly by other crates'
+  `from_default_env()` machinery, which is precisely the direct-environment
+  read the logging rules forbid.
 
 ## Conventions (load on demand)
 
@@ -97,7 +102,7 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
 - **`python-conventions`** — `pyproject.toml`, `uv`, `ruff`, `typer`,
   `pydantic`, Pylance diagnostics, typed data models.
 - **`rust-conventions`** — `clap` (with `env = ...`), `tokio`, `axum`,
-  `tracing` (filter via `clap`-parsed `RUST_LOG`), `mockall`, static
+  `tracing` (filter via `clap`-parsed `LOG_FILTER`), `mockall`, static
   dispatch, `cargo-chef` for Docker builds.
 - **`frontend-conventions`** — TypeScript everywhere (no `any`), React
   function components + hooks, Biome (replaces ESLint/Prettier), enforced

@@ -142,14 +142,21 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   `tracing-subscriber`. Initialise the subscriber once at the start of
   `main`, configured with an `EnvFilter`. The filter directive must come
   from `clap` — a dedicated option (e.g. `--log-level` / `--log-filter`)
-  carrying an `env = "RUST_LOG"` attribute — not read directly from the
-  environment. Instrument code with `tracing` spans/events; never
-  `println!` / `eprintln!` for diagnostics. Example:
+  carrying an `env = "LOG_FILTER"` attribute — not read directly from the
+  environment. **Never `RUST_LOG`**: the variable name should describe the
+  knob, not the language the binary happens to be written in, and `RUST_LOG`
+  is also read by other crates' own `from_default_env()` machinery, which is
+  exactly the direct-environment read this rule forbids. Document the
+  directive syntax in the option's help so `--help` is self-sufficient.
+  Instrument code with `tracing` spans/events; never `println!` /
+  `eprintln!` for diagnostics. Example:
   ```rust
   #[derive(clap::Parser)]
   struct Cli {
       /// `tracing` filter directive (e.g. `info`, `myapp=debug,axum=warn`)
-      #[arg(long = "log-filter", env = "RUST_LOG", default_value = "info")]
+      ///
+      /// Syntax: <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#directives>
+      #[arg(long = "log-filter", env = "LOG_FILTER", default_value = "info")]
       log_filter: String,
   }
 
@@ -162,7 +169,7 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   ```
 - Apply the **Logging and observability** rules from `CLAUDE.md`. Rust
   mechanics: `debug!` (and `trace!` for very high-volume detail) via
-  `tracing`, level controlled by `RUST_LOG` through the `clap`-parsed
+  `tracing`, level controlled by `LOG_FILTER` through the `clap`-parsed
   filter, structured fields (`debug!(%name, count, "…")`) — never string
   interpolation.
 - Format with `rustfmt` and lint with `clippy` (`cargo clippy -- -D warnings`).

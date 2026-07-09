@@ -128,6 +128,41 @@ description: Helm chart conventions (values structure, security context,
   existing `key`, else the generated default) — and reference both in the
   `secretKeyRef`. Gate the generated-Secret template and any
   `checksum/…` annotation on `not .Values.<path>.existingSecret.name`.
+- **Always expose a `caCerts` override for any workload that makes outbound
+  TLS connections** (calling an upstream API, an S3/object-store endpoint, an
+  OIDC/JWKS server, fetching a document, …). Users behind a corporate MITM
+  proxy or with a private CA need to add a trust anchor without rebuilding the
+  image. Model it like an `existingSecret`: an inline bundle that generates a
+  Secret, *or* an existing resource the user already manages — and crucially
+  allow that existing resource to be a **`ConfigMap`** (the natural home for
+  non-secret public CA certs) as well as a `Secret`:
+  ```yaml
+  # -- Extra CA certificates to trust for every outbound TLS connection. Added
+  # on top of the built-in public roots — supply only your private/corporate CA.
+  caCerts:
+    # -- (string) Inline PEM bundle. Stored in a Secret and mounted. Ignored when `existing.name` is set.
+    inline: ~
+    # -- Mount the PEM bundle from a resource you already manage, instead of `inline`. Takes precedence over `inline` when `name` is set.
+    existing:
+      # -- (string) Kind of the resource: `ConfigMap` or `Secret`.
+      kind: ConfigMap
+      # -- (string) Name of the resource. Set → mounts from it instead of generating a Secret from `inline`.
+      name: ~
+      # -- Key in the resource holding the PEM bundle (also the mounted file name).
+      key: ca-certificates.crt
+  ```
+  Wire it through helpers mirroring the `existingSecret` pattern —
+  `caCertsEnabled` (inline or existing set), `caCertsValidate` (fail fast if
+  `existing.kind` is neither `ConfigMap` nor `Secret`), `caCertsFromConfigMap`,
+  `caCertsGenerateSecret` (inline and no existing), `caCertsSecretName`,
+  `caCertsKey`, and a `caCertsPath` for the mount. Gate the generated Secret
+  and the `checksum/ca-certs` pod annotation on `caCertsGenerateSecret`; the
+  volume picks `configMap:` vs `secret:` from `caCertsFromConfigMap`. **Point
+  at the mounted file with the env vars the app's runtime actually honours, not
+  an invented name** — match the language/SDK: Python → `SSL_CERT_FILE`,
+  `REQUESTS_CA_BUNDLE`, and `AWS_CA_BUNDLE` (boto3); Go → `SSL_CERT_FILE`;
+  Node → `NODE_EXTRA_CA_CERTS`; a Rust/other app that reads its own var → that
+  var. Honour the established standard name; never prefix it with the app name.
 - Expose RBAC `rules` (and an appended `extraRules: []`) in `values.yaml`,
   not hardcoded in the `ClusterRole` template.
 - Document **every** key in `values.yaml` with a `helm-docs` `# --`
@@ -213,6 +248,11 @@ description: Helm chart conventions (values structure, security context,
   objects under one `<component>/` directory.
 - Never hardcode env vars, volumes, or volume mounts that users cannot
   extend via `extraEnv` / `extraVolumes` / `extraVolumeMounts`.
+- Never ship a chart whose workload makes outbound TLS calls without a
+  `caCerts` override, never restrict the existing CA source to `Secret` only
+  (a `ConfigMap` must be accepted for public CA certs), and never point at the
+  bundle with an invented env var when the app's runtime already honours a
+  standard one (`SSL_CERT_FILE`, `AWS_CA_BUNDLE`, `NODE_EXTRA_CA_CERTS`, …).
 - Never create a `Gateway` or `GatewayClass` from an application chart —
   these are shared cluster infrastructure. Create only the route
   (`MCPRoute` / `HTTPRoute` / …) and attach it to an existing, named
