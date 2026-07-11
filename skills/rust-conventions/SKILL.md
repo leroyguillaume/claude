@@ -209,6 +209,22 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   ```
   Create this `build.rs` as soon as the crate calls `sqlx::migrate!`, not after
   the first stale-migration surprise.
+- **The same rule applies to any file embedded at compile time** —
+  `include_str!`, `include_bytes!`, and friends. As soon as a crate embeds a
+  file that lives outside `src/` (a template, a schema, a static asset), **add a
+  `build.rs`** that declares it, so the rebuild trigger is explicit rather than
+  inherited from whatever `rustc` happens to record in its dep-info:
+  ```rust
+  // build.rs
+  fn main() {
+      // Rebuild (re-expanding include_str!) whenever the template changes.
+      println!("cargo::rerun-if-changed=build.rs");
+      println!("cargo::rerun-if-changed=templates/report.md.liquid");
+  }
+  ```
+  Always emit `rerun-if-changed` for `build.rs` itself and for every embedded
+  path: a build script that emits **no** `rerun-if-changed` at all is re-run on
+  *any* file change in the package, which is strictly worse than no build script.
 - Use `mockall` for test doubles. Define collaborators as traits, annotate
   them with `#[cfg_attr(test, mockall::automock)]` (or `mock!` when you
   cannot own the trait), and inject the mock in unit tests. Keep production
