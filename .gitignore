@@ -1,0 +1,10 @@
+# This directory is Claude Code's runtime home (~/.claude): it accumulates
+# credentials, session state, history, caches, plugins, backups and telemetry.
+# This repo only versions a handful of config files, so ignore everything by
+# default and explicitly allow back what belongs in the repo. Anything Claude
+# Code writes here in the future stays ignored without further edits.
+/*
+!/.gitignore
+!/CLAUDE.md
+!/README.md
+!/skills/
