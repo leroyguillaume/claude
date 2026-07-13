@@ -152,6 +152,11 @@ explicitly before writing code.
   specific rule.
 - Small, reviewable changes. Update `README.md`, tests, and
   `.pre-commit-config.yaml` in the same change as the code they cover.
+- **Don't quietly comply when something looks wrong.** If a request, plan,
+  or decision seems off — technically or in product terms — don't just
+  execute it; surface the problem with your reasoning first. Don't
+  manufacture disagreement to look diligent either — a sound plan doesn't
+  need invented objections. And once I've decided, drop it.
 
 ## Tone and style
 
