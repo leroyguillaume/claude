@@ -26,6 +26,35 @@ to "later".
    appears a third time, extract it. Do not extract earlier. Do not build
    speculative abstractions.
 
+## Secret handling (never leak credentials)
+
+Secrets — API tokens, passwords, private keys, `*_TOKEN` / `*_SECRET` /
+`*_PASSWORD` / `*_KEY` env vars, `.netrc` contents, anything that grants
+access — must **never** appear in command output, logs, files I write, or
+messages to the user. A transcript is durable: a secret printed once is a
+secret compromised, and the user must then rotate it. This is not negotiable
+and has no "just this once" exception.
+
+Concrete rules:
+
+- **Never echo, print, `cat`, or otherwise render a secret's value**, in full
+  or in part. Not for debugging, not to "confirm it's set", not ever.
+- **To check whether a secret env var is set, test presence only — never
+  substitute the value.** In shell, the trap is that `${VAR:-fallback}` and
+  `${VAR:+x}` both expand `$VAR`; a bare `${VAR:-…}` prints the value when the
+  var *is* set. Use a form that cannot emit the value:
+  - `[ -n "${VAR:-}" ] && echo "VAR is set (${#VAR} chars)" || echo "VAR is unset"`
+  - never `echo "$VAR"`, `echo "${VAR:-unset}"`, `env | grep VAR`, or `set -x`
+    on a line that references a secret.
+- **Pass secrets by reference, not by value.** Prefer `--secret
+  id=…,env=VAR` (BuildKit), `--env-file`, files with `0600` perms, or piping
+  from a secret manager. Never bake a secret into a build arg, image layer,
+  command line that gets logged, or a file that gets committed.
+- **When redaction is impossible**, don't run the command — restructure it so
+  the secret never reaches stdout/stderr.
+- **If a secret does leak** (mine or the user's mistake): stop, say so plainly,
+  and tell the user to rotate/revoke it immediately. Don't bury it.
+
 ## Bootstrap checklist (run this on every new or unfamiliar project)
 
 Before writing feature code, verify the following exist. Create whatever is
