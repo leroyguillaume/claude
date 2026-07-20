@@ -167,7 +167,7 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
           .init();
   }
   ```
-- Apply the **Logging and observability** rules from `CLAUDE.md`. Rust
+- Apply the **`logging-conventions`** skill's rules. Rust
   mechanics: `debug!` (and `trace!` for very high-volume detail) via
   `tracing`, level controlled by `LOG_FILTER` through the `clap`-parsed
   filter, structured fields (`debug!(%name, count, "…")`) — never string

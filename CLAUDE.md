@@ -125,6 +125,9 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   idempotent units of work, for any server / worker / daemon.
 - **`project-metadata-conventions`** — derive author/repository fields from
   `git config`, never invent them.
+- **`skill-conventions`** — one topic per skill, trigger-bearing
+  `description` (`TRIGGER when:` / `SKIP when:`), terse imperative body
+  with before/after examples, registered in this index.
 
 **Language- and tool-specific** skills:
 
