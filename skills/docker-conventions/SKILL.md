@@ -1,7 +1,7 @@
 ---
 name: docker-conventions
-description: Dockerfile conventions (FHS paths, non-root USER, hadolint,
-  .dockerignore).
+description: Dockerfile conventions (FHS paths, non-root USER, hadolint with
+  no self-authorised ignores, pinned OS packages, .dockerignore).
   TRIGGER when: editing or creating a `Dockerfile`, `Containerfile`,
   `.dockerignore`, or `docker-compose.yaml`/`compose.yaml`; user asks about
   container build paths, non-root users, or hadolint in this repo.
@@ -40,11 +40,39 @@ description: Dockerfile conventions (FHS paths, non-root USER, hadolint,
   ```
 - Lint every `Dockerfile` with `hadolint` and add the `hadolint/hadolint`
   pre-commit hook.
-- Fix `hadolint` warnings rather than ignore them. If a rule must be
-  ignored, add an inline `# hadolint ignore=DLxxxx` with a justification
-  comment.
+- **Fix every `hadolint` warning at the source.** A green run is the only
+  acceptable end state.
+- **Pin OS package versions** (`apk add pkg=1.2.3-r4`,
+  `apt-get install -y pkg=1.2.3-4`) — this is DL3018/DL3008, and the answer
+  is to pin, not to silence. Keeping the pins current is Renovate's job, not
+  a reason to skip them. Annotate each one so Renovate can see it:
+  ```dockerfile
+  # renovate: datasource=repology depName=alpine_3_24/bash versioning=loose
+  RUN apk add --no-cache bash=5.3.9-r1
+  ```
+  Notes that save an hour of debugging:
+  - `depName` is `<repology-repo>/<package>`, and the repo carries the
+    **distro release** (`alpine_3_24`, `debian_13`). It does **not** follow a
+    base-image bump on its own — when the base moves to a new release, the
+    annotations must move with it or Renovate silently keeps resolving
+    against the old one.
+  - Multi-stage builds often sit on **different** distro releases per stage
+    (a toolchain image and a runtime image rarely move in lockstep). Check
+    each stage (`cat /etc/alpine-release`) and annotate per stage.
+  - Take the version from the image itself
+    (`apk list <pkg>` / `apt-cache policy <pkg>`), not from Repology's
+    `version` field — Repology normalises (`5.3.p9`), and only its
+    `origversion` (`5.3.9-r1`) is the string apk will accept.
+  - Verify extraction actually works before trusting it:
+    `LOG_LEVEL=debug npx --package renovate -- renovate --platform=local
+    --dry-run=extract`.
 
 **Never:**
 
 - Never end a `Dockerfile` without an explicit non-root `USER`.
 - Never run as `root` in the final image, even "temporarily".
+- **Never add a `# hadolint ignore=DLxxxx` on your own initiative** — not
+  with a justification comment, not "just this once", not because pinning
+  looks brittle. Add one only when the user has expressly asked for that
+  specific ignore. If a rule looks genuinely wrong for the situation, say so
+  and let the user decide; do not pre-empt the decision by silencing it.
