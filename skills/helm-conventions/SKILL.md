@@ -223,6 +223,29 @@ description: Helm chart conventions (values structure, security context,
       memory: 128Mi
       ephemeral-storage: 256Mi
   ```
+- **Always set `revisionHistoryLimit` on every workload that keeps a
+  rollout history** — `Deployment`, `StatefulSet`, `DaemonSet`,
+  `ReplicaSet`. Expose it as a documented key in the component's
+  `values.yaml` block (default `3`) and reference it from the template;
+  never hardcode it and never leave it out. Kubernetes defaults to `10`,
+  so an unset field silently piles up ten stale ReplicaSets per workload
+  — noise in `kubectl get rs`, and etcd objects nobody will ever roll back
+  to. Three is enough history for a realistic rollback.
+  ```yaml
+  # values.yaml
+  # -- Number of old ReplicaSets the Deployment keeps for rollback.
+  revisionHistoryLimit: 3
+  ```
+  ```yaml
+  # templates/<component>/deployment.yaml
+  spec:
+    replicas: {{ .replicaCount }}
+    revisionHistoryLimit: {{ .revisionHistoryLimit }}
+  ```
+  The equivalent knobs on other kinds are **not** this field and are not
+  covered by this rule: a `CronJob` uses
+  `successfulJobsHistoryLimit` / `failedJobsHistoryLimit`, and a `Job` has
+  no history at all.
 
 **Never:**
 
@@ -257,6 +280,10 @@ description: Helm chart conventions (values structure, security context,
   these are shared cluster infrastructure. Create only the route
   (`MCPRoute` / `HTTPRoute` / …) and attach it to an existing, named
   gateway.
+- Never ship a `Deployment` / `StatefulSet` / `DaemonSet` / `ReplicaSet`
+  without `revisionHistoryLimit`, and never hardcode it in the template
+  instead of exposing it in `values.yaml` — the Kubernetes default of `10`
+  leaves a heap of dead ReplicaSets behind every rollout.
 - Never set `resources.limits.cpu`. Memory and ephemeral-storage limits
   only.
 - Never omit any of `requests.cpu`, `requests.memory`,
