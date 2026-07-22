@@ -8,3 +8,6 @@
 !/CLAUDE.md
 !/README.md
 !/skills/
+
+# macOS Finder metadata, at any depth (including allowed-back directories)
+.DS_Store
