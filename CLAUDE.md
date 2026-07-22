@@ -172,6 +172,16 @@ explicitly before writing code.
   when you ship a breaking change — releases are the user's call. If you
   think a bump is warranted, mention it and wait for confirmation.
 
+## System packages
+
+- **Never install system packages without asking first.** No `pacman`,
+  `apt`, `dnf`, `brew`, `yay`/`paru`, or any other system package manager
+  install/upgrade/remove command without explicit confirmation from the
+  user in the current session. If a tool is missing, say what is missing,
+  what you would install, and wait for a yes. Project-local dependencies
+  (`uv add`, `cargo add`, `npm install` inside the project) are not
+  affected by this rule.
+
 ## Interaction defaults
 
 - Apply all rules above **by default, without asking**. Only ask if the
