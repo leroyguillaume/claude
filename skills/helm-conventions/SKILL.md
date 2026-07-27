@@ -1,11 +1,13 @@
 ---
 name: helm-conventions
 description: Helm chart conventions (values structure, security context,
-  templates layout, helm-docs, resources requests/limits).
+  Trivy `KSV-xxxx` compliance, templates layout, helm-docs, resources
+  requests/limits).
   TRIGGER when: editing or creating any file under a chart's `templates/`,
   `values.yaml`, `values-*.yaml`, `Chart.yaml`, `.helmignore`, or a chart's
   `README.md`; adding/removing a Kubernetes object in a chart; user asks about
-  Helm values, RBAC, security context, resources, or helm-docs in this repo.
+  Helm values, RBAC, security context, resources, chart scanning / KSV
+  findings, or helm-docs in this repo.
   SKIP when: pure Python/Rust/Docker/CI work with no chart file touched and the
   user isn't asking about Helm.
 ---
@@ -22,17 +24,24 @@ description: Helm chart conventions (values structure, security context,
   ```yaml
   podSecurityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
     seccompProfile:
       type: RuntimeDefault
   securityContext:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
     capabilities:
-      drop: ["ALL"]
+      drop:
+        - ALL
   ```
+  The IDs must be **> 10000** (Trivy `KSV-0020` / `KSV-0021`: a low container
+  UID collides with the host's user table). 65532 is the `nonroot` UID used
+  by distroless and Chainguard images — keep it in sync with the `USER` baked
+  into the image (see `docker-conventions`), otherwise a
+  `readOnlyRootFilesystem` pod hits permission errors on its own state
+  directory.
 - Lay out `templates/` with **one Kubernetes object per file**, and
   derive every filename from the object's `kind` in kebab-case (split
   CamelCase on word boundaries, replace spaces with hyphens, lowercase —
@@ -205,6 +214,35 @@ description: Helm chart conventions (values structure, security context,
   (restricted)** profile. The default `podSecurityContext` /
   `securityContext` shown above is the baseline; do not ship a chart that
   weakens it.
+- **Scan the rendered chart with `trivy config` and fix every `KSV-xxxx`
+  finding.** The KSV checks are the reference for what a hardened workload
+  looks like (`KSV-0020`/`KSV-0021` UID/GID > 10000, `KSV-0003` drop
+  capabilities, `KSV-0014` read-only root filesystem, `KSV-0030` seccomp,
+  `KSV-0125` trusted registry, …). Treat them as errors, fix at the source,
+  and — same rule as `hadolint` and image scanning — **never add a
+  `.trivyignore` or an inline ignore on your own initiative.** Wire it into CI:
+  ```bash
+  trivy config --exit-code 1 --helm-values charts/<chart>/values-lint.yaml charts/<chart>
+  ```
+  Two traps worth knowing:
+  - **A chart that fails to render is reported as "Not scanned", and trivy
+    still exits 0.** Any `required` value or `fail` in a template silently
+    disables the whole scan — the CI job goes green having checked nothing.
+    That's why a dedicated `values-lint.yaml` supplying the required values is
+    part of the chart, and why CI should assert the report is non-empty rather
+    than trusting the exit code.
+  - Because it scans *rendered* output, findings depend on the values you
+    feed it. Lint with the defaults a user actually gets, not a
+    hardened-on-purpose set that hides the problem.
+  Two checks this convention deliberately does **not** follow, because they
+  are wrong for a chart rather than wrong in the chart:
+  - **`KSV-0011` (`resources.limits.cpu`)** — see the resources rule below;
+    CPU limits cause throttling and we intentionally omit them.
+  - **`KSV-0110` (`metadata.namespace` is `default`)** — a chart takes its
+    namespace from `helm install --namespace`; hardcoding it in templates is
+    the actual anti-pattern.
+  Both are documented, chart-wide exceptions agreed up front — not a licence
+  to silence the next finding that's inconvenient.
 - Always set `resources.requests` for **CPU, memory, and ephemeral
   storage**, and `resources.limits` for **memory and ephemeral storage
   only**. Memory and ephemeral storage are non-compressible and must be

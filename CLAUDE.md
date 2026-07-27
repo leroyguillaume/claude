@@ -125,6 +125,9 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   idempotent units of work, for any server / worker / daemon.
 - **`project-metadata-conventions`** — derive author/repository fields from
   `git config`, never invent them.
+- **`pre-commit-conventions`** — never Docker-backed hooks (`language: docker`
+  / `docker_image`); run the linter binary directly, via a native-language
+  upstream hook or a `repo: local` `language: system` hook.
 
 **Language- and tool-specific** skills:
 
@@ -138,11 +141,13 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   typing (`strict` + `tsc --noEmit` gate), mobile-first responsive layout.
 - **`helm-conventions`** — `values.yaml` `global`/`<component>` layout,
   restricted security context, `templates/<component>/<kind>.yaml`,
-  per-component `ServiceAccount`, `helm-docs` annotations, resources
-  requests/limits (no `limits.cpu`).
-- **`docker-conventions`** — FHS paths (`/usr/local/src/<app>`,
-  `/usr/local/bin/`, `/etc/<app>/`, `/var/lib/<app>/`), non-root `USER` with
-  UID/GID 1000, `hadolint`, `.dockerignore`.
+  per-component `ServiceAccount`, `helm-docs` annotations, `trivy config`
+  (`KSV-xxxx`) compliance, resources requests/limits (no `limits.cpu`).
+- **`docker-conventions`** — smallest possible runtime base image
+  (`scratch` / distroless first) to keep the CVE surface near zero, FHS paths
+  (`/usr/local/src/<app>`, `/usr/local/bin/`, `/etc/<app>/`,
+  `/var/lib/<app>/`), non-root `USER` with UID/GID 65532, `hadolint` plus
+  `trivy config` (`DS-xxxx`) with no self-authorised ignores, `.dockerignore`.
 - **`github-actions-conventions`** — `actionlint`, multi-arch Rust builds
   on native runners (no QEMU), per-arch cache scoping.
 - **`kubernetes-operator-conventions`** — reconcile-path error handling
