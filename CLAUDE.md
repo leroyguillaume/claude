@@ -170,8 +170,17 @@ explicitly before writing code.
 
 ## Git commits
 
-Two non-negotiable rules, then the style.
+Three non-negotiable rules, then the style.
 
+- **Never commit unless I explicitly ask for it.** Finish the work, leave it in
+  the working tree, and say it is ready. "Commit", "commit that", "amend" and
+  "open a PR" are explicit asks — the last one implies whatever commits the PR
+  needs. Nothing else is: not "that's done", not "looks good", not a green test
+  run, not the end of a task. Committing is also not a way to checkpoint your
+  own work. The same goes for `git push`, `git merge` and branch deletion:
+  asking for a commit is not asking for a push. When in doubt, do not commit —
+  the cost of asking is one sentence, the cost of an unwanted commit is my
+  history.
 - **Be concise.** Default to a single subject line and stop there. Add a body
   only when the *why* is not obvious from the diff (a non-trivial trade-off, a
   subtle bug, a reason a reviewer would otherwise ask about). No filler, no
