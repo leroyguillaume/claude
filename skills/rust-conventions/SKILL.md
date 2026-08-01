@@ -172,6 +172,24 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   `tracing`, level controlled by `LOG_FILTER` through the `clap`-parsed
   filter, structured fields (`debug!(%name, count, "…")`) — never string
   interpolation.
+- **Only the program's result goes to stdout; everything else goes to
+  stderr.** `println!` is for what the program *produces* — the thing a caller
+  would pipe into a file or another command. Error messages, usage hints and
+  notes to whoever is watching go to `eprintln!`, so that `cmd > out.txt`
+  keeps the output clean *and* the diagnostics visible. The split is by
+  audience, not by severity: stdout is for the next program in the pipeline,
+  stderr is for the person at the terminal.
+
+  This does not loosen the rule below — diagnostics about the program's own
+  workings still go through `tracing`, never through either macro. And when
+  you install the subscriber, **`tracing_subscriber::fmt()` writes to stdout
+  by default**, which silently mixes logs into the result. Always redirect it:
+  ```rust
+  tracing_subscriber::fmt()
+      .with_env_filter(EnvFilter::new(&cli.log_filter))
+      .with_writer(std::io::stderr)
+      .init();
+  ```
 - Format with `rustfmt` and lint with `clippy` (`cargo clippy -- -D warnings`).
   Add local `cargo fmt --check` and `cargo clippy` hooks to
   `.pre-commit-config.yaml`.
