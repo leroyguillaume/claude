@@ -175,6 +175,55 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
 - Format with `rustfmt` and lint with `clippy` (`cargo clippy -- -D warnings`).
   Add local `cargo fmt --check` and `cargo clippy` hooks to
   `.pre-commit-config.yaml`.
+- **Declare lints once, in the manifest** — never as `#![warn(...)]` attributes
+  scattered across crate roots. In a workspace, the table lives in the root
+  virtual manifest and every member opts in with `[lints] workspace = true`:
+  ```toml
+  # Cargo.toml (workspace root)
+  [workspace.lints.rust]
+  missing_docs = "warn"
+  unsafe_code = "forbid"
+
+  [workspace.lints.clippy]
+  all = { level = "warn", priority = -1 }
+  pedantic = { level = "warn", priority = -1 }
+  ```
+  ```toml
+  # <crate>/Cargo.toml
+  [lints]
+  workspace = true
+  ```
+  **Lint *groups* must carry `priority = -1`.** Cargo turns each entry into a
+  rustc flag and rustc applies "last flag wins", but **Cargo ignores the order
+  the entries are written in** and sorts by `priority` instead. A group left at
+  the default priority of 0 can therefore be emitted *after* an individual
+  `allow` of one of its lints and silently re-enable it. `clippy::all` includes
+  `lint_groups_priority`, which catches this and suggests the fix — do not
+  ignore that warning.
+- **Aim for an empty allow-list.** `pedantic` is worth keeping on: its noisy
+  lints still force a decision, and its cast/float lints catch real bugs long
+  after the code was written. When a lint fires, the default is to comply.
+  Blanket `allow` entries in the manifest are a last resort and must carry a
+  comment explaining what was traded away — a global `allow` hides a problem
+  everywhere, whereas a scoped `#[allow(clippy::…)]` at the offending item,
+  with a justification comment, documents it exactly where it matters. Prefer
+  the scoped form every time. Beware of writing the allow-list *before* the
+  code: allows added at bootstrap "because everyone disables those" are
+  cargo-cult, and some will not even be in the group any more.
+- **Pin the toolchain with a `rust-toolchain.toml`** at the repository root, on
+  an exact patch version, as soon as the project lints with `pedantic` and
+  fails the build on warnings. Without a pin, a clippy release turns CI red on
+  code nobody touched; with one, a toolchain bump is a reviewable diff.
+  ```toml
+  [toolchain]
+  channel = "1.97.1"
+  components = ["rustfmt", "clippy"]
+  profile = "minimal"
+  ```
+  This pin is **not** the MSRV. `rust-version` in `Cargo.toml` is what
+  consumers must have and should stay as low as the code allows; the toolchain
+  file is what contributors and CI build with and should stay current. Never
+  collapse the two.
 - Validate deserialised input (request DTOs, config payloads, …) with the
   **`validator`** crate (derive API), not hand-rolled checks. Put
   `#[derive(Validate)]` on the input struct, use the built-in field
