@@ -1,11 +1,13 @@
 ---
 name: pre-commit-conventions
 description: pre-commit conventions — never use Docker-backed hooks, always run
-  the linter binary directly (`language: system` / native pre-commit language).
+  the linter binary directly (`language: system` / native pre-commit language),
+  always ship a `yamllint` hook in a repo containing YAML.
   TRIGGER when: creating or editing `.pre-commit-config.yaml`; adding, replacing
   or bumping a pre-commit hook; a hook repo only ships a `docker` /
-  `docker_image` variant; user asks why a hook is slow, why it needs Docker, or
-  how to run a linter in pre-commit.
+  `docker_image` variant; setting up linting for a repo containing YAML; user
+  asks why a hook is slow, why it needs Docker, or how to run a linter in
+  pre-commit.
   SKIP when: not touching pre-commit configuration.
 ---
 
@@ -56,6 +58,58 @@ prerequisite in the repo `README.md` and install it in CI before running
 If a runner genuinely cannot have the binary preinstalled, use
 `shellcheck-py/shellcheck-py` (pinned, e.g. `rev: v0.11.0.1`) — it is a pip
 wheel bundling the binary, still no Docker.
+
+## Always include yamllint
+
+**Every repo containing YAML gets a `yamllint` hook**, alongside a
+`.yamllint.yaml` at the root. `check-yaml` only proves a file parses; it says
+nothing about how it is written, which leaves `yaml-conventions` resting on
+whoever happens to be reviewing.
+
+```yaml
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+        # Warning-level rules (document-start among them) are printed and then
+        # ignored without this — the hook passes anyway.
+        args:
+          - --strict
+        # A Helm template is Go templating, not YAML, until it is rendered.
+        exclude: ^charts/[^/]+/templates/
+```
+
+The hook is `language: python` upstream, so no Docker and nothing to
+preinstall. Start from `extends: default` and state only the deviations — most
+repos already satisfy the default ruleset, and dropping it to enable two rules
+throws away `indentation`, `key-duplicates` and `document-start` for nothing:
+
+```yaml
+extends: default
+
+rules:
+  # yaml-conventions: no `---` opening a file. Add a per-rule `ignore:` for any
+  # genuinely multi-document file — the separators between documents are
+  # required syntax and the rule cannot tell them from a stylistic opener.
+  document-start:
+    present: false
+  # yaml-conventions: block style only. `non-empty` still allows `{}` / `[]`.
+  braces:
+    forbid: non-empty
+  brackets:
+    forbid: non-empty
+  # Disable rather than tune: a digest-pinned image reference alone is ~150
+  # characters, and a helm-docs annotation is one line per key by construction.
+  line-length: disable
+```
+
+Two traps worth knowing:
+
+- **Without `--strict`, yamllint exits 0 on warnings.** `document-start` is a
+  warning by default, so the finding is printed and the hook goes green.
+- **A rule that fires on a file it cannot be satisfied on** (`document-start`
+  on a multi-document manifest) needs a per-rule `ignore:`, not a global one —
+  a top-level `ignore:` drops the file from *every* rule.
 
 ## Other rules
 
