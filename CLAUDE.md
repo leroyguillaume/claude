@@ -181,6 +181,14 @@ Three non-negotiable rules, then the style.
   asking for a commit is not asking for a push. When in doubt, do not commit —
   the cost of asking is one sentence, the cost of an unwanted commit is my
   history.
+- **The permission never carries forward.** An ask covers the work sitting in
+  front of it and nothing after it. The next task needs a new ask, even two
+  minutes later in the same session, even when the last thing I said was
+  "commit" and nothing else, even when the new work is a direct follow-up to the
+  work I just had you commit. A session where I asked for a commit once is not a
+  session where committing has become the default; treat every commit as needing
+  its own green light. If several rounds of work have piled up in the working
+  tree, that is fine and expected — say what is uncommitted and wait.
 - **Be concise.** Default to a single subject line and stop there. Add a body
   only when the *why* is not obvious from the diff (a non-trivial trade-off, a
   subtle bug, a reason a reviewer would otherwise ask about). No filler, no
