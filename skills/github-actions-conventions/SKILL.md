@@ -112,6 +112,32 @@ the job that needs it).
   `workflow_dispatch` / `workflow_call` take **no** `paths` — path filters do
   not apply to those events.
 
+## Concurrency — one run per workflow per ref
+
+**Every** workflow carries a top-level `concurrency:` block keyed on the ref, so
+two runs of the same workflow never overlap on the same branch or tag:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+- **`cancel-in-progress: true`, always — no exceptions, publishing workflows
+  included.** A run for a superseded commit is dead weight; kill it and free the
+  runner. Do not reach for `false` on `release`/`chart` to protect a push
+  mid-flight: registries are the place to make a partial publish safe (immutable
+  tags, digest-addressed pushes, a re-run of the same tag), not the concurrency
+  block. Never write `cancel-in-progress: false`, and never make it conditional
+  on the event.
+- **In a reusable (`workflow_call`) workflow, hardcode the workflow name in the
+  group instead of `${{ github.workflow }}`.** In a called run that expression
+  resolves to the **caller**, so `build` would land in the same group as
+  `release` and cancel the very job waiting on it. Write
+  `group: build-${{ github.ref }}`.
+- Key on `github.ref`, not `github.head_ref` — the latter is empty outside
+  `pull_request` events and would collapse every push into one shared group.
+
 ## Cache deliberately, and pragmatically
 
 Cache what is expensive to **recompute**, not what is cheap to **re-download**.
@@ -139,3 +165,6 @@ can be **slower** than a clean fetch, and a stale cache is worse than none.
   never share one unscoped build cache across architectures.
 - Never split the quality gate: `pre-commit` + tests live in the single
   `quality` workflow.
+- Never ship a workflow without a `concurrency:` group, and never set
+  `cancel-in-progress` to anything but `true` — not `false`, not an expression,
+  not even on `release`/`chart`.
