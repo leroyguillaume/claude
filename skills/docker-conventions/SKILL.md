@@ -3,7 +3,8 @@ name: docker-conventions
 description: Dockerfile conventions (minimal CVE-free base images —
   scratch/distroless first, multi-stage, pinned tags — FHS paths, non-root
   USER, hadolint and Trivy `DS-xxxx` compliance with no self-authorised
-  ignores, pinned OS packages, .dockerignore).
+  ignores, pinned apk packages but deliberately unpinned apt packages,
+  .dockerignore).
   TRIGGER when: editing or creating a `Dockerfile`, `Containerfile`,
   `.dockerignore`, or `docker-compose.yaml`/`compose.yaml`; user asks about
   container build paths, base image choice, image size, container CVEs /
@@ -55,8 +56,8 @@ description: Dockerfile conventions (minimal CVE-free base images —
 - **`trivy` does not replace `hadolint`. Run both.** They overlap on the
   obvious stuff (absolute `WORKDIR`, `cd` in `RUN`, `--no-install-recommends`),
   but each catches things the other is blind to:
-  - **Only `hadolint`**: OS package version pinning (`DL3008`/`DL3018`) — the
-    pinning rule below has *no* Trivy equivalent, which by itself settles the
+  - **Only `hadolint`**: apk package version pinning (`DL3018`) — the pinning
+    rule below has *no* Trivy equivalent, which by itself settles the
     question; apt list cleanup (`DL3009`); JSON notation for
     `ENTRYPOINT`/`CMD` (`DL3025`); and **ShellCheck on every `RUN` line**
     (`SC2086` unquoted expansion, etc.), which Trivy does not do at all.
@@ -101,10 +102,9 @@ description: Dockerfile conventions (minimal CVE-free base images —
   pre-commit hook.
 - **Fix every `hadolint` warning at the source.** A green run is the only
   acceptable end state.
-- **Pin OS package versions** (`apk add pkg=1.2.3-r4`,
-  `apt-get install -y pkg=1.2.3-4`) — this is DL3018/DL3008, and the answer
-  is to pin, not to silence. Keeping the pins current is Renovate's job, not
-  a reason to skip them. Annotate each one so Renovate can see it:
+- **Pin `apk` package versions** (`apk add pkg=1.2.3-r4`) — this is DL3018, and
+  the answer is to pin, not to silence. Keeping the pins current is Renovate's
+  job, not a reason to skip them. Annotate each one so Renovate can see it:
   ```dockerfile
   # renovate: datasource=repology depName=alpine_3_24/bash versioning=loose
   RUN apk add --no-cache bash=5.3.9-r1
@@ -125,6 +125,28 @@ description: Dockerfile conventions (minimal CVE-free base images —
   - Verify extraction actually works before trusting it:
     `LOG_LEVEL=debug npx --package renovate -- renovate --platform=local
     --dry-run=extract`.
+- **Do not pin `apt` package versions on Debian/Ubuntu — leave `DL3008`
+  ignored.** This is a deliberate exception to the rule above, not an
+  oversight, and `# hadolint ignore=DL3008` is **pre-authorised** here (the
+  "never silence a rule on your own initiative" rule below does not apply to
+  this one code). Two reasons:
+  - **The pin rots into a build failure.** `deb.debian.org` serves exactly one
+    version of each package per suite: the current one. The moment a security
+    update or point release lands, `curl=8.14.1-2+deb13u4` stops existing and
+    every build breaks — including builds of tags that used to work. `apk` does
+    not get this exemption for free either, but Alpine users typically pair it
+    with Renovate; on Debian the `deb` datasource is far more fiddly, and most
+    repos have no bot wired up at all. Check before assuming one exists.
+  - **A frozen pin means frozen CVEs.** A stable suite only moves for security
+    updates, so an unpinned `apt-get install` on a rebuild picks up precisely
+    the patches you want — while a pin freezes the vulnerability until a human
+    notices. That is backwards for an image you are also scanning with Trivy.
+  Reproducibility is recovered at the layer where it actually works: pin the
+  base image by digest and rebuild on a schedule. Not with apt pins.
+  What still gets pinned, because those pools keep old versions:
+  third-party apt repos (`download.docker.com`, PostgreSQL, NodeSource), PyPI,
+  npm, and GitHub release assets. Hoist third-party apt versions into `ARG`s at
+  the top of the `Dockerfile` so every version knob lives in one place.
 
 **Never:**
 
@@ -147,3 +169,6 @@ description: Dockerfile conventions (minimal CVE-free base images —
   looks brittle. Add one only when the user has expressly asked for that
   specific ignore. If a rule looks genuinely wrong for the situation, say so
   and let the user decide; do not pre-empt the decision by silencing it.
+  **The single standing exception is `DL3008`** (apt version pinning), which is
+  pre-authorised — see the apt rule above. Everything else, including
+  `DL3018`, still needs an explicit ask.
