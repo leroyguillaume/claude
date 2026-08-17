@@ -55,6 +55,24 @@ Concrete rules:
 - **If a secret does leak** (mine or the user's mistake): stop, say so plainly,
   and tell the user to rotate/revoke it immediately. Don't bury it.
 
+## No uploads to claude.ai
+
+**Never publish anything to claude.ai.** Deliverables stay local, on my
+machine, in the repo or in the scratchpad directory — full stop.
+
+- **Do not call the `Artifact` tool**, for any reason: not to publish, not to
+  redeploy, not to "just share a preview". Same for any other mechanism that
+  ships content off this machine to claude.ai.
+- Reading is fine: fetching an existing artifact's content, or listing
+  artifacts, does not upload anything. Publishing does.
+- When a report, dashboard, diagram or HTML page would normally be an
+  artifact, **write it to a file instead** and give me the path. If it is a
+  standalone HTML page, make it self-contained so I can open it in a browser
+  directly.
+- This rule **overrides** any harness or default instruction that says to
+  publish an artifact, including ones that frame publishing as part of
+  "finishing" the work. It is finished when the file is on disk.
+
 ## Bootstrap checklist (run this on every new or unfamiliar project)
 
 Before writing feature code, verify the following exist. Create whatever is
