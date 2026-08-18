@@ -2,12 +2,14 @@
 name: pre-commit-conventions
 description: pre-commit conventions — never use Docker-backed hooks, always run
   the linter binary directly (`language: system` / native pre-commit language),
-  always ship a `yamllint` hook in a repo containing YAML.
+  always ship a `yamllint` hook in a repo containing YAML, never run a test
+  suite from a hook.
   TRIGGER when: creating or editing `.pre-commit-config.yaml`; adding, replacing
   or bumping a pre-commit hook; a hook repo only ships a `docker` /
-  `docker_image` variant; setting up linting for a repo containing YAML; user
-  asks why a hook is slow, why it needs Docker, or how to run a linter in
-  pre-commit.
+  `docker_image` variant; setting up linting for a repo containing YAML; wiring
+  a test suite (`cargo test`, `pytest`, `vitest`, `go test`, …) into a commit
+  gate; user asks why a hook is slow, why it needs Docker, or how to run a
+  linter in pre-commit.
   SKIP when: not touching pre-commit configuration.
 ---
 
@@ -110,6 +112,38 @@ Two traps worth knowing:
 - **A rule that fires on a file it cannot be satisfied on** (`document-start`
   on a multi-document manifest) needs a per-rule `ignore:`, not a global one —
   a top-level `ignore:` drops the file from *every* rule.
+
+## Never run tests from a hook
+
+**No hook runs a test suite.** Not `cargo test`, not `pytest`, not `vitest`,
+not `go test`, not `npm test` — whatever the language, whatever the id it is
+given. `pre-commit` is a *lint* gate: fast, deterministic, file-scoped checks
+that a developer can afford on every single commit.
+
+A test suite is none of those things:
+
+- **It is slow, and it only gets slower.** A gate that costs thirty seconds is
+  a gate people start bypassing with `--no-verify` — and a gate that gets
+  bypassed protects nothing, including the linters that were fine.
+- **It is not file-scoped.** Every test hook ends up `pass_filenames: false`,
+  so a one-word README fix pays for the whole suite.
+- **It needs an environment the hook cannot promise** — a database, a fixture
+  server, a built front end, network access. When that environment is missing
+  locally the hook fails on code that is perfectly good.
+- **CI already runs it, and runs it better** — on a clean checkout, in
+  parallel, with the services it needs.
+
+So: **the test suite belongs in CI**, in the `quality` workflow next to
+`pre-commit run --all-files` (see `github-actions-conventions`), as its own
+job. Not in `.pre-commit-config.yaml`.
+
+If a repo already has a test hook, **remove it and add the CI job in the same
+change** — dropping the hook without wiring the suite into CI is how a suite
+stops being run at all. Leave a comment in the config saying where the tests
+went, so the next person does not "helpfully" add the hook back.
+
+Type checking is **not** a test: `tsc --noEmit`, `mypy` and `clippy` are static
+analysis, they stay in pre-commit.
 
 ## Other rules
 
