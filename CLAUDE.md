@@ -19,12 +19,58 @@ to "later".
    hook listed for the technologies in use (baseline below, language-specific
    hooks in the matching skill).
 3. **Root `README.md` is up to date** with install, configure, run, and test
-   instructions after any change that affects them. **Always write `README.md`
-   (and any other README) in English**, regardless of the project's or the
-   conversation's language.
+   instructions after any change that affects them, and **stays limited to
+   that** — the reasoning goes in `ARCHITECTURE.md`, see below. **Always write
+   `README.md` (and any other README) in English**, regardless of the
+   project's or the conversation's language.
 4. **No code duplication beyond the rule of three.** When the same logic
    appears a third time, extract it. Do not extract earlier. Do not build
    speculative abstractions.
+
+## `README.md` and `ARCHITECTURE.md` are two documents
+
+**Split them by default, in every project, without being asked.** A README
+that also carries the design rationale stops being read: somebody arriving to
+run the thing has to skim past twenty paragraphs of *why* to find the four
+commands they came for, and the *why* itself gets skipped as noise because it
+sits where nobody was looking for it. Two files, each with one job.
+
+`README.md` — what a newcomer needs to **use** the project:
+
+- what it is, in a few lines
+- prerequisites and install
+- configuration (environment variables, config files)
+- how to run it, how to test it, how to lint it
+- how to deploy or apply it, when that applies
+- generated blocks (`terraform-docs`, `helm-docs`, CLI `--help` dumps) stay
+  here — they are reference, and the tooling injects them into the README
+
+`ARCHITECTURE.md` — everything that answers **why**:
+
+- design decisions and the trade-offs behind them, tooling choices
+- how the pieces fit together, data flow, invariants
+- constraints imposed from outside (org policy, platform limits, quotas)
+- bootstrap and migration history, one-off procedures, recovery runbooks
+- known limitations and what would have to change to lift them
+
+The test, when something is ambiguous: **if deleting it would not stop anyone
+from installing, running, testing or deploying the project, it belongs in
+`ARCHITECTURE.md`.** A caveat that changes *what command someone types* is a
+README caveat; a caveat that explains *why the command is that one* is not.
+
+Mechanics:
+
+- Create `ARCHITECTURE.md` as soon as there is a second document's worth of
+  content — in practice, the first time a *why* paragraph shows up in the
+  README, or the README passes ~150 lines.
+- **Cross-link both ways.** The README points at `ARCHITECTURE.md` from the
+  sections whose reasoning was moved out; `ARCHITECTURE.md` points back at the
+  README for the commands. Verify anchors after a split — a heading that moved
+  takes its anchor with it, and dangling ones are the usual casualty.
+- Both files in English, like every other README.
+- Keep them in sync with the change that affects them, same commit.
+- Never duplicate a section across the two. One home per fact; the other file
+  links to it.
 
 ## Secret handling (never leak credentials)
 
@@ -78,7 +124,9 @@ machine, in the repo or in the scratchpad directory — full stop.
 Before writing feature code, verify the following exist. Create whatever is
 missing:
 
-- [ ] `README.md` at repo root
+- [ ] `README.md` at repo root, operational content only
+- [ ] `ARCHITECTURE.md` at repo root as soon as there is any design
+      rationale to record (see the split rule above)
 - [ ] `.pre-commit-config.yaml` with baseline hooks (see below)
 - [ ] Test framework set up and at least one passing test
 - [ ] `.gitignore` appropriate to the stack
@@ -265,8 +313,8 @@ Pull requests are **not** covered here — see the `github-pr-conventions` skill
 - When a rule conflicts with the current state of the project, fix the
   project — unless the project's `CLAUDE.md` explicitly opts out of that
   specific rule.
-- Small, reviewable changes. Update `README.md`, tests, and
-  `.pre-commit-config.yaml` in the same change as the code they cover.
+- Small, reviewable changes. Update `README.md`, `ARCHITECTURE.md`, tests,
+  and `.pre-commit-config.yaml` in the same change as the code they cover.
 - **Don't quietly comply when something looks wrong.** If a request, plan,
   or decision seems off — technically or in product terms — don't just
   execute it; surface the problem with your reasoning first. Don't
