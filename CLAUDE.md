@@ -214,6 +214,12 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   (`/usr/local/src/<app>`, `/usr/local/bin/`, `/etc/<app>/`,
   `/var/lib/<app>/`), non-root `USER` with UID/GID 65532, `hadolint` plus
   `trivy config` (`DS-xxxx`) with no self-authorised ignores, `.dockerignore`.
+- **`terraform-conventions`** — file layout with a mandatory `data.tf`
+  (every `data` block, nowhere else), `variables.tf` / `outputs.tf` /
+  `locals.tf`, resources by domain; typed and documented variables, exactly
+  pinned fully-qualified providers, `for_each` over `count`, secrets kept out
+  of the state (write-only args / `ephemeral`), `terraform test`,
+  `terraform-docs`, `trivy config` (`AVD-xxxx`), never apply without asking.
 - **`github-actions-conventions`** — `actionlint`, multi-arch Rust builds
   on native runners (no QEMU), per-arch cache scoping.
 - **`kubernetes-operator-conventions`** — reconcile-path error handling
