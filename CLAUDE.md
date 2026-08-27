@@ -72,6 +72,37 @@ Mechanics:
 - Never duplicate a section across the two. One home per fact; the other file
   links to it.
 
+## Never link outside the project with a relative path
+
+A relative path is only meaningful *inside* the repository that holds it. The
+moment it escapes the project root — `../../other-project/README.md`,
+`../shared/values.yaml`, a symlink pointing at `~/projects/…` — it stops
+describing anything portable and starts describing **my laptop's directory
+layout**. It breaks for anyone who clones the repo somewhere else, on the
+GitHub/GitLab file viewer, in CI, and inside every container build, where the
+parent directory simply does not exist.
+
+Rules:
+
+- **Never emit a path that climbs out of the project root**, in any file:
+  markdown links, source imports, config values, `include`/`extends`
+  directives, `Dockerfile` `COPY` sources, Makefiles, scripts, symlinks.
+  If the `../` sequence crosses the repo root, it is wrong.
+- **Relative links *within* the project are the default** and stay encouraged
+  — `README.md` → `ARCHITECTURE.md`, `docs/` → `src/`. The rule is about
+  leaving the project, not about relative paths as such.
+- **To point at something outside, use a stable absolute reference**: an
+  `https://` URL (repository, docs, issue), or — when it is code or config
+  that must actually be consumed — a *declared dependency* with a pinned
+  version: a package, a git submodule, a Terraform module `source`, a Helm
+  chart dependency, a `uv`/`cargo` dependency. Never a path replacement
+  pointing at a sibling checkout.
+- **Shared content between two projects is a dependency, not a link.** Extract
+  it into something both sides depend on, or duplicate it deliberately and say
+  so in `ARCHITECTURE.md`. Do not staple the two working copies together.
+- When I ask for something that would require such a link, say what the proper
+  reference is instead — a URL or a dependency — and use that.
+
 ## Secret handling (never leak credentials)
 
 Secrets — API tokens, passwords, private keys, `*_TOKEN` / `*_SECRET` /
