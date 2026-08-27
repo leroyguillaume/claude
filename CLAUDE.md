@@ -103,6 +103,49 @@ Rules:
 - When I ask for something that would require such a link, say what the proper
   reference is instead — a URL or a dependency — and use that.
 
+## Comments: sparse by default, precise when the code is weird
+
+**Do not narrate the code.** A comment that restates the line below it costs a
+line to read and a line to maintain, and buys nothing: the reader already sees
+the `for` loop. If a block needs a comment to explain *what* it does, it
+usually needs a better name or a smaller function instead — fix that, don't
+annotate it.
+
+So, by default: **no** comment. Concretely, never write:
+
+- a paraphrase of the signature as a docstring (`# returns the user id`)
+- section banners (`# ---- helpers ----`), `# TODO` without a why,
+  history notes (`# removed the retry, was flaky`) — that is the git log's job
+- commented-out code — delete it, git remembers
+
+**One header comment at the top of a file is allowed — only when it is
+needed.** Two or three lines saying what this file is for and how it fits with
+its neighbours, when that is not already obvious from its name and its
+directory. Necessary for a file whose role is genuinely ambiguous (a module
+with a generic name, a config nobody can place, an entry point among several);
+unnecessary — so absent — for `tests/test_parser.py` or `handlers/health.py`,
+which say it themselves. It describes the file's *purpose*, never its
+contents: no inventory of the functions below, no changelog. If the header
+starts growing into design rationale, it has outgrown the file — that goes in
+`ARCHITECTURE.md`.
+
+**The exception is the whole point of the rule.** When something is genuinely
+farfelu — a workaround for an upstream bug, a non-obvious ordering constraint,
+a magic constant that came from a measurement, a deliberate deviation from
+these conventions, a subtle race or a perf hack — then comment it, and be
+*precise*: say **what breaks without it**, not that it is "important". Name
+the version or the platform it works around, and link the issue / PR / doc /
+CVE when one exists. Those few lines are the ones that survive to save
+somebody an afternoon, and they are the only place verbosity is earned.
+
+The test: a competent reader looking at this line would ask…
+
+- *"what does this do?"* → rename or restructure, no comment
+- *"why on earth is it like this?"* → comment, and answer that question
+
+And keep them honest: a comment moves with the code it describes, in the same
+change. A stale comment is worse than no comment — it lies with authority.
+
 ## Secret handling (never leak credentials)
 
 Secrets — API tokens, passwords, private keys, `*_TOKEN` / `*_SECRET` /
