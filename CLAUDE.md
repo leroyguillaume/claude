@@ -18,64 +18,19 @@ to "later".
 2. **`.pre-commit-config.yaml` exists** at the repo root and includes every
    hook listed for the technologies in use (baseline below, language-specific
    hooks in the matching skill).
-3. **Root `README.md` is up to date** with install, configure, run, and test
-   instructions after any change that affects them, and **stays limited to
-   that** — the reasoning goes in `ARCHITECTURE.md`, see below. **Always write
-   `README.md` (and any other README) in English**, regardless of the
-   project's or the conversation's language.
+3. **`README.md`, `ARCHITECTURE.md` and `CONTRIBUTING.md` all exist** at the
+   repo root, and stay up to date with the change that affects them. What
+   goes in each of them is the `readme-conventions`,
+   `architecture-conventions` and `contributing-conventions` skills' job —
+   invoke them; this rule is only that the three files are never missing.
 4. **No code duplication beyond the rule of three.** When the same logic
    appears a third time, extract it. Do not extract earlier. Do not build
    speculative abstractions.
 
-## `README.md` and `ARCHITECTURE.md` are two documents
-
-**Split them by default, in every project, without being asked.** A README
-that also carries the design rationale stops being read: somebody arriving to
-run the thing has to skim past twenty paragraphs of *why* to find the four
-commands they came for, and the *why* itself gets skipped as noise because it
-sits where nobody was looking for it. Two files, each with one job.
-
-`README.md` — what a newcomer needs to **use** the project:
-
-- what it is, in a few lines
-- prerequisites and install
-- configuration (environment variables, config files)
-- how to run it, how to test it, how to lint it
-- how to deploy or apply it, when that applies
-- generated blocks (`terraform-docs`, `helm-docs`, CLI `--help` dumps) stay
-  here — they are reference, and the tooling injects them into the README
-
-`ARCHITECTURE.md` — everything that answers **why**:
-
-- design decisions and the trade-offs behind them, tooling choices
-- how the pieces fit together, data flow, invariants
-- constraints imposed from outside (org policy, platform limits, quotas)
-- bootstrap and migration history, one-off procedures, recovery runbooks
-- known limitations and what would have to change to lift them
-
-The test, when something is ambiguous: **if deleting it would not stop anyone
-from installing, running, testing or deploying the project, it belongs in
-`ARCHITECTURE.md`.** A caveat that changes *what command someone types* is a
-README caveat; a caveat that explains *why the command is that one* is not.
-
-Mechanics:
-
-- Create `ARCHITECTURE.md` as soon as there is a second document's worth of
-  content — in practice, the first time a *why* paragraph shows up in the
-  README, or the README passes ~150 lines.
-- **Cross-link both ways.** The README points at `ARCHITECTURE.md` from the
-  sections whose reasoning was moved out; `ARCHITECTURE.md` points back at the
-  README for the commands. Verify anchors after a split — a heading that moved
-  takes its anchor with it, and dangling ones are the usual casualty.
-- Both files in English, like every other README.
-- Keep them in sync with the change that affects them, same commit.
-- Never duplicate a section across the two. One home per fact; the other file
-  links to it.
-
 ## Never link outside the project with a relative path
 
 A relative path is only meaningful *inside* the repository that holds it. The
-moment it escapes the project root — `../../other-project/README.md`,
+moment it escapes the project root — `../../other-project/src/client.py`,
 `../shared/values.yaml`, a symlink pointing at `~/projects/…` — it stops
 describing anything portable and starts describing **my laptop's directory
 layout**. It breaks for anyone who clones the repo somewhere else, on the
@@ -89,21 +44,23 @@ Rules:
   directives, `Dockerfile` `COPY` sources, Makefiles, scripts, symlinks.
   If the `../` sequence crosses the repo root, it is wrong.
 - **Relative links *within* the project are the default** and stay encouraged
-  — `README.md` → `ARCHITECTURE.md`, `docs/` → `src/`. The rule is about
-  leaving the project, not about relative paths as such.
+  — `docs/` → `src/`, a chart's `values.yaml` → its templates. The rule is
+  about leaving the project, not about relative paths as such.
 - **To point at something outside, use a stable absolute reference**: an
   `https://` URL (repository, docs, issue), or — when it is code or config
   that must actually be consumed — a *declared dependency* with a pinned
   version: a package, a git submodule, a Terraform module `source`, a Helm
   chart dependency, a `uv`/`cargo` dependency. Never a path replacement
   pointing at a sibling checkout.
-- **Shared content between two projects is a dependency, not a link.** Extract
-  it into something both sides depend on, or duplicate it deliberately and say
-  so in `ARCHITECTURE.md`. Do not staple the two working copies together.
 - When I ask for something that would require such a link, say what the proper
   reference is instead — a URL or a dependency — and use that.
 
-## Comments: sparse by default, precise when the code is weird
+## Comments: rare, concise, precise when the code is weird
+
+**Add a comment only when it is genuinely necessary, and keep it short.** Two
+lines that answer a real question beat a paragraph that restates the code; if
+a comment is growing into an essay, it is either explaining the wrong thing or
+compensating for code that should be rewritten.
 
 **Do not narrate the code.** A comment that restates the line below it costs a
 line to read and a line to maintain, and buys nothing: the reader already sees
@@ -125,9 +82,7 @@ directory. Necessary for a file whose role is genuinely ambiguous (a module
 with a generic name, a config nobody can place, an entry point among several);
 unnecessary — so absent — for `tests/test_parser.py` or `handlers/health.py`,
 which say it themselves. It describes the file's *purpose*, never its
-contents: no inventory of the functions below, no changelog. If the header
-starts growing into design rationale, it has outgrown the file — that goes in
-`ARCHITECTURE.md`.
+contents: no inventory of the functions below, no changelog.
 
 **The exception is the whole point of the rule.** When something is genuinely
 farfelu — a workaround for an upstream bug, a non-obvious ordering constraint,
@@ -198,9 +153,6 @@ machine, in the repo or in the scratchpad directory — full stop.
 Before writing feature code, verify the following exist. Create whatever is
 missing:
 
-- [ ] `README.md` at repo root, operational content only
-- [ ] `ARCHITECTURE.md` at repo root as soon as there is any design
-      rationale to record (see the split rule above)
 - [ ] `.pre-commit-config.yaml` with baseline hooks (see below)
 - [ ] Test framework set up and at least one passing test
 - [ ] `.gitignore` appropriate to the stack
@@ -252,6 +204,15 @@ Detailed rules live in skills that load when the matching files or topics
 appear. **Cross-cutting** skills are not tied to one language — they trigger on
 the kind of work (a YAML file, an HTTP handler, a long-running process):
 
+- **`readme-conventions`** — README structure (description, getting started,
+  contributing/licence links), English only, `CONTRIBUTING.md` and `LICENSE`
+  must exist, operational content only.
+- **`contributing-conventions`** — `CONTRIBUTING.md` structure (what to
+  install, pre-commit as the gate, what the CI actually runs and how to
+  reproduce it locally), English only, described from the repo's real config.
+- **`architecture-conventions`** — `ARCHITECTURE.md` structure (components,
+  data flow, standing trade-offs, invariants, limitations), present tense
+  only, never a history and never the CI.
 - **`logging-conventions`** — liberal debug logs, structured key-value
   fields, level-controlled verbosity, standard logging library.
 - **`yaml-conventions`** — block style only, never flow style (`{...}` /
@@ -393,8 +354,8 @@ Pull requests are **not** covered here — see the `github-pr-conventions` skill
 - When a rule conflicts with the current state of the project, fix the
   project — unless the project's `CLAUDE.md` explicitly opts out of that
   specific rule.
-- Small, reviewable changes. Update `README.md`, `ARCHITECTURE.md`, tests,
-  and `.pre-commit-config.yaml` in the same change as the code they cover.
+- Small, reviewable changes. Update the documentation, tests, and
+  `.pre-commit-config.yaml` in the same change as the code they cover.
 - **Don't quietly comply when something looks wrong.** If a request, plan,
   or decision seems off — technically or in product terms — don't just
   execute it; surface the problem with your reasoning first. Don't
