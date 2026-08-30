@@ -229,6 +229,10 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
 - **`pre-commit-conventions`** — never Docker-backed hooks (`language: docker`
   / `docker_image`); run the linter binary directly, via a native-language
   upstream hook or a `repo: local` `language: system` hook.
+- **`release-script-conventions`** — every publishable project ships a
+  `scripts/release.sh` that bumps the stored version, regenerates what derives
+  from it, commits, tags, and asks before pushing; CI publishes from the tag
+  and refuses when the tag and the committed version disagree.
 
 **Language- and tool-specific** skills:
 
