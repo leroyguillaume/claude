@@ -240,6 +240,13 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
 - **`frontend-conventions`** — TypeScript everywhere (no `any`), React
   function components + hooks, Biome (replaces ESLint/Prettier), enforced
   typing (`strict` + `tsc --noEmit` gate), mobile-first responsive layout.
+- **`argocd-conventions`** — Argo CD GitOps repo layout (catalog-driven
+  ApplicationSets over Argo CD's own cluster list, three values layers), OCI
+  charts pinned to an exact latest version, `revisionHistoryLimit: 0`,
+  `sourceRepos` as an allowlist, render-before-merge.
+- **`jsonnet-conventions`** — jsonnet in an Argo CD repo: extract only what is
+  big and genuinely shared (no library for a handful of lines), document every
+  exported function and constant, fail loudly at render time, `jsonnetfmt`.
 - **`helm-conventions`** — `values.yaml` `global`/`<component>` layout,
   restricted security context, `templates/<component>/<kind>.yaml`,
   per-component `ServiceAccount`, `helm-docs` annotations, `trivy config`
