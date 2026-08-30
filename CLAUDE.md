@@ -268,8 +268,11 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   pinned fully-qualified providers, `for_each` over `count`, secrets kept out
   of the state (write-only args / `ephemeral`), `terraform test`,
   `terraform-docs`, `trivy config` (`AVD-xxxx`), never apply without asking.
-- **`github-actions-conventions`** — `actionlint`, multi-arch Rust builds
-  on native runners (no QEMU), per-arch cache scoping.
+- **`github-actions-conventions`** — `actionlint`, mandatory Trivy scanning,
+  multi-arch Rust builds on native runners (no QEMU), per-arch cache scoping.
+- **`renovate-conventions`** — on GitHub, Dependabot for everything it
+  supports and Renovate only for the rest (never both on one ecosystem);
+  never automerge; dependency dashboard always on.
 - **`kubernetes-operator-conventions`** — reconcile-path error handling
   (always requeue, never `PermanentError`), Warning events, idempotency
   (`409`/`404` as success), `ownerReference`/finalizer teardown, structured

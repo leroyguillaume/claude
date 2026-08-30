@@ -49,7 +49,8 @@ Apply these when the repo is hosted on GitHub.
   A tag is mutable; a SHA is not. Resolve the SHA of the latest tag with
   `git ls-remote --tags https://github.com/<owner>/<repo> '<tag>^{}'`.
 - Add **`.github/dependabot.yaml`** with the `github-actions` ecosystem so the
-  pinned SHAs (and their tag comments) are bumped automatically.
+  pinned SHAs (and their tag comments) are bumped automatically. The rest of
+  that file, and where Renovate fits beside it, is `renovate-conventions`.
 - Never use a bare branch or tag ref (`@v4`, `@main`, `@stable`) in a
   committed workflow.
 
