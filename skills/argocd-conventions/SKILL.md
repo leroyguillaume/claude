@@ -45,7 +45,10 @@ the refactor they will ask for it.
 a single object rather than of the repository: `revisionHistoryLimit: 0`, OCI
 chart references, exact version pins resolved from the actual latest, no globs
 in `sourceRepos`, `RespectIgnoreDifferences` beside an `ignoreDifferences`,
-retry rather than cross-app sync waves. Apply those to what you write, in the
+retry rather than cross-app sync waves. No automated sync belongs there too,
+with the one exception noted where the rule is written: a repo whose model
+*is* automated sync gets consistency instead, because a single app without it
+silently never deploys. Apply those to what you write, in the
 local idiom — do not sweep the repo to retrofit them, and if an existing
 choice is a genuine correctness problem, say it once, plainly, then let it go.
 
@@ -244,9 +247,40 @@ as jsonnet, which turns a values file into an execution channel for nothing.
 - `RespectIgnoreDifferences=true` alongside any `ignoreDifferences`. Without
   it the ignore silences the *report* only: every sync still pushes the field,
   the other controller rewrites it, and the two managers fight forever.
-- **Automated sync is a deliberate choice, stated either way.** Whichever you
-  pick, write it in `ARCHITECTURE.md` — including that self-heal goes with it,
-  so a cluster patched by hand keeps the patch until the next sync.
+### No automated sync
+
+**No `automated` block. An app syncs when somebody asks it to.**
+
+Rendering stays continuous — a commit lands, Argo CD reports the app
+`OutOfSync`, and the diff is there to read. *Applying* is the deliberate half.
+It is the same argument as never automerging a dependency PR: a commit that
+reaches every cluster without anyone pressing anything is a change to
+production nobody read, and a green render is not a review — it proves the
+manifests are valid, not that they are wanted.
+
+State the cost rather than hiding it:
+
+- **Self-heal goes with it.** A cluster patched by hand keeps the patch until
+  the next sync, so drift is real and stays until someone syncs. That is the
+  trade: drift you can see beats a change you did not.
+- **Pruning goes with it too**, so a resource removed from git stays in the
+  cluster until a sync with pruning on. Removal is deliberate, like everything
+  else here.
+- A sync that exhausts its retries is re-run by hand.
+
+Turning it back on is one block, in the ApplicationSet template — say so in
+`ARCHITECTURE.md` so nobody has to find it:
+
+```yaml
+automated:
+  prune: true
+  selfHeal: true
+```
+
+**The one exception is a repo that already runs on automated sync.** There,
+a single Application without it silently never deploys — the worst failure
+mode in the list. Match the repo, say once that it is off-convention, and
+leave it (see the scoping section at the top).
 
 ## Ordering
 
@@ -339,4 +373,6 @@ expression nothing resolves.
 - Never give the `$values` source a `path`, and never point a source `path` at
   a directory that may not exist.
 - Never rely on sync waves to order one Application against another.
+- Never add an `automated` sync block — nor reach for it to work around an app
+  somebody keeps forgetting to sync.
 - Never restate a default in a cluster file just to be explicit.
