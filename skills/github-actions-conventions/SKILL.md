@@ -1,13 +1,15 @@
 ---
 name: github-actions-conventions
-description: GitHub Actions / CI conventions (canonical quality/build/chart/release
-  workflows, SHA-pinned actions, OCI chart publish, multi-arch Rust builds on
-  native runners, pragmatic caching).
+description: GitHub Actions / CI conventions (canonical
+  quality/build/security/chart/release workflows, mandatory Trivy scanning
+  with SARIF upload, SHA-pinned actions, OCI chart publish, multi-arch Rust
+  builds on native runners, pragmatic caching).
   TRIGGER when: editing or creating any file under `.github/workflows/`,
   `.github/actions/`, `.github/release.yaml`, or a composite-action
   `action.yaml`/`action.yml`; setting up CI for a new repo on GitHub;
-  configuring container/chart publishing or releases; user asks about GitHub
-  Actions, runners, CI cache, or release automation in this repo.
+  configuring container/chart publishing or releases; wiring vulnerability or
+  image scanning into CI; user asks about GitHub Actions, runners, CI cache,
+  Trivy/CVE scanning, or release automation in this repo.
   SKIP when: pure Python/Rust/Helm/Docker work with no workflow file touched and
   the user isn't asking about CI.
 ---
@@ -77,6 +79,13 @@ the job that needs it).
   **tags and labels with `docker/metadata-action`** — labels on each per-arch
   build, tags in the `manifest` job (consumed from `DOCKER_METADATA_OUTPUT_JSON`
   by `docker buildx imagetools create`). Never hand-roll tag strings.
+- **`security`** — always. The Trivy vulnerability scans (see below): `trivy
+  fs` on the repo, and `trivy image` on the published image when the repo
+  builds one. Runs on every pull request, on push to the default branch, and
+  **on a `schedule`** — a nightly or weekly re-scan is the whole point, since
+  CVEs are disclosed against code that hasn't changed. Uploads SARIF to GitHub
+  code scanning, so it needs `security-events: write` in that job and nowhere
+  else.
 - **`chart`** — when a Helm chart exists. **Publishes** the chart as an **OCI
   artifact** to GHCR (`helm push` → `oci://ghcr.io/<owner>/charts`). The chart
   has its **own release lifecycle, decoupled from the app**: trigger it on a
@@ -98,6 +107,58 @@ the job that needs it).
   GitHub auto-generated-notes config (categorise PRs by label, exclude noise).
   `gh release create --generate-notes` reads it.
 
+## Trivy — always, and not only as a gate
+
+**Every repo runs Trivy in CI.** `trivy config` already runs in `pre-commit`
+(the `DS-xxxx` / `KSV-xxxx` / `AVD-xxxx` misconfiguration checks — see
+`docker-conventions`, `helm-conventions`, `terraform-conventions`); CI is
+where the *vulnerability* side lives, because that one needs a database that
+changes every day and a network to fetch it.
+
+That difference is the reason the CI scan cannot be replaced by a hook: a
+misconfiguration finding is deterministic and belongs at commit time, while a
+CVE appears against code nobody touched. **A repo that only scans on PR is
+scanning the day it merged, not today** — hence the `schedule`.
+
+What to run:
+
+- **`trivy image`** on the image the `build` workflow just produced — **before
+  it is pushed**, in the same job, on PRs too. Publishing a known-vulnerable
+  image and scanning it afterwards is the wrong order.
+- **`trivy fs`** on the checkout, for the dependency lockfiles (`Cargo.lock`,
+  `uv.lock`, `package-lock.json`) and any secret hits. This is what catches a
+  vulnerable transitive dependency the manifest never mentions.
+
+How to run it:
+
+- **Fail the build on `HIGH` and `CRITICAL`** (`exit-code: 1`,
+  `severity: HIGH,CRITICAL`). Lower severities are reported, not blocking.
+- **`ignore-unfixed: true` on the blocking gate only.** A CVE with no upstream
+  fix cannot be actioned by the contributor in front of it; blocking on it
+  just teaches everyone that the red X is normal, which is how a real finding
+  gets waved through. Report it — see SARIF below — and act on it as its own
+  piece of work.
+- **Upload SARIF to GitHub code scanning** with
+  `github/codeql-action/upload-sarif` (SHA-pinned like every other action).
+  Run the reporting scan **without** `exit-code` so the upload still happens
+  when findings exist, and give the step `if: always()` so a failed gate does
+  not swallow the report. That is what makes the non-blocking findings visible
+  instead of lost in a log.
+- Pin `aquasecurity/trivy-action` by SHA with its tag comment, like everything
+  else.
+- **Cache the vulnerability database** (`cache: true`, or an explicit
+  `~/.cache/trivy` cache). This one is worth it despite the "don't cache
+  downloads" rule: the DB is a large artefact pulled from GHCR on every run
+  across every job, and the failure mode is a rate-limited registry taking the
+  whole pipeline down, not merely a slow step.
+
+**No self-authorised ignores** — same standing rule as everywhere else. Do not
+add a `.trivyignore` entry, a `--skip-dirs`, or a severity downgrade to get a
+green run. Fix the finding at the source: bump the dependency, change the base
+image, fix the misconfiguration. If an entry is genuinely unavoidable, the
+user decides, and it carries a comment with the CVE, the reason, and the
+condition that lifts it — never a bare ID.
+
 ## Path filters — don't trigger for nothing
 
 - A workflow triggered on `push`/`pull_request` must carry a **`paths:`** (or
@@ -108,9 +169,11 @@ the job that needs it).
 - **Exception — the `quality` workflow (pre-commit + tests) is never
   path-filtered.** It is the universal gate and must run on every push and pull
   request, whatever changed.
-- Tag-triggered workflows (`chart` on `chart-*`, `release` on `v*`) and
-  `workflow_dispatch` / `workflow_call` take **no** `paths` — path filters do
-  not apply to those events.
+- Tag-triggered workflows (`chart` on `chart-*`, `release` on `v*`),
+  `schedule`, and `workflow_dispatch` / `workflow_call` take **no** `paths` —
+  path filters do not apply to those events.
+- **The `security` workflow is not path-filtered either**, for the same reason
+  as `quality`: a new CVE lands without any file changing.
 
 ## Concurrency — one run per workflow per ref
 
@@ -165,6 +228,11 @@ can be **slower** than a clean fetch, and a stale cache is worse than none.
   never share one unscoped build cache across architectures.
 - Never split the quality gate: `pre-commit` + tests live in the single
   `quality` workflow.
+- Never push or publish an image that has not been Trivy-scanned in the same
+  job first, and never silence a finding with a `.trivyignore` entry,
+  `--skip-dirs` or a severity downgrade to get a green run.
+- Never rely on the PR scan alone — without the scheduled re-scan the repo
+  only knows about the CVEs that existed on merge day.
 - Never ship a workflow without a `concurrency:` group, and never set
   `cancel-in-progress` to anything but `true` — not `false`, not an expression,
   not even on `release`/`chart`.
