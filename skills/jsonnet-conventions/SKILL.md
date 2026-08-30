@@ -14,7 +14,11 @@ description: Jsonnet conventions for an Argo CD / GitOps repository — stay
 # Jsonnet conventions (Argo CD)
 
 For the jsonnet an Argo CD repository renders — `resources/` manifests and the
-`lib/` they import. The surrounding layout is in `argocd-conventions`.
+libraries they import. The surrounding layout is in `argocd-conventions`, and
+the same scoping applies: **in a repository already laid out some other way,
+follow its layout** — where its jsonnet lives, how it names things — and do
+not challenge it. The rules below about *what the jsonnet itself looks like*
+apply either way.
 
 **Jsonnet here is configuration, not a program.** Its reader is someone
 debugging a failed sync at an inconvenient hour, working backwards from a
@@ -164,8 +168,10 @@ runtime with no clue pointing back here.
 
 ## Layout and naming
 
-- Libraries live in `lib/<domain>/<thing>.libsonnet`, grouped by the system
-  they describe, not by the app that happens to use them first.
+- In a repo you are laying out, libraries live in
+  `lib/<domain>/<thing>.libsonnet`, grouped by the system they describe, not
+  by the app that happens to use them first. In an existing repo, they go
+  wherever its libraries already go.
 - **`new(...)` is the constructor**, for the one obvious object a library
   builds. Named alternatives (`allowFrom`, `permitted`) for the rest.
 - A library imported by exactly one file and unlikely to gain a second caller

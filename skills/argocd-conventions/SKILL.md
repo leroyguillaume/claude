@@ -1,10 +1,12 @@
 ---
 name: argocd-conventions
-description: Argo CD GitOps repository conventions — catalog-driven
-  ApplicationSets over Argo CD's own cluster list, three values layers
-  (app defaults / cluster overrides / extra manifests), OCI chart references
-  pinned to an exact latest version, `revisionHistoryLimit: 0` everywhere,
-  AppProject `sourceRepos` as an allowlist.
+description: Argo CD GitOps repository conventions — the repository shape
+  (catalog-driven ApplicationSets over Argo CD's own cluster list, three
+  values layers) applies only when bootstrapping or when explicitly asked to
+  refactor; in an existing repo, follow the shape that is already there. The
+  object-level rules always apply: OCI chart references pinned to an exact
+  latest version, `revisionHistoryLimit: 0` everywhere, AppProject
+  `sourceRepos` as an allowlist.
   TRIGGER when: creating or editing an `Application`, `ApplicationSet`,
   `AppProject`, or any file in a GitOps/deployment repository that Argo CD
   reads; adding an app or a cluster to such a repo; bumping a chart version;
@@ -17,8 +19,35 @@ description: Argo CD GitOps repository conventions — catalog-driven
 # Argo CD conventions
 
 For a repository whose job is to deploy a set of applications onto a set of
-clusters. The shape below is the default; deviate only with a reason written
-down in `ARCHITECTURE.md`.
+clusters.
+
+## Read this first: when the layout applies
+
+**The repository shape described below is for a repo you are creating, not a
+verdict on one that already exists.** Two modes:
+
+- **Bootstrapping a new GitOps repository, or explicitly asked to refactor an
+  existing one to these conventions** — use the layout below in full. Deviate
+  only with a reason written down in `ARCHITECTURE.md`.
+- **Working in a repository that is already laid out some other way** — use
+  *its* layout. Read how it does things and match it: its directory names, its
+  templating (plain YAML, Kustomize, Helm-of-Helms, an `Application` per app
+  hand-written), where values live, how a cluster is onboarded.
+
+**In that second mode, do not challenge the structure.** Not in a comment, not
+in a "note that this would be cleaner as…", not by quietly introducing a
+`lib/` beside the existing files. A GitOps layout is load-bearing for people
+and pipelines you cannot see, and a repo that is half one shape and half
+another is worse than either. The user knows this skill exists; if they want
+the refactor they will ask for it.
+
+**What still applies in both modes** is everything below that is a property of
+a single object rather than of the repository: `revisionHistoryLimit: 0`, OCI
+chart references, exact version pins resolved from the actual latest, no globs
+in `sourceRepos`, `RespectIgnoreDifferences` beside an `ignoreDifferences`,
+retry rather than cross-app sync waves. Apply those to what you write, in the
+local idiom — do not sweep the repo to retrofit them, and if an existing
+choice is a genuine correctness problem, say it once, plainly, then let it go.
 
 ## The model: one list, not two
 
