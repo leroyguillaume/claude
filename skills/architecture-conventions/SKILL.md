@@ -41,13 +41,21 @@ So, never write:
 - **a changelog or release notes** in any form, dated sections, "recent
   changes", "what's new"
 - **a dated / superseded decision log** (ADR-style `Status: superseded by
-  ADR-0007`). If the user genuinely wants ADRs, they live in their own
-  `docs/adr/` directory with their own lifecycle — not inside this file
+  ADR-0007`). ADRs are how this repository records decisions, and they live
+  one per file under `docs/adr/` with their own lifecycle — never inside this
+  file. See `adr-conventions`
 - **references to the change that introduced something** — PR numbers, commit
   hashes, ticket IDs as narrative
 
 **Git already stores all of that**, with more precision and no maintenance
 cost. Prose duplicating the log is prose that rots.
+
+What git does *not* store is why a decision was taken over the alternatives on
+the table that day — and that is what `docs/adr/` is for. The two files are
+complementary: history is banned here precisely because the ADRs hold it. A
+decision that changes the design lands in both, in one commit — a new ADR, and
+this file rewritten to describe the new state. Linking an ADR from here is
+fine; narrating the change is not. See `adr-conventions`.
 
 ### The subtle distinction: standing rationale is not history
 

@@ -23,7 +23,13 @@ to "later".
    goes in each of them is the `readme-conventions`,
    `architecture-conventions` and `contributing-conventions` skills' job —
    invoke them; this rule is only that the three files are never missing.
-4. **No code duplication beyond the rule of three.** When the same logic
+4. **A big architectural change is recorded as an ADR in `docs/adr/`.**
+   Adding or removing a component, a datastore or an external dependency,
+   changing how the parts talk, accepting a constraint from outside, or
+   deliberately deviating from a convention — each gets its own immutable
+   file, written as the decision is taken. What an ADR looks like and where
+   the line sits is the `adr-conventions` skill's job.
+5. **No code duplication beyond the rule of three.** When the same logic
    appears a third time, extract it. Do not extract earlier. Do not build
    speculative abstractions.
 
@@ -213,6 +219,9 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
 - **`architecture-conventions`** — `ARCHITECTURE.md` structure (components,
   data flow, standing trade-offs, invariants, limitations), present tense
   only, never a history and never the CI.
+- **`adr-conventions`** — one immutable ADR per decision in
+  `docs/adr/NNNN-title.md`, superseded rather than edited; when a change
+  warrants one, and the split with `ARCHITECTURE.md`.
 - **`logging-conventions`** — liberal debug logs, structured key-value
   fields, level-controlled verbosity, standard logging library.
 - **`yaml-conventions`** — block style only, never flow style (`{...}` /
