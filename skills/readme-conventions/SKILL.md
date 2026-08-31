@@ -83,6 +83,7 @@ zero to a running project without leaving this section.
 - **Prerequisites first**, with versions when they matter: `Python ≥ 3.13`,
   `uv`, `Docker ≥ 25`, `kubectl` + a cluster. State only what's actually
   required to follow the steps below.
+- **Every install command covers macOS *and* Linux** — see below.
 - **Installation** — clone + install, or the package-manager one-liner.
   Derive the clone URL from `git config --get remote.origin.url`
   (see `project-metadata-conventions`), never invent it.
@@ -105,6 +106,56 @@ zero to a running project without leaving this section.
 
 Every command must actually work as written, from a fresh clone, in that
 order. Run them if you can; a README that lies is worse than no README.
+
+#### Install commands: macOS **and** Linux, always
+
+**Never ship a `brew install` line on its own.** A macOS-only instruction is not
+a shorter README, it is a README that stops working for every contributor on
+Linux — and for CI, containers and dev boxes, which are Linux essentially
+always. The reader on the wrong platform is left translating package names,
+which is exactly the twenty minutes the section exists to save.
+
+So every install step gives **both**, each in its own fenced block under a bold
+label naming the platform:
+
+````markdown
+**macOS**
+
+```sh
+brew install jq shellcheck
+```
+
+**Linux**
+
+```sh
+sudo apt install -y jq shellcheck
+```
+````
+
+Both of those genuinely exist under that name on both platforms, which is the
+bar — see the third rule below.
+
+Three rules on top of that:
+
+- **Prefer a single distro-neutral command when the tool ships one**, and give
+  it once instead of a per-platform pair — `uv tool install <x>`,
+  `cargo install <x>`, `pipx install <x>`, `go install`, the project's own
+  `curl … | sh` installer, or a versioned release tarball. Those work on both
+  platforms *and* pin a version, which a distro package rarely does. Reach for
+  `brew`/`apt` only when there is no such option.
+- **"Linux" is not one distro.** When you must use a system package manager,
+  either pick the one the project's own CI/container base image uses and say so,
+  or give the tool's upstream installation URL rather than guessing at three
+  package managers. A wrong `dnf` line is worse than a link.
+- **Never invent a package name.** Verify the package exists under that name on
+  that platform, or link upstream's install page instead. `brew install jsonnet`
+  and `apt install jsonnet` do not always install the same implementation — say
+  which one is required (`go-jsonnet`) when it matters.
+
+The same applies to anything else that is platform-shaped: a shell profile path,
+a config directory (`~/Library/…` vs `~/.config/…`), a service manager
+invocation. If the instruction differs between the two, both spellings are
+given or neither is.
 
 ### 3. Contributing and licence
 

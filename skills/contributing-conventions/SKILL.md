@@ -62,6 +62,15 @@ running the project; this covers building on it.
   ```
 
   One command per fenced block, no `$` prompt, no interleaved output.
+- **Every install command covers macOS *and* Linux.** Never a bare
+  `brew install` line: a macOS-only instruction leaves every Linux contributor
+  translating package names, and CI, containers and dev boxes are Linux
+  essentially always. Give both, each in its own fenced block under a bold
+  platform label — or, better, a single distro-neutral command when the tool
+  ships one (`uv tool install`, `cargo install`, `pipx install`, upstream's own
+  installer or a release tarball), which works on both *and* pins a version.
+  Never invent a package name: verify it, or link upstream's install page.
+  `readme-conventions` carries the full rule and the example.
 - **Say what "it works" looks like** — the one command that proves the setup
   is good, and point at the test section below for the rest.
 - **Do not restate the README.** How to *run* the project, its environment
