@@ -118,8 +118,8 @@ rather than filling it with boilerplate.
   they sort by creation"), and the constraints imposed from outside: org
   policy, platform limits, quotas, compliance rules. These are the sentences
   that save an afternoon; make them explicit and unmissable.
-- **Limitations** — what the design does not handle today, and what would have
-  to change to lift it. Present tense: a limitation is a property of the
+- **Limitations** — what the design does not handle, and what would have to
+  change to lift it. Present tense: a limitation is a property of the
   system, not a promise about the future. No roadmap, no dates.
 
 ## What stays out
