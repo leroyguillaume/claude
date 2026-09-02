@@ -77,9 +77,14 @@ annotate it.
 So, by default: **no** comment. Concretely, never write:
 
 - a paraphrase of the signature as a docstring (`# returns the user id`)
-- section banners (`# ---- helpers ----`), `# TODO` without a why,
-  history notes (`# removed the retry, was flaky`) — that is the git log's job
+- section banners (`# ---- helpers ----`), history notes (`# removed the
+  retry, was flaky`) — that is the git log's job
 - commented-out code — delete it, git remembers
+- **a `TODO` / `FIXME` / `XXX` marker, in any form** — with a justification,
+  with an issue number, with your initials, it makes no difference. Work that
+  remains is not a comment: it goes in an issue (see the documentation rule
+  below and the `github-issue-conventions` skill), and the code stays silent
+  about it.
 
 **One header comment at the top of a file is allowed — only when it is
 needed.** Two or three lines saying what this file is for and how it fits with
@@ -106,6 +111,38 @@ The test: a competent reader looking at this line would ask…
 
 And keep them honest: a comment moves with the code it describes, in the same
 change. A stale comment is worse than no comment — it lies with authority.
+
+## Documentation describes the present, never a snapshot in time
+
+A doc is read months after it is written, by someone who has no idea what the
+state of the world was the day it was committed. So **everything I write in a
+document must still be true whenever it is opened**: it describes what the
+project *is*, not where the work had got to.
+
+Never write, in any documentation file:
+
+- **A "reste à faire" / "TODO" / "next steps" / "roadmap" / "coming soon"
+  section**, or a single line of it buried in a paragraph. Work that remains
+  is not documentation — it belongs in the issue tracker (on GitHub, see the
+  `github-issue-conventions` skill), in the pull request description, or in
+  what I say back to the user. Never in a committed file.
+- **A status at a point in time**: `✅ done` / `🚧 in progress` checklists,
+  completion percentages, phase or milestone trackers, "currently", "for now",
+  "at the time of writing", "as of <date>", "recently added", "new in this
+  version", "not yet implemented", "this will change soon".
+- **A narrative of how we got here** — what used to be true, what was
+  migrated, what was dropped. The git log and the ADRs hold the history;
+  `ARCHITECTURE.md` and the rest hold the present.
+
+Instead: describe what exists, in the present tense, and simply stay silent
+about what does not. A limitation that is *inherent* to the design is not a
+status — it is a fact about the system, and it belongs in the docs (it just
+gets stated as "X is not supported", not as "X is not supported *yet*").
+
+The two deliberate exceptions, because their whole job is to be dated records
+rather than a description of the present: **ADRs** in `docs/adr/` (immutable,
+each one a decision taken on a day) and the **`CHANGELOG.md`** (a list of
+releases). Those are allowed to talk about time. Nothing else is.
 
 ## Secret handling (never leak credentials)
 

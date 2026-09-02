@@ -63,8 +63,8 @@ whether the project is what they're looking for.
 - Key features as a short bullet list, only if it genuinely clarifies scope.
 
 Not here: architecture diagrams, design trade-offs, tech-stack justification,
-benchmarks, roadmap. Those go in `ARCHITECTURE.md` — link to it from the end
-of the description if there is one:
+benchmarks. Those go in `ARCHITECTURE.md` — link to it from the end of the
+description if there is one:
 
 ```markdown
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and the reasoning behind it.
