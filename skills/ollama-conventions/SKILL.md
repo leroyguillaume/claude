@@ -57,9 +57,12 @@ possibly-stale memory — don't present a remembered model as a current best.
 
 ## Plumbing conventions
 
-- **Configuration via bare env vars**, no project prefix (per global rules):
-  honour `OLLAMA_HOST` and the standard `OLLAMA_*` names; use `DATABASE_URL`,
-  `LOG_LEVEL`, etc. for surrounding config.
+- **Configuration via env vars named per the global rules** (see
+  "Configuration via environment variables" in `CLAUDE.md`): always honour
+  `OLLAMA_HOST` and the standard `OLLAMA_*` names as they are — they are
+  upstream's, not yours to rename or prefix. Name your own surrounding config
+  by process shape: bare (`DATABASE_URL`, `LOG_LEVEL`) for a service that owns
+  its environment, prefixed with the tool's name for a CLI.
 - **Don't pin `:latest`.** Always use an explicit, reproducible model tag in
   code, compose files, Modelfiles, and docs.
 - **Document the choice.** When you commit a model tag, leave a one-line note

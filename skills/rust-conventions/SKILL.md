@@ -49,6 +49,16 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   must be settable via an environment variable: always give each `clap`
   argument an `env = "..."` attribute — there is no config knob that can
   only be passed on the command line.
+- **Name those variables per the "Configuration via environment variables"
+  rules in `CLAUDE.md`**, which turn on who owns the environment. A service
+  in a container takes the bare name (`env = "BIND_ADDR"`); **a CLI or
+  tooling binary prefixes every one of its own variables with the tool's
+  name** (`env = "SKILLMGR_CONFIG_FILE"`, `env = "SKILLMGR_FORCE"`), because
+  it runs in a shell it shares with everything else and its flags are exactly
+  the generic words — `FORCE`, `DRY_RUN`, `OFFLINE`, `CONFIG_FILE` — that
+  something else has already exported. Never read a bare name as a fallback,
+  and never prefix a genuine cross-tool standard (`NO_COLOR`, `HTTP_PROXY`,
+  `SSL_CERT_FILE`).
 - Prefer `default_value_t = <typed value>` over a stringly-typed
   `default_value = "..."` whenever the field's type is anything other than a
   `String`/`&str` — enums, integers, paths, durations, etc. `default_value_t`
@@ -142,8 +152,8 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   `tracing-subscriber`. Initialise the subscriber once at the start of
   `main`, configured with an `EnvFilter`. The filter directive must come
   from `clap` — a dedicated option (e.g. `--log-level` / `--log-filter`)
-  carrying an `env = "LOG_FILTER"` attribute — not read directly from the
-  environment. **Never `RUST_LOG`**: the variable name should describe the
+  carrying an `env = "LOG_FILTER"` attribute, or `<TOOL>_LOG_FILTER` when the
+  binary is a CLI — not read directly from the environment. **Never `RUST_LOG`**: the variable name should describe the
   knob, not the language the binary happens to be written in, and `RUST_LOG`
   is also read by other crates' own `from_default_env()` machinery, which is
   exactly the direct-environment read this rule forbids. Document the
@@ -333,10 +343,10 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   `/docs`.
 - Never use `println!` / `eprintln!` (or ad-hoc `log` setup) for
   application diagnostics; route everything through `tracing`.
-- Never add a `clap` option without an `env = "..."` attribute, and never
-  build the `EnvFilter` from `EnvFilter::from_env` / `from_default_env`
-  or a direct `std::env` read — the directive must flow through the
-  `clap`-parsed value.
+- Never add a `clap` option without an `env = "..."` attribute, never give a
+  CLI's own option a bare unprefixed variable name, and never build the
+  `EnvFilter` from `EnvFilter::from_env` / `from_default_env` or a direct
+  `std::env` read — the directive must flow through the `clap`-parsed value.
 - Never leave `clippy` warnings unaddressed. If a lint must be allowed,
   add a scoped `#[allow(...)]` with a justification comment.
 - Never hand-roll mock structs, fakes, or stubs for a trait when

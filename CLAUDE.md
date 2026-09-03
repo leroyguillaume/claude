@@ -227,19 +227,48 @@ technology present in the repo.
 
 ## Configuration via environment variables (all languages)
 
-- **Do not prefix configuration environment variables with the project or
-  application name.** Use the bare, conventional name — `BIND_ADDR`,
-  `DB_MAX_CONNECTIONS`, `STORAGE_BACKEND`, `LOG_LEVEL` — never
-  `MYAPP_BIND_ADDR` / `ZYNDECK_BIND_ADDR`. A process owns its own
-  environment; the prefix is noise and does not actually prevent collisions.
-- Honour the established standard name when one already exists
-  (`DATABASE_URL`, `NO_COLOR`, `HTTP_PROXY`, …) instead of inventing a
-  variant.
-- **Exception: `RUST_LOG`.** Use `LOG_FILTER` instead. The name of a knob
-  should describe the knob, not the language the binary happens to be
-  written in — and `RUST_LOG` is read implicitly by other crates'
-  `from_default_env()` machinery, which is precisely the direct-environment
-  read the logging rules forbid.
+The right name depends on **who owns the environment the process runs in**.
+That is the whole rule; everything below follows from it.
+
+- **A process that owns its environment takes the bare, conventional name.**
+  A service, daemon, worker or job in a container is handed an environment
+  written for it and nothing else, so there is nothing to collide with and the
+  prefix is pure noise: `BIND_ADDR`, `DB_MAX_CONNECTIONS`, `STORAGE_BACKEND`,
+  `LOG_LEVEL` — never `MYAPP_BIND_ADDR` / `ZYNDECK_BIND_ADDR`.
+
+- **A CLI or tooling binary prefixes every variable with its own name**, in
+  upper snake case: `SKILLMGR_CONFIG_FILE`, `SKILLMGR_FORCE`,
+  `RIPGREP_CONFIG_PATH`. It runs in an interactive shell or a CI job whose
+  environment is shared with dozens of other tools and was never written for
+  it — and its knobs are exactly the generic words everybody else uses:
+  `FORCE`, `DRY_RUN`, `OFFLINE`, `CONFIG_FILE`, `TARGET`, `VERBOSE`, `DEBUG`.
+  A value left over from something else is then picked up in silence, and for
+  a destructive flag the first symptom is the damage: a `FORCE=1` exported an
+  hour ago for a different tool turns a refusal to overwrite into an
+  overwrite.
+
+  **The test, for a binary that is arguably both** (a server with a CLI
+  entrypoint, a tool that also runs as a job): *would a person plausibly have
+  this variable set for another reason at the moment they run it?* In a
+  container the answer is no — bare names. On a laptop or in a CI shell it is
+  yes — prefix.
+
+- **Never read both the prefixed and the bare name.** A fallback to the bare
+  name keeps precisely the collision the prefix exists to remove, and it is
+  silent: an unread variable falls back to the default rather than failing.
+  Pick one name and read only that one.
+
+- **Genuine cross-tool standards keep their standard name, prefix or not.**
+  `NO_COLOR`, `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY`, `SSL_CERT_FILE`,
+  `XDG_*`, `DATABASE_URL` where it really is the standard — being shared is
+  the entire point of those. Honour the established name instead of inventing
+  a variant, and never prefix one.
+
+- **Exception: `RUST_LOG`.** Use `LOG_FILTER` — `<TOOL>_LOG_FILTER` in a CLI —
+  instead. The name of a knob should describe the knob, not the language the
+  binary happens to be written in, and `RUST_LOG` is read implicitly by other
+  crates' `from_default_env()` machinery, which is precisely the
+  direct-environment read the logging rules forbid.
 
 ## Conventions (load on demand)
 

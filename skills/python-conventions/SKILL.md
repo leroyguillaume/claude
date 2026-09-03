@@ -39,6 +39,13 @@ description: Python project conventions (uv, ruff, typer, pydantic, Pylance).
 - Build CLIs with `typer`. Configuration must resolve in this order:
   CLI flags → environment variables → defaults. Use `typer` option
   `envvar=...`, or `pydantic-settings` for richer config models.
+- **Name those variables per the "Configuration via environment variables"
+  rules in `CLAUDE.md`**: bare for a service that owns its environment
+  (`envvar="BIND_ADDR"`), prefixed with the tool's own name for a CLI
+  (`envvar="MYTOOL_CONFIG_FILE"`), which runs in a shell shared with
+  everything else. With `pydantic-settings` that is
+  `SettingsConfigDict(env_prefix="mytool_")` — set it on a CLI, leave it off
+  a service, and never keep a bare-name fallback beside it.
 - Declare `typer` parameters with `Annotated[T, typer.Option(...)] = default`,
   not `param: T = typer.Option(default, ...)`. The `Annotated` form keeps the
   default value in the standard Python position and is the form `typer`
