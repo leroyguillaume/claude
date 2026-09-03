@@ -4,12 +4,13 @@ description: Architecture Decision Record conventions — one immutable file per
   decision in `docs/adr/NNNN-kebab-title.md`, written when the decision is
   taken, superseded by a new ADR rather than edited. The one place in the repo
   where history belongs; `ARCHITECTURE.md` stays present-tense.
+  Written only for decisions that change the architecture itself; when it is
+  not clear-cut, ask the user rather than writing one.
   TRIGGER when: taking or recording an architectural decision — adding or
   removing a component, datastore or external dependency, changing how parts
-  communicate, accepting an outside constraint, deviating deliberately from a
-  convention; creating or editing anything under `docs/adr/`; user asks
-  whether something warrants an ADR, or where a decision should be written
-  down.
+  communicate, accepting an outside constraint; creating or editing anything
+  under `docs/adr/`; user asks whether something warrants an ADR, or where a
+  decision should be written down.
   SKIP when: describing the system as it stands (that is
   `architecture-conventions`), or the decision is reversible in an afternoon
   and touches one module.
@@ -46,27 +47,43 @@ link an ADR as the record; it must never narrate the change.
 ## When to write one
 
 The hard part, and where most ADR practices die — either nobody writes any, or
-everything gets one and nobody reads them.
+everything gets one and nobody reads them. **The second failure is the common
+one**, and it is the expensive one: a repository with forty ADRs has no ADRs,
+and since they are immutable, nobody can quietly tidy them away afterwards.
 
-**Write an ADR when the answer to "why is it like this?" takes more than two
-sentences *and* doing the opposite tomorrow would be expensive.** Concretely:
+**The gate is architectural impact, not interestingness.** An ADR is for a
+decision that changes the *shape* of the system: what the components are, what
+each owns, how they talk to each other, what the whole thing depends on. The
+test is blunt — **would someone drawing the architecture diagram have to redraw
+it?** If not, then however good the decision is, however hard the call was,
+however credible the alternative, it is not an ADR.
+
+Write one when, and only when:
 
 - a component, datastore or external dependency is added or removed;
 - how the parts talk changes — protocol, sync to async, who owns what data;
-- a choice between options where **the loser was genuinely credible**. If
-  there was no real alternative, there was no decision, only a fact;
-- a constraint accepted from outside — org policy, a platform limit, a quota,
-  a compliance rule — that the design now bends around;
-- a **deliberate deviation** from a convention in these skills or in the
-  project's own rules.
+- a constraint from outside — org policy, a platform limit, a quota, a
+  compliance rule — forces the design to bend around it;
 
-**Do not write one for**: adding an endpoint or a screen, a dependency bump, a
-refactor with no interface change, a naming choice, or anything a single
-person can undo in an afternoon. A repository with forty ADRs has no ADRs.
+**and**, on top of that, the answer to "why is it like this?" takes more than
+two sentences *and* doing the opposite tomorrow would be expensive.
 
-**When in doubt, ask the user** whether the change warrants one — it is a
-judgement about how permanent the decision feels, and they know that better
-than the diff does.
+**Do not write one for anything that leaves the diagram unchanged**: an
+endpoint or a screen, a dependency bump, a refactor with no interface change, a
+naming or ergonomics choice, a default value, a config or file format, a CLI
+flag, an error-handling policy, a library picked over a near-identical one, or
+a deliberate deviation from one of these conventions. Those are real decisions
+and their reasoning is worth keeping — it goes in **`ARCHITECTURE.md` as
+standing rationale, in the present tense** (see `architecture-conventions`), in
+a code comment where it is genuinely farfelu, or nowhere.
+
+**When it is not clear-cut, ask — and do not write it meanwhile.** How
+load-bearing and how permanent a decision feels is a judgement about *this*
+project, which the user holds and the diff does not. One question costs a
+sentence; a directory of ADRs nobody asked for costs every future reader's
+attention, permanently. **Never write an ADR unasked unless it is
+unambiguously one of the three cases above** — and never write a batch of them
+to document a project retrospectively.
 
 ## Files
 
@@ -138,8 +155,9 @@ turned out. The record is of what was decided *then*, with what was known
 Retro-fitting an ADR for every past decision is fiction, and reads like it.
 When adopting ADRs in a repository that already exists:
 
-- write ADRs only for the **load-bearing decisions still shaping the code**,
-  the ones people keep re-litigating;
+- write ADRs only for the **architectural decisions still shaping the code**,
+  the ones people keep re-litigating — and ask the user which those are rather
+  than deciding for them;
 - date them the day they are written, not the day the decision was taken, and
   say in the Context that the decision predates the record;
 - do not invent alternatives that were never weighed — leave the section out
@@ -147,10 +165,11 @@ When adopting ADRs in a repository that already exists:
 
 **Never:**
 
+- Never write an ADR for a decision that leaves the architecture unchanged, and
+  never write one unasked when the call is not clear-cut — ask instead.
 - Never edit an accepted ADR beyond its status line — supersede it instead.
 - Never delete or renumber an ADR, superseded or rejected included.
 - Never put a decision log inside `ARCHITECTURE.md`, and never let an ADR
   drift into describing the whole system.
-- Never write an ADR for a reversible, local change.
 - Never ship an ADR whose Consequences section lists only upsides.
 - Never leave `docs/adr/README.md` out of date with the directory.

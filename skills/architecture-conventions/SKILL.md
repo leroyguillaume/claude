@@ -53,9 +53,17 @@ cost. Prose duplicating the log is prose that rots.
 What git does *not* store is why a decision was taken over the alternatives on
 the table that day — and that is what `docs/adr/` is for. The two files are
 complementary: history is banned here precisely because the ADRs hold it. A
-decision that changes the design lands in both, in one commit — a new ADR, and
-this file rewritten to describe the new state. Linking an ADR from here is
-fine; narrating the change is not. See `adr-conventions`.
+decision that **changes the architecture** lands in both, in one commit — a new
+ADR, and this file rewritten to describe the new state. Linking an ADR from
+here is fine; narrating the change is not. See `adr-conventions`.
+
+Most decisions never reach that bar, and get no ADR at all — the ADR gate is
+deliberately narrow (`adr-conventions`). **Their reasoning still belongs here**,
+as standing rationale in the present tense: a chosen default, a file format, an
+ergonomics call, a deliberate deviation from a convention. Say what the design
+*is* and what the alternative could not do, and the fact that no ADR exists
+costs nothing. Dropping the reasoning because it had nowhere else to go is how
+a decision gets silently reversed a year later.
 
 ### The subtle distinction: standing rationale is not history
 

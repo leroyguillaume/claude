@@ -23,12 +23,15 @@ to "later".
    goes in each of them is the `readme-conventions`,
    `architecture-conventions` and `contributing-conventions` skills' job —
    invoke them; this rule is only that the three files are never missing.
-4. **A big architectural change is recorded as an ADR in `docs/adr/`.**
-   Adding or removing a component, a datastore or an external dependency,
-   changing how the parts talk, accepting a constraint from outside, or
-   deliberately deviating from a convention — each gets its own immutable
-   file, written as the decision is taken. What an ADR looks like and where
-   the line sits is the `adr-conventions` skill's job.
+4. **An architectural change is recorded as an ADR in `docs/adr/` — and only
+   an architectural change.** Adding or removing a component, a datastore or
+   an external dependency, changing how the parts talk, or accepting a
+   constraint from outside: each gets its own immutable file, written as the
+   decision is taken. A decision that leaves the architecture diagram
+   unchanged does **not** get one however hard the call was — its reasoning
+   belongs in `ARCHITECTURE.md`. **When it is not clear-cut, ask me instead of
+   writing one**; ADRs are immutable, so a superfluous one stays forever. What
+   an ADR looks like is the `adr-conventions` skill's job.
 5. **No code duplication beyond the rule of three.** When the same logic
    appears a third time, extract it. Do not extract earlier. Do not build
    speculative abstractions.
