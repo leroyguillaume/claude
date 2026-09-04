@@ -67,12 +67,15 @@ starts in any project on the machine.
 
 1. Create `skills/<my-skill>/SKILL.md`.
 2. Add YAML frontmatter with a `name`, a `description`, and clear `TRIGGER` /
-   `SKIP` guidance so Claude knows when to load it:
+   `SKIP` guidance so Claude knows when to load it. The description is a
+   folded block scalar (`>-`) because it embeds `TRIGGER when:` — a `:` inside
+   a plain multi-line scalar is not valid YAML:
 
    ```markdown
    ---
    name: my-skill
-   description: One line on what this covers.
+   description: >-
+     One line on what this covers.
      TRIGGER when: <conditions that should load the skill>.
      SKIP when: <conditions where it is irrelevant>.
    ---
@@ -82,8 +85,11 @@ starts in any project on the machine.
    The actual conventions go here.
    ```
 
-3. Reference it from the "Conventions (load on demand)" section of `CLAUDE.md`
-   if it should be discoverable from the top-level index.
+3. Reference it from the "Conventions (load on demand)" section of `CLAUDE.md`.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for validating a skill before pushing,
+and [ARCHITECTURE.md](ARCHITECTURE.md) for why conventions live in skills and
+what happens when one outgrows its token budget.
 
 ## Updating
 
@@ -94,3 +100,7 @@ git pull --ff-only
 
 Commit changes to `CLAUDE.md` or any skill as you would any other repo; runtime
 files stay ignored, so commits remain focused on configuration.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
