@@ -1,13 +1,16 @@
 ---
 name: rust-conventions
-description: Rust project conventions (clap, tokio, axum, tracing, mockall,
-  static dispatch, cargo-chef for Docker builds).
+description: >-
+  Rust project conventions (clap, tokio, tracing, mockall, static dispatch,
+  module and workspace layout, clippy and toolchain pinning, cargo-chef for
+  Docker builds).
   TRIGGER when: editing or creating `.rs` files; touching `Cargo.toml`,
   `Cargo.lock`, or `rust-toolchain*`; adding/removing a Rust dependency; setting
-  up a Rust CLI, HTTP server, async trait, mock, or logging subscriber; user asks
+  up a Rust CLI, server, async trait, mock, or logging subscriber; user asks
   about Rust tooling, deps, traits, async, clippy, or rustfmt in this repo.
   SKIP when: pure Python/Helm/Docker/CI work with no Rust file touched and the
-  user isn't asking about Rust.
+  user isn't asking about Rust. For the HTTP stack itself (axum, aide, Scalar,
+  OpenAPI, validator) load `rust-http-conventions` alongside this one.
 ---
 
 # Rust conventions
@@ -90,64 +93,10 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   race it against the loop with `tokio::select!`. `tokio::signal::ctrl_c` alone is
   **not** enough — it only covers `SIGINT`, so a container stopped with `SIGTERM`
   would never drain.
-- **Every HTTP server / API uses the same stack, always: `axum` + `aide` +
-  Scalar — no exceptions.** Never expose a bare `axum::Router` for an API:
-  build the router with `aide`'s `ApiRouter` (drop-in for `axum`), document
-  every endpoint, and serve the generated OpenAPI document.
-- Generate the OpenAPI document with **`aide`** (its `ApiRouter` drop-in for
-  `axum`) and **`schemars`** (derive `JsonSchema` on every request/response
-  DTO). Serve the spec at `/openapi.json` and an interactive **Scalar**
-  reference at `/docs` (via `aide`'s `scalar` feature).
-  Practical notes learned the hard way:
-  - Enable the `aide` features `axum, axum-json, scalar, macros` — the base
-    `axum` feature does **not** make `axum::Json` an `OperationInput`/`Output`,
-    so without `axum-json` no JSON handler satisfies `OperationHandler`.
-  - Call `aide::generate::extract_schemas(true)` once before building the
-    router so types are emitted as reusable `#/components/schemas` `$ref`s.
-  - Implement `aide::OperationOutput` (a no-op `type Inner = ()` is enough) for
-    your error type so `Result<_, AppError>` is a valid documented return.
-  - Document path/query parameters with **named structs** (`Path<GamePath>`,
-    not `Path<Uuid>` / `Path<(Uuid, Uuid)>`); `aide` derives parameter names
-    from the struct fields, so bare/tuple extractors document no parameters.
-  - The `(StatusCode, Json<T>)` tuple documents **no** response; declare the
-    success status of creates explicitly with
-    `post_with(handler, |op| op.response::<201, Json<XxxResponse>>())`.
-  - Pin the `schemars` version `aide` re-exports (0.9 for `aide` 0.15) and add
-    its `chrono04` / `uuid1` features for `DateTime`/`Uuid` fields.
-  - `OperationInput` for `Query<T>` is behind `aide`'s **`axum-query`** feature.
-    A handler taking `Query<_>` fails the `OperationHandler` bound (cryptically)
-    until you enable it, so the feature set is usually
-    `axum, axum-json, axum-query, scalar, macros`. A custom extractor likewise
-    needs a (no-op) `impl OperationInput`.
-  - For file uploads, take axum's `Multipart` extractor (`multipart/form-data`,
-    one field per file → supports several files in one request). Enable **two**
-    features: `multipart` on `axum` and **`axum-multipart`** on `aide` (the
-    latter provides `Multipart`'s `OperationInput`, else the `OperationHandler`
-    bound fails). axum's default request body limit is only **2 MiB**, far too
-    small for PDFs — raise it per route with
-    `post_with(handler, …).layer(DefaultBodyLimit::max(N))`
-    (`aide`'s `ApiMethodRouter` has `.layer`, so the limit stays scoped to the
-    upload route rather than the whole API).
-  - Add an `example` to a request/response schema with
-    `#[schemars(extend("example" = serde_json::json!({...})))]` — the
-    auto-generated placeholder (`"string"`, `null`) reads poorly in Scalar.
-  - Keep infrastructure endpoints (liveness/health probe, metrics, …) **out of
-    the OpenAPI document**: register them with plain `route(...)`, not
-    `api_route(...)`. The documented surface is the product API, not the ops
-    plumbing.
-  - Do **not** serve `aide`'s bundled Scalar via `Scalar::axum_route()` — the
-    vendored build renders with broken CSS. Serve your own `/docs` HTML that
-    loads the current Scalar from its CDN
-    (`https://cdn.jsdelivr.net/npm/@scalar/api-reference`) pointed at
-    `/openapi.json`. (Trade-off: `/docs` then needs network access; acceptable
-    for a dev docs page.)
-  - If the API has authentication, **document it in OpenAPI**: register the
-    scheme once via `finish_api_with(&mut api, |t| t.security_scheme("BearerAuth",
-    SecurityScheme::Http { scheme: "bearer", bearer_format: Some("JWT"), .. }))`
-    and require it per protected operation with
-    `op.security_requirement("BearerAuth")`. Leave public operations (login,
-    public reads) without a requirement. This makes Scalar show the lock icon
-    and a token input.
+- Build every HTTP server / API with **`axum` + `aide` + Scalar**, never a
+  bare `axum::Router` and never another framework. The stack, the OpenAPI
+  wiring and its traps live in `rust-http-conventions` — load it before
+  touching a handler, a router or a request/response DTO.
 - Always set up structured logging/tracing with `tracing` and
   `tracing-subscriber`. Initialise the subscriber once at the start of
   `main`, configured with an `EnvFilter`. The filter directive must come
@@ -253,19 +202,8 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   file is what contributors and CI build with and should stay current. Never
   collapse the two.
 - Validate deserialised input (request DTOs, config payloads, …) with the
-  **`validator`** crate (derive API), not hand-rolled checks. Put
-  `#[derive(Validate)]` on the input struct, use the built-in field
-  validators (`length`, `range`, `email`, `url`, `nested`, …) where they
-  fit, and `#[validate(custom(function = path::to::fn))]` for
-  domain-specific rules — the function takes `&T` and returns
-  `Result<(), validator::ValidationError>`, and in `validator` ≥ 0.19
-  `function` is a **bare path**, not a string literal. Call `value.validate()?`
-  at the edge (e.g. the `axum` handler) and provide a
-  `From<validator::ValidationErrors>` for your error type so it maps to a
-  `422`. Keep cross-entity / database-backed checks (e.g. "this id must
-  belong to that parent") in the repository/service layer; `validator`
-  covers field-level shape only. Add it with
-  `cargo add validator --features derive`.
+  **`validator`** crate (derive API), never hand-rolled checks — see
+  `rust-http-conventions` for the derive details and where the check belongs.
 - For database integration tests, run against a **real Postgres** (the
   project's `docker-compose` service) and isolate with **`#[sqlx::test]`** —
   it creates a fresh database per test, applies the migrations, and injects a
@@ -334,13 +272,12 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
   `impl Trait` express the same thing with static dispatch.
 - Never use a different async runtime (`async-std`, `smol`, …) or a
   different web framework when `tokio` + `axum` fit the need.
+- Never build an HTTP surface without loading `rust-http-conventions` first —
+  a bare `axum::Router`, a hand-written OpenAPI document or an alternative
+  docs UI are all out.
 - Never use `testcontainers` (or other throwaway-container harnesses) for
   database tests. Use a real Postgres (the project's `docker-compose`) with
   `#[sqlx::test]` for per-test isolation.
-- Never expose an HTTP API without `aide` + Scalar: no bare `axum::Router`
-  for an API, no hand-written OpenAPI, no alternative docs UI. Every endpoint
-  is documented and the spec is served at `/openapi.json` with Scalar at
-  `/docs`.
 - Never use `println!` / `eprintln!` (or ad-hoc `log` setup) for
   application diagnostics; route everything through `tracing`.
 - Never add a `clap` option without an `env = "..."` attribute, never give a
@@ -352,10 +289,8 @@ description: Rust project conventions (clap, tokio, axum, tracing, mockall,
 - Never hand-roll mock structs, fakes, or stubs for a trait when
   `mockall` can generate them, and never pull in another mocking crate
   (`mockers`, `faux`, …) when `mockall` fits.
-- Never hand-roll input validation (bespoke `validate()` methods returning
-  `Result<(), String>`, ad-hoc field checks scattered through handlers)
-  when the `validator` derive can express it, and never pull in another
-  validation crate when `validator` fits.
+- Never hand-roll input validation, and never pull in another validation
+  crate when the `validator` derive fits.
 - Never reach for the `async-trait` crate. Use native `async fn` /
   `-> impl Future<Output = …> (+ Send)` in traits and generic injection
   instead. The only exception is an external trait you do not own that is
