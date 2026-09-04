@@ -1,0 +1,59 @@
+name: quality
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.13"
+
+      # actionlint and skill-validator are `language: golang` hooks: pre-commit
+      # builds them from source, so the toolchain has to be there first.
+      - name: set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: stable
+
+      - name: install pre-commit
+        run: pip install pre-commit
+
+      - name: run pre-commit
+        run: pre-commit run --all-files --show-diff-on-failure
+
+  skills:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: stable
+
+      - name: install skill-validator
+        run: go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@v1.6.1
+
+      # The pre-commit job already gates on this. This one exists for
+      # --emit-annotations, which anchors each finding on the offending line of
+      # the pull request diff instead of burying it in a log.
+      - name: validate the skills
+        run: skill-validator check --strict --emit-annotations skills/

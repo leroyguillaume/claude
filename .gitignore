@@ -4,8 +4,13 @@
 # default and explicitly allow back what belongs in the repo. Anything Claude
 # Code writes here in the future stays ignored without further edits.
 /*
+!/.github/
 !/.gitignore
+!/.pre-commit-config.yaml
+!/.yamllint.yaml
+!/ARCHITECTURE.md
 !/CLAUDE.md
+!/CONTRIBUTING.md
 !/README.md
 !/skills/
 

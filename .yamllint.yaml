@@ -1,0 +1,17 @@
+extends: default
+
+rules:
+  # yaml-conventions: no `---` opening a file.
+  document-start:
+    present: false
+  # yaml-conventions: block style only. `non-empty` still allows `{}` / `[]`.
+  braces:
+    forbid: non-empty
+  brackets:
+    forbid: non-empty
+  # A SHA-pinned `uses:` with its tag comment alone busts any sane limit.
+  line-length: disable
+  # github-actions-conventions: a workflow's trigger key is written bare as
+  # `on:`, which YAML reads as the boolean. Keep the check on values.
+  truthy:
+    check-keys: false
