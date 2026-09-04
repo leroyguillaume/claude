@@ -1,6 +1,7 @@
 ---
 name: ollama-conventions
-description: Ollama model-selection conventions (never recommend a model from
+description: >-
+  Ollama model-selection conventions (never recommend a model from
   memory — research current benchmarks on the web first, then justify the pick).
   TRIGGER when: setting up or configuring Ollama; writing code, compose files,
   or scripts that pull/run an Ollama model (`ollama pull`, `ollama run`, the

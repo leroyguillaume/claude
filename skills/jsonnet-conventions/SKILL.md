@@ -1,6 +1,7 @@
 ---
 name: jsonnet-conventions
-description: Jsonnet conventions for an Argo CD / GitOps repository — stay
+description: >-
+  Jsonnet conventions for an Argo CD / GitOps repository — stay
   simple (no library for a handful of lines, extract only what is big and
   genuinely shared), document every exported function and constant, fail loudly
   at render time, `jsonnetfmt` in pre-commit.

@@ -1,6 +1,7 @@
 ---
 name: frontend-conventions
-description: Frontend project conventions (TypeScript, React, Biome, enforced
+description: >-
+  Frontend project conventions (TypeScript, React, Biome, enforced
   typing, mobile-first). TRIGGER when: editing or creating `.ts`/`.tsx` files;
   touching `package.json`, `tsconfig*.json`, `biome.json`/`biome.jsonc`, or a
   frontend lockfile; adding/removing a frontend dependency; building a React

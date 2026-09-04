@@ -1,6 +1,7 @@
 ---
 name: helm-conventions
-description: Helm chart conventions (values structure, security context,
+description: >-
+  Helm chart conventions (values structure, security context,
   Trivy `KSV-xxxx` compliance, templates layout, helm-docs, resources
   requests/limits).
   TRIGGER when: editing or creating any file under a chart's `templates/`,

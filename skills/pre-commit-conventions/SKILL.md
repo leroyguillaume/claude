@@ -1,6 +1,7 @@
 ---
 name: pre-commit-conventions
-description: pre-commit conventions — never use Docker-backed hooks, always run
+description: >-
+  pre-commit conventions — never use Docker-backed hooks, always run
   the linter binary directly (`language: system` / native pre-commit language),
   always ship a `yamllint` hook in a repo containing YAML, never run a test
   suite from a hook.

@@ -1,6 +1,7 @@
 ---
 name: yaml-conventions
-description: YAML formatting conventions (block style only, no flow style, no
+description: >-
+  YAML formatting conventions (block style only, no flow style, no
   `---` opening a file).
   TRIGGER when: editing or creating any `.yaml`/`.yml` file (manifests, Helm
   charts/values, GitHub Actions workflows, compose files, config); writing a

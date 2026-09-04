@@ -1,6 +1,7 @@
 ---
 name: release-script-conventions
-description: Release conventions — every publishable project ships a
+description: >-
+  Release conventions — every publishable project ships a
   `scripts/release.sh` that bumps the version stored in the repo, regenerates
   what derives from it, commits, tags, and asks before pushing; the git tag is
   what CI publishes from, and CI refuses to publish when the tag and the

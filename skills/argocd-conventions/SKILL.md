@@ -1,6 +1,7 @@
 ---
 name: argocd-conventions
-description: Argo CD GitOps repository conventions — the repository shape
+description: >-
+  Argo CD GitOps repository conventions — the repository shape
   (catalog-driven ApplicationSets over Argo CD's own cluster list, three
   values layers) applies only when bootstrapping or when explicitly asked to
   refactor; in an existing repo, follow the shape that is already there. The

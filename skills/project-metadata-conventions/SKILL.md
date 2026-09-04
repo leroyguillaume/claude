@@ -1,6 +1,7 @@
 ---
 name: project-metadata-conventions
-description: Project metadata conventions (derive author/maintainer and
+description: >-
+  Project metadata conventions (derive author/maintainer and
   repository/URL fields from `git config`, never invent them).
   TRIGGER when: setting or updating author/maintainer or repository/URL fields
   in any manifest (`Cargo.toml`, `pyproject.toml`, `package.json`,

@@ -1,6 +1,7 @@
 ---
 name: github-repo-settings
-description: GitHub repository settings administered via the `gh` CLI — sync
+description: >-
+  GitHub repository settings administered via the `gh` CLI — sync
   issue/PR labels to the set referenced in `.github/release.yaml`, restrict
   the allowed merge methods to squash-only, and auto-delete head branches on
   merge.

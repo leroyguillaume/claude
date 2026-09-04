@@ -1,6 +1,7 @@
 ---
 name: logging-conventions
-description: Logging and observability conventions (liberal debug logs,
+description: >-
+  Logging and observability conventions (liberal debug logs,
   structured key-value fields, level-controlled verbosity, standard logging
   library). Applies to every language and runtime.
   TRIGGER when: writing or editing code that does I/O or external calls, has

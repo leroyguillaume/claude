@@ -1,6 +1,7 @@
 ---
 name: kopf-conventions
-description: kopf-specific mechanics for Python Kubernetes operators — event
+description: >-
+  kopf-specific mechanics for Python Kubernetes operators — event
   posting (the posting.enabled vs posting.loggers gotcha), explicit kopf.event
   lifecycle events, cluster-scoped event namespacing, status-based progress
   storage, on.resume rollouts, handler argument injection, and timers.

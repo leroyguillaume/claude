@@ -1,6 +1,7 @@
 ---
 name: docker-compose-conventions
-description: Docker Compose conventions (file naming).
+description: >-
+  Docker Compose conventions (file naming).
   TRIGGER when: creating or editing a Docker Compose file (`docker-compose.yaml`,
   `docker-compose.yml`, `compose.yaml`, `compose.yml`); adding a Compose stack
   to a repo; user asks about Compose file naming or how to name a compose file

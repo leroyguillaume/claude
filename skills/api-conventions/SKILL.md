@@ -1,6 +1,7 @@
 ---
 name: api-conventions
-description: HTTP/RPC API conventions (dedicated DTOs, no domain models on the
+description: >-
+  HTTP/RPC API conventions (dedicated DTOs, no domain models on the
   wire, camelCase JSON, FK naming, tagged operations, mandatory pagination of
   list endpoints). Applies to any HTTP/RPC surface in any language or framework.
   TRIGGER when: editing or creating request/response handlers, routes,

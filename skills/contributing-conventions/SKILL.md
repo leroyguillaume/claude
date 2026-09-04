@@ -1,6 +1,7 @@
 ---
 name: contributing-conventions
-description: CONTRIBUTING.md conventions (English only, three mandatory blocks —
+description: >-
+  CONTRIBUTING.md conventions (English only, three mandatory blocks —
   dev environment setup, running the tests, pre-commit, what the CI runs and
   how to reproduce it locally — described from the repo's actual config,
   never from memory).

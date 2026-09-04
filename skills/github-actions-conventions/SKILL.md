@@ -1,6 +1,7 @@
 ---
 name: github-actions-conventions
-description: GitHub Actions / CI conventions (canonical
+description: >-
+  GitHub Actions / CI conventions (canonical
   quality/build/security/chart/release workflows, mandatory Trivy scanning
   with SARIF upload, SHA-pinned actions, OCI chart publish, multi-arch Rust
   builds on native runners, pragmatic caching).

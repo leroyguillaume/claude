@@ -1,6 +1,7 @@
 ---
 name: terraform-conventions
-description: Terraform / OpenTofu conventions (file layout with a mandatory
+description: >-
+  Terraform / OpenTofu conventions (file layout with a mandatory
   `data.tf`, naming, typed and documented variables, pinned providers, secrets
   out of the state, `terraform test`, pre-commit hooks, trivy `AVD-xxxx`).
   TRIGGER when: creating or editing any `.tf`, `.tfvars`, `.tftest.hcl`, or

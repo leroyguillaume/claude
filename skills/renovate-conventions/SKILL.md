@@ -1,6 +1,7 @@
 ---
 name: renovate-conventions
-description: Dependency-update bot conventions — on GitHub, Dependabot for
+description: >-
+  Dependency-update bot conventions — on GitHub, Dependabot for
   everything it supports and Renovate only for the remainder (never both on
   one ecosystem); off GitHub, Renovate for the lot. Never automerge, ever.
   Dependency dashboard always on.

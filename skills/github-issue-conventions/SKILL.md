@@ -1,6 +1,7 @@
 ---
 name: github-issue-conventions
-description: Where work that remains goes on a GitHub-hosted repo — an issue
+description: >-
+  Where work that remains goes on a GitHub-hosted repo — an issue
   opened with the `gh` CLI, proposed and never opened unasked, never a
   `TODO.md` / roadmap / status section in a committed file.
   TRIGGER when: you spot work that is out of the current scope (a bug, a

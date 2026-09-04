@@ -1,6 +1,7 @@
 ---
 name: architecture-conventions
-description: ARCHITECTURE.md conventions — a present-tense description of the
+description: >-
+  ARCHITECTURE.md conventions — a present-tense description of the
   system as it stands today (components, data flow, standing design
   trade-offs, invariants, limitations). Never a history: no past changes, no
   migrations, no changelog, no dated decision log. Never the CI.

@@ -1,6 +1,7 @@
 ---
 name: docker-conventions
-description: Dockerfile conventions (minimal CVE-free base images —
+description: >-
+  Dockerfile conventions (minimal CVE-free base images —
   scratch/distroless first, multi-stage, pinned tags — FHS paths, non-root
   USER, hadolint and Trivy `DS-xxxx` compliance with no self-authorised
   ignores, pinned apk packages but deliberately unpinned apt packages,

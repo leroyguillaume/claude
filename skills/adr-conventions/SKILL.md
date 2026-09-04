@@ -1,6 +1,7 @@
 ---
 name: adr-conventions
-description: Architecture Decision Record conventions — one immutable file per
+description: >-
+  Architecture Decision Record conventions — one immutable file per
   decision in `docs/adr/NNNN-kebab-title.md`, written when the decision is
   taken, superseded by a new ADR rather than edited. The one place in the repo
   where history belongs; `ARCHITECTURE.md` stays present-tense.

@@ -1,6 +1,7 @@
 ---
 name: readme-conventions
-description: README conventions (English only, three mandatory blocks —
+description: >-
+  README conventions (English only, three mandatory blocks —
   description, getting started, contributing/licence links — operational
   content only, design rationale lives in `ARCHITECTURE.md`).
   TRIGGER when: creating or editing any `README.md`; scaffolding a new
@@ -161,7 +162,7 @@ given or neither is.
 
 Two short sections at the bottom, each a link, not a copy:
 
-- **Contributing** — one line pointing at [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- **Contributing** — one line pointing at `CONTRIBUTING.md`.
   Do not restate the workflow in the README; one home per fact.
 - **License** — the SPDX identifier or full name, then a link to the `LICENSE`
   file. Never paste the licence text into the README.

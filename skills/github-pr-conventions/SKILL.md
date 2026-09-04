@@ -1,6 +1,7 @@
 ---
 name: github-pr-conventions
-description: Conventions for opening GitHub pull requests with the `gh` CLI —
+description: >-
+  Conventions for opening GitHub pull requests with the `gh` CLI —
   always apply the right labels at creation time so the PR lands in the correct
   release-notes category. Derive the label set from the repo (and
   `.github/release.yaml`), never from memory.

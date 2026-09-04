@@ -1,6 +1,7 @@
 ---
 name: signal-handling-conventions
-description: Signal handling and graceful shutdown conventions for long-running
+description: >-
+  Signal handling and graceful shutdown conventions for long-running
   processes (SIGTERM/SIGINT, drain in-flight work, idempotent units of work).
   Applies to servers, workers, and daemons in any language or runtime.
   TRIGGER when: writing or editing a process entrypoint / `main`, an HTTP or

@@ -1,6 +1,7 @@
 ---
 name: kubernetes-operator-conventions
-description: Kubernetes operator / controller conventions (error handling,
+description: >-
+  Kubernetes operator / controller conventions (error handling,
   always-requeue, events, idempotency, finalizers, ownerReferences). Applies to
   kopf, controller-runtime, Operator SDK, or any custom controller reconcile
   loop.

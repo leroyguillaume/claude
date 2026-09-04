@@ -1,6 +1,7 @@
 ---
 name: python-conventions
-description: Python project conventions (uv, ruff, typer, pydantic, Pylance).
+description: >-
+  Python project conventions (uv, ruff, typer, pydantic, Pylance).
   TRIGGER when: editing or creating `.py` files; touching `pyproject.toml`, `uv.lock`,
   or `.python-version`; adding/removing a Python dependency; setting up a Python
   CLI, config layer, or data model; user asks about Python tooling, deps, types,
