@@ -126,12 +126,15 @@ somewhere slower.
 
 | Workflow | Triggers on | What it does | Reproduce locally |
 | --- | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | push to `main`, every PR | `pre-commit run --all-files`; a second job re-runs `skill-validator` with `--emit-annotations` so findings land on the diff | `pre-commit run --all-files` |
+| [`quality.yaml`](.github/workflows/quality.yaml) | push to `main`, every PR, weekly | `pre-commit run --all-files`; a second job re-runs `skill-validator` with `--emit-annotations` so findings land on the diff, then checks the external links | `pre-commit run --all-files` and `skill-validator validate links skills/` |
 | [`security.yaml`](.github/workflows/security.yaml) | push to `main`, every PR, weekly | `trivy fs` over the checkout (vulnerabilities, secrets, misconfiguration), blocking on `HIGH`/`CRITICAL`; uploads SARIF to code scanning | `trivy fs .` |
 
-Both workflows are blocking. The weekly `security` run exists because a
-vulnerability is disclosed against code nobody touched, so a scan on merge day
-only reports what was known that day.
+Both workflows are blocking, and both re-run weekly for the same reason: a
+vulnerability is disclosed, and a documentation URL dies, without any file here
+changing. A run on merge day only reports what was true that day.
+
+The external-link check is not a pre-commit hook because it needs the network —
+a gate that fails on a train is a gate people learn to bypass.
 
 Neither workflow needs a secret: `GITHUB_TOKEN` covers the SARIF upload, so
 they run identically on a fork's pull request.

@@ -5,6 +5,10 @@ on:
     branches:
       - main
   pull_request:
+  schedule:
+    # For the external-link check below: upstream reorganises its docs and the
+    # link dies without any file here changing.
+    - cron: "0 4 * * 2"
 
 permissions:
   contents: read
@@ -57,3 +61,8 @@ jobs:
       # the pull request diff instead of burying it in a log.
       - name: validate the skills
         run: skill-validator check --strict --emit-annotations skills/
+
+      # `check` only resolves relative links. This one hits the network, which
+      # is why it lives here and not in a pre-commit hook.
+      - name: check the external links
+        run: skill-validator validate links --emit-annotations skills/
