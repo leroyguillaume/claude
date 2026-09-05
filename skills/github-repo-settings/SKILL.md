@@ -42,7 +42,9 @@ repo should have. Two distinct purposes coexist:
 The same concept often has both: `bug` (issue) ↔ `fix` (PR), `enhancement` (issue)
 ↔ `feature` (PR). Inside one changelog category, listing both members of such a
 pair is a duplicate — pick one (the PR-side label) and drop the other from
-`release.yaml`; but keep the issue-side label alive on the repo.
+`release.yaml`; but keep the issue-side label alive on the repo. That is also
+what `github-pr-conventions` assumes when it labels a PR: `fix`/`feature` by
+default, `bug`/`enhancement` only where a repo still maps them.
 
 The `"*"` catch-all in `release.yaml` is a wildcard, **not** a real label — never
 create it.
@@ -61,18 +63,30 @@ Procedure:
 ```bash
 unset GITHUB_TOKEN
 # create / upsert the PR-changelog labels referenced by release.yaml (idempotent)
-gh label create feature      --description "New feature"                  --color 0e8a16 --force
-gh label create fix          --description "Bug fix"                      --color d73a4a --force
-gh label create chore        --description "Maintenance / housekeeping"   --color fef2c0 --force
-gh label create dependencies --description "Dependency updates"           --color 0366d6 --force
+gh label create feature       --description "New feature"                   --color 0e8a16 --force
+gh label create fix           --description "Bug fix"                       --color d73a4a --force
+gh label create chore         --description "Maintenance / housekeeping"    --color fef2c0 --force
+gh label create dependencies  --description "Dependency updates"            --color 0366d6 --force
+gh label create documentation --description "Documentation only"            --color 0075ca --force
+gh label create breaking      --description "Backwards-incompatible change" --color b60205 --force
+gh label create security      --description "Security fix"                  --color b60205 --force
+# the exclude label, only when release.yaml has an `exclude.labels` entry
+gh label create ignore-for-release --description "Exclude from release changelog" --color ededed --force
 # issue-triage labels stay even though release.yaml never maps them
-gh label create bug          --description "Something isn't working"      --color d73a4a --force
-gh label create enhancement  --description "New feature or request"       --color a2eeef --force
+gh label create bug         --description "Something isn't working" --color d73a4a --force
+gh label create enhancement --description "New feature or request"  --color a2eeef --force
 gh label list --limit 100   # verify
 ```
 
 Notes:
 
+- Only create the category labels the repo's `release.yaml` actually maps — a
+  `breaking` label on a repo with no *Breaking changes* category is dead weight,
+  and the exclude label only makes sense alongside an `exclude.labels` entry.
+- **Leave the ecosystem labels to Dependabot.** It creates `rust`,
+  `github_actions`, `docker`, `python`, `npm_and_yarn` itself, black and
+  described as "Pull requests that update … code". Creating your own variant
+  gives the repo two labels for one concept.
 - `gh label create --force` upserts, so it is safe to re-run.
 - Deleting a label removes it from every issue/PR it is on and **cannot be
   undone** — it is destructive. Absence from `release.yaml` is **not** a reason to
