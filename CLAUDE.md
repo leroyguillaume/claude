@@ -318,8 +318,8 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   `pydantic`, Pylance diagnostics, typed data models.
 - **`rust-conventions`** — `clap` (with `env = ...`), `tokio`, `tracing`
   (filter via `clap`-parsed `LOG_FILTER`), `mockall`, static dispatch, module
-  and workspace layout, manifest lints and toolchain pinning, `cargo-chef` for
-  Docker builds.
+  and workspace layout, manifest lints and toolchain pinning,
+  `.cargo/config.toml` development defaults, `cargo-chef` for Docker builds.
 - **`rust-http-conventions`** — the Rust HTTP stack: `axum` + `aide` + Scalar
   with no exceptions, `schemars` DTOs, OpenAPI at `/openapi.json`, `validator`
   at the edge, and the `aide` feature-flag traps.

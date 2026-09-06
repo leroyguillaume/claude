@@ -2,12 +2,14 @@
 name: rust-conventions
 description: >-
   Rust project conventions (clap, tokio, tracing, mockall, static dispatch,
-  module and workspace layout, clippy and toolchain pinning, cargo-chef for
-  Docker builds).
+  module and workspace layout, clippy and toolchain pinning, `.cargo/config.toml`
+  development defaults, cargo-chef for Docker builds).
   TRIGGER when: editing or creating `.rs` files; touching `Cargo.toml`,
-  `Cargo.lock`, or `rust-toolchain*`; adding/removing a Rust dependency; setting
-  up a Rust CLI, server, async trait, mock, or logging subscriber; user asks
-  about Rust tooling, deps, traits, async, clippy, or rustfmt in this repo.
+  `Cargo.lock`, `rust-toolchain*`, or `.cargo/config.toml`; adding/removing a
+  Rust dependency; setting up a Rust CLI, server, async trait, mock, or logging
+  subscriber; a `cargo run` / `cargo test` invocation that needs environment
+  variables in front of it; user asks about Rust tooling, deps, traits, async,
+  clippy, or rustfmt in this repo.
   SKIP when: pure Python/Helm/Docker/CI work with no Rust file touched and the
   user isn't asking about Rust. For the HTTP stack itself (axum, aide, Scalar,
   OpenAPI, validator) load `rust-http-conventions` alongside this one.
@@ -71,6 +73,36 @@ description: >-
   may keep `default_value = "info"`.) A custom enum used as a default therefore
   needs a `Display` impl mirroring its `FromStr`, e.g.
   `#[arg(long, env = "...", default_value_t = Mode::Auto)]`.
+- **Give the development defaults a `.cargo/config.toml` with an `[env]`
+  table**, committed at the repository root, as soon as a binary needs an
+  environment variable to start. `cargo run` and `cargo test` then work from a
+  fresh clone with nothing exported, and the
+  `DATABASE_URL=… JWT_SECRET=… S3_BUCKET=… cargo run` incantation disappears
+  from the README instead of being copy-pasted wrong.
+  ```toml
+  # .cargo/config.toml
+  [env]
+  DATABASE_URL = "postgres://app:app@localhost:5432/app"
+  # Resolved against this file's parent directory, not the shell's cwd.
+  MIGRATIONS_DIR = { value = "migrations", relative = true }
+  ```
+  Four rules keep it from becoming a liability:
+  - **Never `force = true`.** Without it, a variable already present in the
+    environment wins and the file stays a fallback; with it, CI's own
+    `DATABASE_URL` and a container's real configuration are silently replaced
+    by a development default. That single word is the difference between a
+    convenience and a footgun.
+  - **Only values that unlock the project's own throwaway stack** — the
+    `docker-compose` services and nothing else. A credential that reaches a
+    shared or production system never goes in a committed file, whatever the
+    variable is called.
+  - **Say in a comment that Cargo applies `[env]` only to processes it
+    spawns.** `cargo run` and `cargo test` get the values; running
+    `./target/debug/app` by hand, or the binary in a container, gets nothing.
+    That is the first surprise, and it is cheaper to answer in the file than in
+    a bug report.
+  - **Keep it the one home for those values.** The README says the file exists
+    and that the environment takes precedence; it does not restate the values.
 - Use `tokio` as the async runtime.
 - Apply the **Signal handling and graceful shutdown** rules from `CLAUDE.md`.
   Rust mechanics: enable tokio's `signal` feature and write one
@@ -275,6 +307,11 @@ description: >-
 - Never build an HTTP surface without loading `rust-http-conventions` first —
   a bare `axum::Router`, a hand-written OpenAPI document or an alternative
   docs UI are all out.
+- Never set `force = true` in a `.cargo/config.toml` `[env]` table, and never
+  put a credential there that reaches anything beyond the project's own
+  development stack. Development defaults must lose to a real environment.
+- Never front a documented `cargo run` / `cargo test` with a wall of
+  `VAR=value` assignments when `.cargo/config.toml` can carry them.
 - Never use `testcontainers` (or other throwaway-container harnesses) for
   database tests. Use a real Postgres (the project's `docker-compose`) with
   `#[sqlx::test]` for per-test isolation.
