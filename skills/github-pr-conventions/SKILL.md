@@ -4,7 +4,8 @@ description: >-
   Conventions for opening GitHub pull requests with the `gh` CLI —
   always apply the right labels at creation time so the PR lands in the correct
   release-notes category. Derive the label set from the repo (and
-  `.github/release.yaml`), never from memory.
+  `.github/release.yaml`), never from memory. Rebase the branch onto an
+  up-to-date `main` before opening it.
   TRIGGER when: creating/opening a pull request (`gh pr create`), or fixing an
   existing PR's labels.
   SKIP when: managing the repo's label *definitions* or merge methods (that is
@@ -13,6 +14,41 @@ description: >-
 ---
 
 # GitHub pull request conventions (`gh` CLI)
+
+## Rebase onto `main` before opening it
+
+**A PR is opened from a branch that has just been rebased onto an up-to-date
+`main`** — always, even when the branch is an hour old and the diff looks
+unrelated to everything that landed since:
+
+```bash
+git fetch origin
+git rebase origin/main
+```
+
+Before `gh pr create`, not after a reviewer trips over a conflict marker. What
+it buys, and why "it'll merge fine anyway" is not a reason to skip it:
+
+- **The PR's diff is the change and nothing else.** A branch cut from a stale
+  `main` drags everything that moved in between into the comparison, and the
+  reviewer spends their attention telling the two apart.
+- **CI runs against the code that will actually be merged.** Green on a
+  three-week-old base says nothing about green on today's `main`; the failure
+  then surfaces after the merge, where it is everybody's problem instead of
+  mine.
+- **Conflicts get resolved by whoever wrote the code**, while the reasons are
+  still fresh, rather than by whoever hits the merge button.
+
+**Rebase, never merge `main` into the branch.** A `Merge branch 'main' into …`
+commit carries no information, and it makes the branch impossible to read as a
+series of changes.
+
+If the rebase conflicts, resolve it and **re-run the tests and the linters
+before opening the PR** — a conflict resolution is fresh code that nothing has
+checked yet. On a branch that was already pushed, force-push with
+`--force-with-lease`, never a bare `--force`.
+
+## Labels
 
 **Every PR you open must carry the right labels, applied at creation time.** An
 unlabelled PR lands in the "Other Changes" bucket of the generated release notes
