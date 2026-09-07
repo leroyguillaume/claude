@@ -165,7 +165,10 @@ Two short sections at the bottom, each a link, not a copy:
 - **Contributing** — one line pointing at `CONTRIBUTING.md`.
   Do not restate the workflow in the README; one home per fact.
 - **License** — the SPDX identifier or full name, then a link to the `LICENSE`
-  file. Never paste the licence text into the README.
+  file. Never paste the licence text into the README. **Omit the section
+  entirely on a deliberately unlicensed project** (an internal or proprietary
+  repo): a `## License` heading with nothing real under it is worse than no
+  heading. See below.
 
 ## Links
 
@@ -196,6 +199,16 @@ files exist.
   from `git config user.name` (see `project-metadata-conventions`). Until the
   user answers, leave the README's licence section out rather than pointing at
   a file that doesn't exist.
+- **"No licence" is a legitimate answer, and the common one on an internal
+  repository.** A private repo on a company forge is proprietary by default;
+  adding a `LICENSE` to one is a legal statement nobody asked for. When the
+  user says the project is internal or proprietary, the correct outcome is a
+  README with **no License section**, no `LICENSE` file, and no `license` field
+  in the manifest — not a placeholder, not an "All rights reserved" file
+  invented for the occasion. Record the answer and stop raising it.
+- **Ask once per project.** Never re-open the licence question on a repo where
+  the user has already settled it, and never treat a missing `LICENSE` as a
+  finding on a repo that is deliberately unlicensed.
 - Mirror the licence in the project manifest when there is one
   (`license` in `pyproject.toml` / `Cargo.toml` / `package.json`,
   `Chart.yaml` annotations) so the two never disagree.

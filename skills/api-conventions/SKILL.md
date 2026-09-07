@@ -12,6 +12,8 @@ description: >-
   or endpoint grouping in this repo.
   SKIP when: the work touches no request/response surface (pure CLI, library,
   data layer with no wire boundary) and the user isn't asking about API design.
+  For the URL and method design itself — resource naming, REST verbs, status
+  codes — load `rest-conventions` alongside this one.
 ---
 
 # API conventions
@@ -19,6 +21,10 @@ description: >-
 Applies to every HTTP/RPC surface, in any language or framework. The language
 skills restate the mechanics (which validation crate, which serde attribute)
 where they need to be concrete.
+
+This skill owns what goes **in** the messages. `rest-conventions` owns the
+**URLs and methods** — the path names a resource, the method is the verb, and
+no endpoint is called `/list` or `/update`. Both apply to every HTTP endpoint.
 
 - **Never bind a domain, entity, or persistence model directly to a request
   or response body.** Domain / ORM / database structs stay behind the
