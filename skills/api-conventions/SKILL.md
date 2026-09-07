@@ -3,13 +3,14 @@ name: api-conventions
 description: >-
   HTTP/RPC API conventions (dedicated DTOs, no domain models on the
   wire, camelCase JSON, FK naming, tagged operations, mandatory pagination of
-  list endpoints). Applies to any HTTP/RPC surface in any language or framework.
+  list endpoints, the OpenAPI document at `/openapi.json` rendered by Scalar
+  at `/docs`). Applies to any HTTP/RPC surface in any language or framework.
   TRIGGER when: editing or creating request/response handlers, routes,
   controllers, or DTO/schema types; adding or changing an HTTP/RPC endpoint;
   returning a collection/list from an endpoint or a repository that backs one;
-  designing a JSON body, query/path params, or an OpenAPI spec; user asks about
-  API contracts, serialisation, DTOs vs domain models, field casing, pagination,
-  or endpoint grouping in this repo.
+  designing a JSON body, query/path params, or an OpenAPI spec; wiring a docs
+  UI; user asks about API contracts, serialisation, DTOs vs domain models,
+  field casing, pagination, endpoint grouping, or where the docs are served.
   SKIP when: the work touches no request/response surface (pure CLI, library,
   data layer with no wire boundary) and the user isn't asking about API design.
   For the URL and method design itself — resource naming, REST verbs, status
@@ -60,6 +61,26 @@ no endpoint is called `/list` or `/update`. Both apply to every HTTP endpoint.
   and declare the tags up front with a description and a deliberate order
   (e.g. `Authentication`, then the main resources). No operation ships
   untagged.
+- **Serve the OpenAPI document from the application itself, at
+  `/openapi.json`.** It is generated from the code by the framework (`aide` in
+  Rust, FastAPI's own generator in Python, …), never hand-written, and no copy
+  is committed to the repository — a generated file that can only ever be a
+  stale duplicate of what the process already publishes is not worth the upkeep.
+- **Render that document with Scalar at `/docs`, and with nothing else.** The
+  path and the tool are both fixed, in every language and framework: a reader
+  who knows one of our APIs knows where the reference is on all of them.
+  Whatever documentation UI the framework bundles gets switched off so it cannot
+  drift from Scalar or squat the path — in FastAPI that is `docs_url=None` *and*
+  `redoc_url=None` on the application, then a route of your own on `/docs`.
+- **Load Scalar from its CDN**
+  (`https://cdn.jsdelivr.net/npm/@scalar/api-reference`), not from a build
+  vendored into the service (`aide`'s bundled Scalar in particular renders with
+  broken CSS). The trade-off is that `/docs` needs egress **from the reader's
+  browser** — the service itself never calls out for it, and `/openapi.json`
+  answers regardless — which is the right side of the bargain for a docs page.
+- **`/docs` is a page, not an operation: keep it out of the document** (in
+  FastAPI, `include_in_schema=False`), so it never shows up in a generated
+  client or in the tool set an MCP layer derives from the spec.
 - **Always paginate list endpoints — never return an unbounded collection.**
   Any endpoint that returns a collection takes pagination parameters and caps
   how much it returns. The repository/data-layer method that backs it must
