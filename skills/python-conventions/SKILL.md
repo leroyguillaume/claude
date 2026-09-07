@@ -7,7 +7,8 @@ description: >-
   CLI, config layer, or data model; user asks about Python tooling, deps, types,
   CLI args, env vars, or logging in this repo.
   SKIP when: pure Rust/Helm/Docker/CI work with no Python file touched and the
-  user isn't asking about Python.
+  user isn't asking about Python. For asyncio loops, fan-out and concurrency,
+  load `python-async-conventions` alongside this one.
 ---
 
 # Python conventions
