@@ -3,7 +3,8 @@ name: github-issue-conventions
 description: >-
   Where work that remains goes on a GitHub-hosted repo — an issue
   opened with the `gh` CLI, proposed and never opened unasked, never a
-  `TODO.md` / roadmap / status section in a committed file.
+  `TODO.md` or a status section in a committed file (the root `ROADMAP.md`,
+  when the project keeps one, being the single exception).
   TRIGGER when: you spot work that is out of the current scope (a bug, a
   follow-up, a cleanup, a missing test), when the user asks to file/track
   something, or when you are about to write remaining work into any file.
@@ -13,11 +14,16 @@ description: >-
 
 # GitHub issue conventions (`gh` CLI)
 
-**Remaining work lives in an issue, never in the repo's files.** A committed
-`TODO.md`, a "roadmap" heading, a `## Status` checklist — they all rot within a
-month, conflict on every branch, and become a second, worse tracker sitting next
-to the real one. See the documentation rule in `~/.claude/CLAUDE.md`: a
-document describes the present.
+**Remaining work lives in an issue, never scattered through the repo's files.**
+A committed `TODO.md`, a "roadmap" heading in the README, a `## Status`
+checklist — they all rot within a month, conflict on every branch, and become a
+second, worse tracker sitting next to the real one. See the documentation rule
+in `~/.claude/CLAUDE.md`: a document describes the present.
+
+**The one exception is a root `ROADMAP.md`**, when the project keeps one. It
+holds the shape of what is coming; the tracker still holds the actionable
+tickets, and every other file stays in the present tense. Never create one
+unasked.
 
 **GitHub only.** Everything here assumes an `origin` remote on GitHub — check
 before reaching for `gh`:

@@ -127,8 +127,9 @@ Never write, in any documentation file:
 - **A "reste à faire" / "TODO" / "next steps" / "roadmap" / "coming soon"
   section**, or a single line of it buried in a paragraph. Work that remains
   is not documentation — it belongs in the issue tracker (on GitHub, see the
-  `github-issue-conventions` skill), in the pull request description, or in
-  what I say back to the user. Never in a committed file.
+  `github-issue-conventions` skill), in the **root `ROADMAP.md`** when the
+  project keeps one (see below), in the pull request description, or in what I
+  say back to the user. Never anywhere else in a committed file.
 - **A status at a point in time**: `✅ done` / `🚧 in progress` checklists,
   completion percentages, phase or milestone trackers, "currently", "for now",
   "at the time of writing", "as of <date>", "recently added", "new in this
@@ -142,10 +143,28 @@ about what does not. A limitation that is *inherent* to the design is not a
 status — it is a fact about the system, and it belongs in the docs (it just
 gets stated as "X is not supported", not as "X is not supported *yet*").
 
-The two deliberate exceptions, because their whole job is to be dated records
-rather than a description of the present: **ADRs** in `docs/adr/` (immutable,
-each one a decision taken on a day) and the **`CHANGELOG.md`** (a list of
-releases). Those are allowed to talk about time. Nothing else is.
+The three deliberate exceptions, because their whole job is to be dated records
+or forward-looking rather than a description of the present: **ADRs** in
+`docs/adr/` (immutable, each one a decision taken on a day), the
+**`CHANGELOG.md`** (a list of releases), and **`ROADMAP.md` at the repository
+root** (what is planned and not built yet). Those are allowed to talk about
+time. Nothing else is.
+
+`ROADMAP.md` is the single, well-known place where the future is allowed to
+live, and that is exactly what keeps it out of everything else:
+
+- **Root only, and that filename only.** Not `docs/ROADMAP.md`, not `TODO.md`,
+  not `docs/PLAN.md`. One path, so a reader knows where to look and every other
+  file stays in the present tense.
+- **It does not license a roadmap section elsewhere.** The README, the
+  `ARCHITECTURE.md`, an ADR, a code comment — the ban stands there, unchanged.
+  The most any of them may do is link to `ROADMAP.md` once.
+- **Not a replacement for the tracker.** A repo with an issue tracker still
+  files work there; `ROADMAP.md` carries the shape of what is coming, not each
+  actionable ticket.
+- **Never created unasked.** It is a deliberate choice a project makes. Write
+  one when the user asks for it, or when the repo already has one — never as a
+  place to park work I noticed on my way past.
 
 ## Secret handling (never leak credentials)
 
@@ -300,6 +319,11 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
 - **`api-conventions`** — dedicated request/response DTOs, no domain
   models on the wire, `camelCase` JSON, `<entity>Id` FK naming, tagged
   operations, mandatory pagination of list endpoints.
+- **`rest-conventions`** — the URLs and the methods: the path names a
+  resource, the method is the verb, and no endpoint is ever called `/list`,
+  `/update` or `/getUser`. Collection and member URLs, method semantics,
+  status codes, `PUT` over `PATCH`, filters as query parameters, and the
+  narrow escape hatch for operations that genuinely are not CRUD.
 - **`signal-handling-conventions`** — `SIGTERM`/`SIGINT`, graceful drain,
   idempotent units of work, for any server / worker / daemon.
 - **`project-metadata-conventions`** — derive author/repository fields from
@@ -316,6 +340,11 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
 
 - **`python-conventions`** — `pyproject.toml`, `uv`, `ruff`, `typer`,
   `pydantic`, Pylance diagnostics, typed data models.
+- **`python-async-conventions`** — asyncio loops and fan-out: an `await` in a
+  `for` loop is sequential, but `gather` is not a free swap (it drops
+  short-circuiting, changes failure handling, unbinds results from inputs);
+  picking the axis to parallelise on, `gather` vs `TaskGroup`, bounded
+  concurrency, and testing the requests rather than the result.
 - **`rust-conventions`** — `clap` (with `env = ...`), `tokio`, `tracing`
   (filter via `clap`-parsed `LOG_FILTER`), `mockall`, static dispatch, module
   and workspace layout, manifest lints and toolchain pinning,
