@@ -4,9 +4,9 @@ Global, non-negotiable rules for Claude Code. These apply to **every** project
 unless a project-level `CLAUDE.md` explicitly overrides a specific rule.
 
 Most concrete conventions live in skills under `~/.claude/skills/`, which load
-on demand from file paths and topics (see the list at the end). The rules kept
-in this file are the ones that must apply unconditionally — meta-principles and
-negative guardrails that would be dangerous to miss if a skill failed to load.
+on demand from file paths and topics. The rules kept in this file are the ones
+that must apply unconditionally — meta-principles and negative guardrails that
+would be dangerous to miss if a skill failed to load.
 
 ## Non-negotiable rules
 
@@ -336,128 +336,11 @@ That is the whole rule; everything below follows from it.
 
 ## Conventions (load on demand)
 
-Detailed rules live in skills that load when the matching files or topics
-appear. **Cross-cutting** skills are not tied to one language — they trigger on
-the kind of work (a YAML file, an HTTP handler, a long-running process):
-
-- **`readme-conventions`** — README structure (description, getting started,
-  contributing/licence links), English only, `CONTRIBUTING.md` and `LICENSE`
-  must exist, operational content only.
-- **`contributing-conventions`** — `CONTRIBUTING.md` structure (what to
-  install, pre-commit as the gate, what the CI actually runs and how to
-  reproduce it locally), English only, described from the repo's real config.
-- **`architecture-conventions`** — `ARCHITECTURE.md` structure (components,
-  data flow, standing trade-offs, invariants, limitations), present tense
-  only, never a history and never the CI.
-- **`adr-conventions`** — one immutable ADR per decision in
-  `docs/adr/NNNN-title.md`, superseded rather than edited; when a change
-  warrants one, and the split with `ARCHITECTURE.md`.
-- **`diagram-conventions`** — Mermaid is the default, and in a markdown file
-  it is the answer, inline; ASCII art is for chat only, drawings and images
-  for what Mermaid cannot draw, never hosted outside the repo. Which diagram
-  type answers which question, and labelling the edges.
-- **`logging-conventions`** — liberal debug logs, structured key-value
-  fields, level-controlled verbosity, standard logging library.
-- **`yaml-conventions`** — block style only, never flow style (`{...}` /
-  `[...]`), in any YAML file or snippet.
-- **`sql-conventions`** — always lint SQL with `sqlfluff` (pre-commit hook),
-  for both queries and migrations; reformat rather than disable rules.
-- **`api-conventions`** — dedicated request/response DTOs, no domain
-  models on the wire, `camelCase` JSON, `<entity>Id` FK naming, tagged
-  operations, mandatory pagination of list endpoints.
-- **`rest-conventions`** — the URLs and the methods: the path names a
-  resource, the method is the verb, and no endpoint is ever called `/list`,
-  `/update` or `/getUser`. Collection and member URLs, method semantics,
-  status codes, `PUT` over `PATCH`, filters as query parameters, and the
-  narrow escape hatch for operations that genuinely are not CRUD.
-- **`signal-handling-conventions`** — `SIGTERM`/`SIGINT`, graceful drain,
-  idempotent units of work, for any server / worker / daemon.
-- **`systemd-conventions`** — the privileges a service actually runs with:
-  never `User=root`, a dedicated system account or `DynamicUser=`, the
-  sandboxing block every unit carries, writable paths via `StateDirectory=`,
-  secrets through `LoadCredential=`, `systemd-analyze security` as the gate;
-  plus cloud-init (`runcmd` is root, explicit `write_files` permissions, no
-  sudo for service accounts, no secrets in user-data).
-- **`system-user-conventions`** — a service account is not a person: one
-  dedicated system account per service, `nologin` shell, locked password, no
-  home under `/home`, no sudo and no root-equivalent group (`docker`,
-  `wheel`), created declaratively; the ownership modes that go with it, and
-  one account per human with key-only SSH.
-- **`project-metadata-conventions`** — derive author/repository fields from
-  `git config`, never invent them.
-- **`pre-commit-conventions`** — never Docker-backed hooks (`language: docker`
-  / `docker_image`); run the linter binary directly, via a native-language
-  upstream hook or a `repo: local` `language: system` hook.
-- **`release-script-conventions`** — every publishable project ships a
-  `scripts/release.sh` that bumps the stored version, regenerates what derives
-  from it, commits, tags, and asks before pushing; CI publishes from the tag
-  and refuses when the tag and the committed version disagree.
-
-**Language- and tool-specific** skills:
-
-- **`python-conventions`** — `pyproject.toml`, `uv`, `ruff`, `typer`,
-  `pydantic`, Pylance diagnostics, typed data models.
-- **`python-async-conventions`** — asyncio loops and fan-out: an `await` in a
-  `for` loop is sequential, but `gather` is not a free swap (it drops
-  short-circuiting, changes failure handling, unbinds results from inputs);
-  picking the axis to parallelise on, `gather` vs `TaskGroup`, bounded
-  concurrency, and testing the requests rather than the result.
-- **`rust-conventions`** — `clap` (with `env = ...`), `tokio`, `tracing`
-  (filter via `clap`-parsed `LOG_FILTER`), `mockall`, static dispatch, module
-  and workspace layout, manifest lints and toolchain pinning,
-  `.cargo/config.toml` development defaults, `cargo-chef` for Docker builds.
-- **`rust-http-conventions`** — the Rust HTTP stack: `axum` + `aide` + Scalar
-  with no exceptions, `schemars` DTOs, OpenAPI at `/openapi.json`, `validator`
-  at the edge, and the `aide` feature-flag traps.
-- **`frontend-conventions`** — TypeScript everywhere (no `any`), React
-  function components + hooks, Biome (replaces ESLint/Prettier), enforced
-  typing (`strict` + `tsc --noEmit` gate), mobile-first responsive layout.
-- **`argocd-conventions`** — OCI charts pinned to an exact latest version,
-  `revisionHistoryLimit: 0`, `sourceRepos` as an allowlist,
-  render-before-merge. Plus a full GitOps repo layout (catalog-driven
-  ApplicationSets over Argo CD's own cluster list) that applies **only** when
-  bootstrapping or when explicitly asked to refactor — an existing repo keeps
-  its own shape, unchallenged.
-- **`jsonnet-conventions`** — jsonnet in an Argo CD repo: extract only what is
-  big and genuinely shared (no library for a handful of lines), document every
-  exported function and constant, fail loudly at render time, `jsonnetfmt`.
-- **`helm-conventions`** — `values.yaml` `global`/`<component>` layout,
-  restricted security context, `templates/<component>/<kind>.yaml`,
-  per-component `ServiceAccount`, `helm-docs` annotations, `trivy config`
-  (`KSV-xxxx`) compliance, resources requests/limits (no `limits.cpu`).
-- **`docker-conventions`** — smallest possible runtime base image
-  (`scratch` / distroless first) to keep the CVE surface near zero, FHS paths
-  (`/usr/local/src/<app>`, `/usr/local/bin/`, `/etc/<app>/`,
-  `/var/lib/<app>/`), non-root `USER` with UID/GID 65532, `hadolint` plus
-  `trivy config` (`DS-xxxx`) with no self-authorised ignores, `.dockerignore`.
-- **`terraform-conventions`** — file layout with a mandatory `data.tf`
-  (every `data` block, nowhere else), `variables.tf` / `outputs.tf` /
-  `locals.tf`, resources by domain; typed and documented variables, exactly
-  pinned fully-qualified providers, `for_each` over `count`, secrets kept out
-  of the state (write-only args / `ephemeral`), `terraform test`,
-  `terraform-docs`, `trivy config` (`AVD-xxxx`), never apply without asking.
-- **`github-actions-conventions`** — `actionlint`, mandatory Trivy scanning,
-  multi-arch Rust builds on native runners (no QEMU), per-arch cache scoping.
-- **`renovate-conventions`** — on GitHub, Dependabot for everything it
-  supports and Renovate only for the rest (never both on one ecosystem);
-  never automerge; dependency dashboard always on.
-- **`kubernetes-operator-conventions`** — reconcile-path error handling
-  (always requeue, never `PermanentError`), Warning events, idempotency
-  (`409`/`404` as success), `ownerReference`/finalizer teardown, structured
-  logging (no secrets). Applies to kopf / controller-runtime / Operator SDK.
-- **`kopf-conventions`** — kopf-specific wiring: event posting
-  (`posting.enabled` vs `posting.loggers` — `TemporaryError` does **not**
-  auto-post), explicit `kopf.event` lifecycle events, cluster-scoped event
-  namespacing, status-based progress storage, `on.resume` rollouts, handler
-  argument injection, timers. Python/kopf operators only.
-- **`ollama-conventions`** — never recommend a local model from memory;
-  research current web benchmarks for the user's task first, match to
-  hardware/quant, cite the evidence, and pin an exact reproducible tag
-  (no `:latest`).
-
-These skills auto-trigger from file paths and topics. If you are about to
-touch a file matched by one of them and the skill hasn't loaded, invoke it
-explicitly before writing code.
+Detailed rules live in skills under `~/.claude/skills/`, which are listed with
+their own trigger conditions at the start of every session — no copy of that
+list belongs here, it only goes stale. They auto-trigger from file paths and
+topics, but if you are about to touch a file one of them covers and the skill
+hasn't loaded, invoke it explicitly before writing code.
 
 ## Git commits
 
