@@ -69,6 +69,12 @@ Write one when, and only when:
 **and**, on top of that, the answer to "why is it like this?" takes more than
 two sentences *and* doing the opposite tomorrow would be expensive.
 
+**When an ADR does carry a diagram, it is Mermaid** — the decision here is
+usually a shape, and two small diagrams (the option taken, the one rejected)
+argue it better than a page of prose. Never ASCII art, never a committed image:
+an ADR is immutable, so a diagram nobody can edit is one nobody can ever fix.
+See `diagram-conventions`.
+
 **Do not write one for anything that leaves the diagram unchanged**: an
 endpoint or a screen, a dependency bump, a refactor with no interface change, a
 naming or ergonomics choice, a default value, a config or file format, a CLI
