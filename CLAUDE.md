@@ -372,6 +372,17 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
   narrow escape hatch for operations that genuinely are not CRUD.
 - **`signal-handling-conventions`** — `SIGTERM`/`SIGINT`, graceful drain,
   idempotent units of work, for any server / worker / daemon.
+- **`systemd-conventions`** — the privileges a service actually runs with:
+  never `User=root`, a dedicated system account or `DynamicUser=`, the
+  sandboxing block every unit carries, writable paths via `StateDirectory=`,
+  secrets through `LoadCredential=`, `systemd-analyze security` as the gate;
+  plus cloud-init (`runcmd` is root, explicit `write_files` permissions, no
+  sudo for service accounts, no secrets in user-data).
+- **`system-user-conventions`** — a service account is not a person: one
+  dedicated system account per service, `nologin` shell, locked password, no
+  home under `/home`, no sudo and no root-equivalent group (`docker`,
+  `wheel`), created declaratively; the ownership modes that go with it, and
+  one account per human with key-only SSH.
 - **`project-metadata-conventions`** — derive author/repository fields from
   `git config`, never invent them.
 - **`pre-commit-conventions`** — never Docker-backed hooks (`language: docker`

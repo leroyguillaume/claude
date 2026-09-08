@@ -43,6 +43,9 @@ description: >-
   - or create the user in the builder stage and copy `/etc/passwd` and
     `/etc/group` over.
   Either way the final stage still ends with an explicit non-root `USER`.
+  The copied entry names `/usr/sbin/nologin`, a binary the final image does
+  not contain — harmless, since an image with no shell and no `sshd` has no
+  login path to refuse in the first place.
 - **Scan the built image in CI** (`trivy image` / `grype`) and fail the build
   on `HIGH`/`CRITICAL`. A skinny base is what makes that gate cheap enough to
   keep enabled.
@@ -74,8 +77,10 @@ description: >-
   - Any mutable state under `/var/lib/<appname>/`.
 - Create a dedicated non-root user and group **named after the app** (use a
   short, recognisable name if the project name is long or not a valid Linux
-  username), with **UID 65532 and GID 65532**, `chown` the app-owned paths,
-  and end the `Dockerfile` with a `USER` directive.
+  username), with **UID 65532 and GID 65532**, and end the `Dockerfile` with a
+  `USER` directive. The account's other properties — `nologin` shell, locked
+  password, no group it does not need — are `system-user-conventions`; the UID
+  is the one thing that differs here, and the next paragraph says why.
   Why 65532 and not 1000: UID/GID must be **> 10000** (Trivy `KSV-0020` /
   `KSV-0021`). Without user namespaces, a container UID *is* a host UID, and
   1000 is the first human account on virtually every Linux box — so a
@@ -93,12 +98,25 @@ description: >-
   # runtime stage
   RUN groupadd --system --gid 65532 myapp \
    && useradd  --system --uid 65532 --gid myapp \
-        --home /etc/myapp --shell /usr/sbin/nologin myapp
-  COPY --from=builder --chown=myapp:myapp \
+        --home /nonexistent --no-create-home --shell /usr/sbin/nologin myapp
+  COPY --from=builder \
        /usr/local/src/myapp/target/release/myapp /usr/local/bin/myapp
   USER myapp
   ENTRYPOINT ["/usr/local/bin/myapp"]
   ```
+- **`chown` only what the app writes — never the binary.** `COPY` without
+  `--chown` lands `root:root` `0755`, which is what an executable should be:
+  the process needs to *execute* it, not to own it, and a service that can
+  rewrite its own binary rewrites it once and is still there after every
+  restart. Give the app user only its state and cache paths, and prefer
+  `readOnlyRootFilesystem: true` at the orchestrator (see
+  `helm-conventions`) so the question stops arising.
+- **`HOME` points at nothing, or at the state directory — never at
+  `/etc/<appname>/`.** Config is root-owned and the service must not be able
+  to write it; pointing `HOME` there is how it ends up chowned to the app
+  "because the cache wasn't writable". Use `--home /nonexistent
+  --no-create-home` when the app writes no dotfiles, or `--home
+  /var/lib/<appname>` when it does.
 - Lint every `Dockerfile` with `hadolint` and add the `hadolint/hadolint`
   pre-commit hook.
 - **Fix every `hadolint` warning at the source.** A green run is the only
