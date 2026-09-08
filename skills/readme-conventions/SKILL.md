@@ -65,8 +65,8 @@ whether the project is what they're looking for.
 
 Not here: architecture diagrams, design trade-offs, tech-stack justification,
 benchmarks. Those go in `ARCHITECTURE.md` — link to it from the end of the
-description if there is one. (And when one is drawn there, it is Mermaid, never
-ASCII art or a committed image — see `diagram-conventions`.)
+description if there is one. (And when one is drawn there, it is Mermaid — see
+`diagram-conventions`.)
 
 ```markdown
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and the reasoning behind it.
