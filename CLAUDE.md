@@ -64,6 +64,48 @@ Rules:
 - When I ask for something that would require such a link, say what the proper
   reference is instead — a URL or a dependency — and use that.
 
+## A project given as inspiration stays out of the deliverable
+
+When I point you at another repository — mine or somebody else's — to show you
+how something is done, that project is **input to you, not part of what you
+build**. It exists on my disk and in my head; it does not exist for whoever
+reads this repo afterwards, and a reader who cannot open it gains nothing from
+being told it was consulted.
+
+So nothing you produce mentions it. Not in code, docs, comments, commit
+messages, PR descriptions, ADRs or issues. Never write:
+
+- **a path to it**, absolute or relative — a sibling checkout is the most
+  common form of the rule above, and the most tempting
+- **its name**, in prose or in an identifier: no "inspired by `foo`", no
+  "same approach as `bar`", no "ported from `baz`", no `// cf. foo/src/api.rs`
+- **a link to it**, even a working `https://` one, when it is only there to
+  credit where the idea came from
+- **its vocabulary as a tell** — codenames, service names, or in-jokes carried
+  over from a project that has nothing to do with this one
+
+Instead, write the thing as if it had always belonged here: state the
+convention it follows, the constraint it satisfies, or the reason it is shaped
+this way, on its own terms. A design worth borrowing can be justified without
+naming where it was borrowed from — and if it cannot, it is not understood
+well enough to ship.
+
+Three exceptions, and only these:
+
+- **A real dependency.** If the project ends up actually being consumed — a
+  package, a submodule, a chart or a module `source` — it is declared as a
+  pinned dependency, named where dependencies are named. That is a build
+  input, not a reference.
+- **A licence obligation.** Code copied under a licence keeps its attribution,
+  verbatim and wherever the licence requires it. Say so when it happens,
+  rather than letting me find it in review.
+- **A public upstream we conform to.** An RFC, a spec, an upstream project's
+  documented behaviour we must match — link that, it helps the reader.
+
+In what you say back to me, mention it as much as you like: "I followed the
+layout from `foo`" is useful in conversation. It just never lands in a
+committed file.
+
 ## Comments: rare, concise, precise when the code is weird
 
 **Add a comment only when it is genuinely necessary, and keep it short.** Two
