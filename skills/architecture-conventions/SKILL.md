@@ -13,7 +13,7 @@ description: >-
   SKIP when: writing install/run/test instructions (that is
   `readme-conventions`), or documenting dev setup, pre-commit or the CI
   pipeline (that is `contributing-conventions`).
-  Diagrams here are Mermaid, never ASCII art — load `diagram-conventions`
+  Diagrams here are Mermaid, inline in the file — load `diagram-conventions`
   before drawing one.
 ---
 
@@ -153,11 +153,13 @@ rather than filling it with boilerplate.
 
 ## Diagrams
 
-**Mermaid, inline in the file, always** — in a fenced ```mermaid block. Never
-ASCII art, never a committed `.png`/`.svg`, never an image hosted outside the
-repo. It renders on GitHub/GitLab, it diffs alongside the code it describes,
-and the next person to touch it can actually edit it. If you find yourself
-counting spaces to line up a `│`, that is the rule firing.
+**Mermaid, inline in the file** — in a fenced ```mermaid block. It renders on
+GitHub/GitLab, it diffs alongside the code it describes, and the next person to
+touch it can actually edit it. Never ASCII art in the file, and never an image
+hosted outside the repo. A component graph, a sequence, a state machine and an
+ER model all have a Mermaid type that fits; the escape hatch to a drawing or an
+image is for what Mermaid genuinely cannot draw, and `diagram-conventions` says
+when that is.
 
 A component graph plus one sequence diagram for the interesting flow covers
 most projects; one diagram showing the real mechanism beats five decorative
