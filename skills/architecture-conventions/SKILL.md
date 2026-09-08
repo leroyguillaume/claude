@@ -13,6 +13,8 @@ description: >-
   SKIP when: writing install/run/test instructions (that is
   `readme-conventions`), or documenting dev setup, pre-commit or the CI
   pipeline (that is `contributing-conventions`).
+  Diagrams here are Mermaid, never ASCII art — load `diagram-conventions`
+  before drawing one.
 ---
 
 # ARCHITECTURE conventions
@@ -151,15 +153,19 @@ rather than filling it with boilerplate.
 
 ## Diagrams
 
-- **Mermaid, inline in the file.** It renders on GitHub/GitLab, it diffs, and
-  it doesn't rot in a binary nobody can edit.
-- One diagram that shows the actual mechanism beats five decorative ones. A
-  component graph plus one sequence diagram for the interesting flow covers
-  most projects.
-- Never link an image hosted outside the repo — an external host is a dead
-  diagram waiting to happen.
-- Label the edges (protocol, direction, sync/async). An unlabelled arrow says
-  "these two things know about each other", which the reader had guessed.
+**Mermaid, inline in the file, always** — in a fenced ```mermaid block. Never
+ASCII art, never a committed `.png`/`.svg`, never an image hosted outside the
+repo. It renders on GitHub/GitLab, it diffs alongside the code it describes,
+and the next person to touch it can actually edit it. If you find yourself
+counting spaces to line up a `│`, that is the rule firing.
+
+A component graph plus one sequence diagram for the interesting flow covers
+most projects; one diagram showing the real mechanism beats five decorative
+ones. Label every edge with the protocol and direction — an unlabelled arrow
+says "these two things know about each other", which the reader had guessed.
+
+**Load `diagram-conventions` before drawing one**: which type answers which
+question, how to label and group, and how to keep the thing renderable.
 
 ## Links
 

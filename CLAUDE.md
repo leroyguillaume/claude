@@ -310,6 +310,9 @@ the kind of work (a YAML file, an HTTP handler, a long-running process):
 - **`adr-conventions`** — one immutable ADR per decision in
   `docs/adr/NNNN-title.md`, superseded rather than edited; when a change
   warrants one, and the split with `ARCHITECTURE.md`.
+- **`diagram-conventions`** — every diagram is Mermaid, inline in the file
+  that needs it; never ASCII art, never a committed or externally hosted
+  image. Which diagram type answers which question, and labelling the edges.
 - **`logging-conventions`** — liberal debug logs, structured key-value
   fields, level-controlled verbosity, standard logging library.
 - **`yaml-conventions`** — block style only, never flow style (`{...}` /
