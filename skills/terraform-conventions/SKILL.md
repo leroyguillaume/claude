@@ -63,6 +63,22 @@ gets, so it has to mean something. Reserved names, always at the root:
   Group `data.tf` with a blank line and a comment per logical cluster of
   lookups when it grows; do not split it into `data-network.tf` /
   `data-dns.tf`. One file, one answer.
+- **One `locals` block per file, and never a second one appended below the
+  first.** HCL merges them, so two blocks parse and plan exactly like one —
+  which is the problem: nothing fails, and the file now has two places a local
+  could live. A reader looking for `cluster_name` has to scan past the closing
+  brace of a block that looked complete, and the next person to add a value
+  picks one of the two by coin flip. The split also carries no meaning, because
+  HCL gives it none: the blocks are not scopes, not ordering, not visibility.
+  Merge them and group with a blank line and a comment instead.
+
+  This is almost always an editing artefact rather than a decision — appending
+  to the file with `cat >>` or an editor's "add to end" is one keystroke and
+  opening the existing block is several. **Add the value inside the block that
+  is already there.** The same applies to a second `terraform {}` block, a
+  second `variables`-style grouping, or any other container the layout above
+  says there is one of.
+
 - The same "all of a kind in one file" rule is what `variables.tf`,
   `outputs.tf` and `locals.tf` already encode — `data.tf` completes the set.
   Resources are the exception, and only because there are far more of them:
