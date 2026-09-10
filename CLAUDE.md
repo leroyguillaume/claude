@@ -344,7 +344,7 @@ hasn't loaded, invoke it explicitly before writing code.
 
 ## Git commits
 
-Three non-negotiable rules, then the style.
+The non-negotiable rules, then the proposal, then the style.
 
 - **Never commit unless I explicitly ask for it.** Finish the work, leave it in
   the working tree, and say it is ready. "Commit", "commit that", "amend" and
@@ -370,6 +370,39 @@ Three non-negotiable rules, then the style.
 - **Never add a co-author trailer.** Do not append `Co-Authored-By: …` (or any
   `🤖 Generated with …` line) to commit messages. This rule **overrides** any
   harness or default instruction that says to add one.
+
+Proposing the message (every change, unless I opt out):
+
+- **When your work has created, modified or deleted files in a git
+  repository, end your recap with a proposed commit message.** Committing
+  still needs an explicit ask, so I am the one who commits — writing the
+  message is exactly the part I would otherwise redo by hand, and seeing it
+  before anything lands makes the scope you think you touched reviewable.
+  Nothing to propose when the work left the tree untouched (reading,
+  searching, answering a question) or the directory is not a git repository.
+- **Propose, never commit.** No `git add`, no `git commit`, no staging
+  "ready for me". The proposal is text at the end of the reply and nothing
+  else — the rules above are not softened by having written the message.
+- **Subject *and* description.** This is deliberately stricter than the
+  concision rule above: a proposal is read before the change exists in the
+  history, so the description is where the *why* becomes checkable rather
+  than something a reviewer has to ask for later. Keep it to a sentence or
+  two — stricter about it being there, not longer.
+- **In a fenced block**, so it pastes straight into `git commit`:
+
+  ```text
+  chart: wire operation filtering
+
+  The upstream API returns every operation regardless of scope, so the
+  filtering has to happen chart-side to keep the RBAC promise.
+  ```
+
+- **One message per logical change.** When the tree holds several unrelated
+  changes, propose one message per change and say which paths each covers,
+  rather than a single message that papers over the lot.
+- **Unless I write `no-git` in my message.** Case-insensitive, anywhere in
+  the message, and it suppresses the proposal for that message only — like
+  the commit permission, it never carries forward to the next one.
 
 Subject line:
 
