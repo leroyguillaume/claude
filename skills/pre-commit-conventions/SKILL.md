@@ -3,8 +3,9 @@ name: pre-commit-conventions
 description: >-
   pre-commit conventions — never use Docker-backed hooks, always run
   the linter binary directly (`language: system` / native pre-commit language),
-  always ship a `yamllint` hook in a repo containing YAML, never run a test
-  suite from a hook.
+  always ship a `yamllint` hook in a repo containing YAML, always ship a
+  `commit-msg` hook rejecting `Co-Authored-By` / "Generated with" lines,
+  never run a test suite from a hook.
   TRIGGER when: creating or editing `.pre-commit-config.yaml`; adding, replacing
   or bumping a pre-commit hook; a hook repo only ships a `docker` /
   `docker_image` variant; setting up linting for a repo containing YAML; wiring
@@ -114,6 +115,44 @@ Two traps worth knowing:
   on a multi-document manifest) needs a per-rule `ignore:`, not a global one —
   a top-level `ignore:` drops the file from *every* rule.
 
+## Always reject co-authors in commit messages
+
+**Every repo gets a `commit-msg` hook that fails on any `Co-Authored-By:`
+trailer or any `Generated with …` line**, whoever or whatever they name. A
+commit has one author; a line that slips through lands in a client's history
+for good. The hook makes the rule mechanical instead of a matter of attention.
+
+```yaml
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+repos:
+  - repo: local
+    hooks:
+      - id: no-co-authors
+        name: no co-authors in commit message
+        entry: '^\s*co-authored-by:|\bgenerated with\b'
+        language: pygrep
+        args:
+          - --ignore-case
+        stages:
+          - commit-msg
+```
+
+Traps:
+
+- **`default_install_hook_types` is mandatory.** A plain `pre-commit install`
+  only installs the `pre-commit` hook type; without this key the
+  `commit-msg` hook is declared and never runs. In a repo that already had
+  pre-commit installed, re-run `pre-commit install` once.
+- **`\b` in front of `generated` is deliberate**: without it, a legitimate
+  `docs regenerated with helm-docs` would be rejected.
+- **Never use `--no-verify` to get a commit through this hook.** A failure
+  means the message is wrong: rewrite it.
+- `pre-commit run --all-files` (and so CI) skips `commit-msg` hooks — the
+  hook guards local commits only.
+
 ## Never run tests from a hook
 
 **No hook runs a test suite.** Not `cargo test`, not `pytest`, not `vitest`,
@@ -151,7 +190,9 @@ analysis, they stay in pre-commit.
 - **Pin every `rev`** to a tag; never `master`/`main`.
 - **Local hooks always set `language: system`** plus either `types:`/`files:`
   or `pass_filenames: false` — an unfiltered local hook runs on every file in
-  the repo.
+  the repo. The exception is a pure regex check, which uses `language:
+  pygrep`; a `commit-msg`-only hook needs no filter, it is only ever handed
+  the message file.
 - **YAML block style only** in `.pre-commit-config.yaml`: write `types:` /
   `args:` as a list of `-` items, never `[shell]` / `[--fix]`. See
   `yaml-conventions`.
