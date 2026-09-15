@@ -167,6 +167,30 @@ runtime with no clue pointing back here.
   render must be a pure function of the repository and the extVars, or the
   offline render check stops matching what Argo CD produces.
 
+## Cloud-specific shapes: a function per provider, picked by the cluster
+
+When the same resource takes a different shape per cloud or provider (GKE vs
+AKS, GCS vs Azure Storage), **never branch on it inside a shared manifest** —
+no `if std.objectHas(config, 'gcsBucket') then … else …`, no assert that
+exactly one of two provider keys is set. A shared app's `resources/` stays
+provider-agnostic.
+
+Instead:
+
+- Write **one function per provider** in a library, named after the provider
+  (`promptLogs.gcp(bucket)`, `promptLogs.azure(account, fileSystem)`), each
+  taking exactly the arguments that provider needs — no optional parameters
+  covering the other one.
+- **Call it from the cluster's own jsonnet**
+  (`clusters/<cluster>/<app>/resources/<thing>.jsonnet`). The cluster knows its
+  cloud, so the choice is made where it is obvious, in one line, and the
+  rendered shape can be read off the call site.
+
+The library earns its place here from the invariant the constructors share
+(a resource name another manifest refers to, the key spelling a binary reads),
+not from line count, so the "no library for a few lines" rule above does not
+apply.
+
 ## Layout and naming
 
 - In a repo you are laying out, libraries live in
