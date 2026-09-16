@@ -30,13 +30,15 @@ gets, so it has to mean something. Reserved names, always at the root:
 
 | File | Holds |
 | --- | --- |
-| `terraform.tf` | the `terraform {}` block — `required_version`, `required_providers` — and the `provider` blocks |
-| `backend.tf` | the `backend` / `cloud` block, when it is not in `terraform.tf` |
+| `terraform.tf` | the `terraform {}` block — `required_version`, `required_providers` — and every `provider` block |
+| `backend.tf` | the `backend` / `cloud` block, always here and never in `terraform.tf` — in its own `terraform {}` block |
 | `variables.tf` | every `variable` block |
 | `outputs.tf` | every `output` block |
 | `locals.tf` | every `locals` block |
 | **`data.tf`** | **every `data` block** |
-| `<component>.tf` | every resource that exists for one component, whatever its type: `toto.tf`, `billing.tf`, `network.tf`, `gke.tf`, … |
+| `<component>.tf` | every resource that exists for one component, whatever its type: `toto.tf`, `billing.tf`; for infrastructure no app owns, the technical building block: `network.tf`, `gke.tf` |
+| `terraform.tfvars` | the value of every variable the stack declares |
+| `main.tf` | only in a stack whose sole content is one `module` call — never alongside component files |
 
 - **Every `data` block lives in `data.tf`. No exceptions.** Not next to the
   resource that consumes it, not "just this one because it's only used here".
@@ -85,9 +87,9 @@ gets, so it has to mean something. Reserved names, always at the root:
   Resources are the exception: they group by component.
 - **Every resource created for a component lives in `<component>.tf`, named
   after the component — never in a file named after a resource type.** The
-  app `toto` needs a secret, a database, a service account and the IAM
-  bindings that tie them together: all of it goes in `toto.tf`. Not
-  `secrets.tf` + `cloudsql.tf` + `iam.tf`, where adding, reviewing or
+  app `toto` needs a secret, a database instance, a database, a service
+  account and the IAM bindings that tie them together: all of it goes in
+  `toto.tf`. Not `secrets.tf` + `cloudsql.tf` + `iam.tf`, where adding, reviewing or
   deleting one app means touching three files and removing it cleanly means
   hoping you found every piece.
   ```hcl
@@ -110,16 +112,30 @@ gets, so it has to mean something. Reserved names, always at the root:
     member    = google_service_account.toto.member
   }
 
+  resource "google_sql_database_instance" "toto" {
+    name             = "toto"
+    database_version = var.toto_database_version
+    region           = var.region
+    settings {
+      tier = var.toto_database_tier
+    }
+  }
+
   resource "google_sql_database" "toto" {
     name     = "toto"
-    instance = google_sql_database_instance.main.name
+    instance = google_sql_database_instance.toto.name
   }
   ```
-  - A resource shared by several components is a component of its own: the
-    Cloud SQL instance hosting everyone's databases lives in `postgres.tf`,
-    the VPC in `network.tf`, the cluster in `gke.tf`. What a consumer adds
-    *on* it — its database, its user, its IAM binding on the shared bucket —
-    lives in the consumer's file.
+  - **The file is named after the component a resource is created for,
+    never after what the resource is.** The database instance created for
+    `toto` lives in `toto.tf`, not in `postgres.tf` or `cloudsql.tf` — a
+    technology is not a component. When another component uses something
+    `toto` created (a database on its instance, an IAM binding on its
+    bucket), that addition lives in the consumer's file.
+  - **Only infrastructure created for no app in particular is named after
+    its technical building block**: the VPC, its subnets and its routers in
+    `network.tf`, the cluster in `gke.tf`. The moment a resource exists for a
+    component, the component wins.
   - When the same component shape repeats a third time, extract a module in
     `modules/<name>/`; each call still gets its own `<component>.tf` holding
     the `module` block and whatever is specific to that component.
@@ -127,6 +143,12 @@ gets, so it has to mean something. Reserved names, always at the root:
   trenchcoat. Split it by component, never by resource type.
 - Modules live in `modules/<name>/` and repeat the exact same layout
   internally, `data.tf` included.
+- **A stack that only calls a module puts that call in `main.tf`.** There is
+  no component to name the file after — the module is the whole stack — so
+  `main.tf` is the honest name. The reserved files (`terraform.tf`,
+  `variables.tf`, `outputs.tf`, `terraform.tfvars`, …) still apply. The
+  moment the stack declares a resource of its own, or a second module call,
+  `main.tf` is gone: every block moves to its `<component>.tf`.
 
 ## Naming
 
@@ -151,6 +173,12 @@ gets, so it has to mean something. Reserved names, always at the root:
   - **Several self-explanatory resources of one type: all of them
     `<component>_<role>`**, none left bare — `toto_primary` and
     `toto_replica`, never `toto` plus `toto_replica`.
+- **A `module` block follows the same rule, with the module's name in place
+  of the component's.** One unambiguous call of `modules/postgres` is
+  `module "postgres"`. When the name alone does not say which call it is —
+  several calls of the same module, or a generic module such as `secret` —
+  every call is `<module>_<role>`: `module "postgres_toto"` and
+  `module "postgres_billing"`, never `postgres` plus `postgres_billing`.
 - `this` only inside a module, where the module is the component. Never label
   by index or by environment.
 - Name the *thing*, not its shape: `data.google_project.this`, not
@@ -169,11 +197,18 @@ gets, so it has to mean something. Reserved names, always at the root:
   enum, a reserved key, a CIDR). Fail at plan, not at the API's 400.
 - `sensitive = true` on anything credential-shaped — and prefer not taking it
   as a variable at all (see Secrets).
-- Defaults are fine, and good, when a value is genuinely stack-specific and
-  stable (a cluster name, a region). Leave a variable without a default when
-  omitting it should be an error.
-- `terraform.tfvars` carries the per-stack values, commented; secrets never
-  go in it.
+- **Prefer a variable to a literal, as far as it goes.** A project ID, a
+  region, a machine type, a version, a CIDR, a replica count, a domain — any
+  value an operator could plausibly want to read or change without reading
+  the resource code is a variable. Literals are for what is the code's own
+  identity (a component's name, a role string the API fixes) and nothing
+  else. Constructed values stay `locals`, built from variables.
+- **A root stack sets every variable's value in `terraform.tfvars`**, one
+  file at the stack root, commented where the value is not self-evident. It
+  is the stack's configuration at a glance; a value hidden in a `default`
+  makes the reader open `variables.tf` to learn what is actually deployed.
+  Defaults belong in modules, where they describe the common case for every
+  caller. Secrets never go in `terraform.tfvars` (see Secrets).
 
 ## Outputs
 
@@ -203,7 +238,8 @@ gets, so it has to mean something. Reserved names, always at the root:
   middle element of a list re-creates everything after it. `for_each` keys by
   a stable string. Use `count` only for a genuine on/off toggle
   (`count = var.enabled ? 1 : 0`).
-- Never hardcode a value that varies between stacks — variable or local.
+- Never hardcode a value an operator could want to change — variable, with its
+  value in `terraform.tfvars` (see Variables).
 - Use `locals` for anything constructed more than once (a resource-name format
   string, a principal, a label set), and comment the construction.
 - **Use `moved` blocks** to rename or restructure, never `state mv` by hand and
@@ -293,6 +329,10 @@ trivy config --exit-code 1 .
 
 **Never:**
 
+- Never put the `backend` / `cloud` block anywhere but `backend.tf`, or a
+  `provider` block anywhere but `terraform.tf`.
+- Never name a file after a technology (`postgres.tf`, `cloudsql.tf`) when
+  its resources exist for a component.
 - Never put a `data` block anywhere but `data.tf`, and never split `data.tf`
   into per-component data files.
 - Never spread one component's resources across files by resource type
@@ -300,7 +340,13 @@ trivy config --exit-code 1 .
 - Never label a component's resource anything but `<component>` (one
   self-explanatory resource of its type) or `<component>_<role>` (an
   ambiguous type such as a secret, or several of a type).
+- Never label a `module` block anything but `<module>` (one unambiguous call)
+  or `<module>_<role>` (a generic module, or several calls of one).
+- Never use `main.tf` in a stack that holds anything besides a single module
+  call.
 - Never put a `variable`, `output` or `locals` block in a component file.
+- Never leave a root stack's variable value in a `default` rather than
+  `terraform.tfvars`, and never write a literal where a variable fits.
 - Never ship a variable or output without a `description`, or a variable
   without a `type`.
 - Never use `any` where a concrete type can be written.
