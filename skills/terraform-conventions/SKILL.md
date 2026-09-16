@@ -2,8 +2,9 @@
 name: terraform-conventions
 description: >-
   Terraform / OpenTofu conventions (file layout with a mandatory
-  `data.tf`, naming, typed and documented variables, pinned providers, secrets
-  out of the state, `terraform test`, pre-commit hooks, trivy `AVD-xxxx`).
+  `data.tf` and one file per component, naming, typed and documented
+  variables, pinned providers, secrets out of the state, `terraform test`,
+  pre-commit hooks, trivy `AVD-xxxx`).
   TRIGGER when: creating or editing any `.tf`, `.tfvars`, `.tftest.hcl`, or
   `.terraform.lock.hcl` file; adding a resource, data source, variable, output,
   local, module or provider; setting up pre-commit or CI for a stack that
@@ -35,14 +36,14 @@ gets, so it has to mean something. Reserved names, always at the root:
 | `outputs.tf` | every `output` block |
 | `locals.tf` | every `locals` block |
 | **`data.tf`** | **every `data` block** |
-| `<domain>.tf` | the resources for one domain: `network.tf`, `gke.tf`, `dns.tf`, `cloudsql.tf`, … |
+| `<component>.tf` | every resource that exists for one component, whatever its type: `toto.tf`, `billing.tf`, `network.tf`, `gke.tf`, … |
 
 - **Every `data` block lives in `data.tf`. No exceptions.** Not next to the
   resource that consumes it, not "just this one because it's only used here".
   Data sources are the stack's inputs from the outside world — the things it
   reads but does not own — and that list is the first thing anyone auditing a
   stack wants: what does this depend on that it did not create? Scattered
-  across eight domain files, that question takes a `grep`; in `data.tf` it
+  across eight component files, that question takes a `grep`; in `data.tf` it
   takes a `cat`. It also makes the blast radius of an external change
   (a renamed zone, a subnet moved to another project) legible in one place,
   and it stops the same lookup being declared twice under two names in two
@@ -81,10 +82,49 @@ gets, so it has to mean something. Reserved names, always at the root:
 
 - The same "all of a kind in one file" rule is what `variables.tf`,
   `outputs.tf` and `locals.tf` already encode — `data.tf` completes the set.
-  Resources are the exception, and only because there are far more of them:
-  they group by domain.
-- A file that outgrows a screen or two is usually two domains wearing a
-  trenchcoat. Split it by domain, never by resource type.
+  Resources are the exception: they group by component.
+- **Every resource created for a component lives in `<component>.tf`, named
+  after the component — never in a file named after a resource type.** The
+  app `toto` needs a secret, a database, a service account and the IAM
+  bindings that tie them together: all of it goes in `toto.tf`. Not
+  `secrets.tf` + `cloudsql.tf` + `iam.tf`, where adding, reviewing or
+  deleting one app means touching three files and removing it cleanly means
+  hoping you found every piece.
+  ```hcl
+  # toto.tf
+  resource "google_service_account" "toto" {
+    account_id   = "toto"
+    display_name = "toto"
+  }
+
+  resource "google_secret_manager_secret" "toto_api_key" {
+    secret_id = "toto-api-key"
+    replication {
+      auto {}
+    }
+  }
+
+  resource "google_secret_manager_secret_iam_member" "toto_api_key" {
+    secret_id = google_secret_manager_secret.toto_api_key.id
+    role      = "roles/secretmanager.secretAccessor"
+    member    = google_service_account.toto.member
+  }
+
+  resource "google_sql_database" "toto" {
+    name     = "toto"
+    instance = google_sql_database_instance.main.name
+  }
+  ```
+  - A resource shared by several components is a component of its own: the
+    Cloud SQL instance hosting everyone's databases lives in `postgres.tf`,
+    the VPC in `network.tf`, the cluster in `gke.tf`. What a consumer adds
+    *on* it — its database, its user, its IAM binding on the shared bucket —
+    lives in the consumer's file.
+  - When the same component shape repeats a third time, extract a module in
+    `modules/<name>/`; each call still gets its own `<component>.tf` holding
+    the `module` block and whatever is specific to that component.
+- A file that outgrows a screen or two is usually two components wearing a
+  trenchcoat. Split it by component, never by resource type.
 - Modules live in `modules/<name>/` and repeat the exact same layout
   internally, `data.tf` included.
 
@@ -92,11 +132,27 @@ gets, so it has to mean something. Reserved names, always at the root:
 
 - `snake_case` for everything: files, variables, outputs, locals, resource and
   data labels.
-- **Never repeat the type in the label.** `resource "google_compute_subnetwork"
-  "nodes"`, not `"nodes_subnetwork"` — the reference already reads
-  `google_compute_subnetwork.nodes`.
-- Label a singleton `this`. Label the rest by role (`nodes`, `platform`,
-  `controlplane`), never by index or by environment.
+- **Never repeat the type in the label.** `resource "google_sql_database"
+  "toto"`, not `"toto_database"` — the reference already reads
+  `google_sql_database.toto`.
+- **A resource is labelled after the component it belongs to.** Whether the
+  label stops there depends on whether the type already says what the
+  resource is:
+  - **A self-explanatory type, one of it in the component: the label is
+    exactly the component name.** A database, a Mongo cluster, a service
+    account, a bucket — `google_sql_database.toto` and
+    `google_service_account.toto` say everything.
+  - **An ambiguous type: always `<component>_<role>`, even when there is only
+    one.** `google_secret_manager_secret.toto` says nothing about what it
+    holds; `google_secret_manager_secret.toto_api_key` does. Same for config
+    maps, random values, generic IAM bindings — anything whose type names a
+    container rather than its content. A binding on a named resource takes
+    that resource's label (`google_secret_manager_secret_iam_member.toto_api_key`).
+  - **Several self-explanatory resources of one type: all of them
+    `<component>_<role>`**, none left bare — `toto_primary` and
+    `toto_replica`, never `toto` plus `toto_replica`.
+- `this` only inside a module, where the module is the component. Never label
+  by index or by environment.
 - Name the *thing*, not its shape: `data.google_project.this`, not
   `data.google_project.project_data`.
 
@@ -238,8 +294,13 @@ trivy config --exit-code 1 .
 **Never:**
 
 - Never put a `data` block anywhere but `data.tf`, and never split `data.tf`
-  into per-domain data files.
-- Never put a `variable`, `output` or `locals` block in a domain file.
+  into per-component data files.
+- Never spread one component's resources across files by resource type
+  (`iam.tf`, `secrets.tf`, `databases.tf`) — they all go in `<component>.tf`.
+- Never label a component's resource anything but `<component>` (one
+  self-explanatory resource of its type) or `<component>_<role>` (an
+  ambiguous type such as a secret, or several of a type).
+- Never put a `variable`, `output` or `locals` block in a component file.
 - Never ship a variable or output without a `description`, or a variable
   without a `type`.
 - Never use `any` where a concrete type can be written.
