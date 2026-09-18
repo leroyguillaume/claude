@@ -84,7 +84,8 @@ apps/
 clusters/
   README.md                      # the one list of clusters
   _sample/                       # onboarding reference, rendered like a cluster
-  <cluster>/README.md            # the cluster as a whole: access, bootstrap, landing zone
+  <cluster>/README.md            # the cluster as a whole: access, landing zone
+  <cluster>/BOOTSTRAP.md         # its full bootstrap, with its real names
   <cluster>/<cluster>.yaml       # cluster-level values, under one `config:` root
   <cluster>/<app>/README.md      # what this app does differently here — every app
   <cluster>/<app>/<app>.yaml     # per-cluster Helm value deltas
@@ -116,7 +117,7 @@ first: this layout must stay true without an LLM.
 | `apps/` | what the four top-level files do; the **one** list of apps, a line each on what it *is* | versions, namespaces — the catalog's |
 | `apps/<app>/` | what the app does, what its defaults and `resources/` hold | which clusters run it |
 | `clusters/` | the **one** list of clusters, where each runs, its infra repo | per-cluster details |
-| `clusters/<cluster>/` | the cluster as a whole: access, its full bootstrap, secret backend, DNS, TLS, databases, network | its apps, its disabled apps |
+| `clusters/<cluster>/` | the cluster as a whole: access, secret backend, DNS, TLS, databases, network | its apps, its disabled apps |
 | `clusters/<cluster>/<app>/` | what this app does differently here, and why | the defaults, restated |
 | `lib/<bucket>/` | what the libraries build, who calls them | the overall design |
 
@@ -127,9 +128,10 @@ first: this layout must stay true without an LLM.
 - **Point with a pattern, never a list**: "what a cluster does differently is in
   `clusters/<cluster>/<app>/README.md`". Adding a cluster touches no app README;
   adding an app touches no cluster README.
-- **Each cluster's bootstrap lives whole in its own README**, with its real
-  names — it is that cluster's procedure and changes with it. Why a step exists
-  at all goes once in `ARCHITECTURE.md`.
+- **Each cluster's bootstrap lives whole in `clusters/<cluster>/BOOTSTRAP.md`**,
+  with its real names — it is that cluster's procedure and changes with it, and
+  out of the README it keeps both files readable. Why a step exists at all goes
+  once in `ARCHITECTURE.md`.
 - **No deployment state**: never whether a stack is applied or an app synced.
 - **A root `lib/README.md` only if the validator allows a file there**;
   otherwise `ARCHITECTURE.md`'s bucket table is the index.
