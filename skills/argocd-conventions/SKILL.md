@@ -83,7 +83,7 @@ apps/
   <app>/resources/*.jsonnet      # default extra manifests
 clusters/
   README.md                      # the one list of clusters
-  _sample/                       # onboarding reference, rendered like a cluster
+  _sample/_sample.yaml           # onboarding reference, rendered like a cluster — nothing else
   <cluster>/README.md            # the cluster as a whole: access, landing zone
   <cluster>/BOOTSTRAP.md         # its full bootstrap, with its real names
   <cluster>/<cluster>.yaml       # cluster-level values, under one `config:` root
@@ -121,10 +121,11 @@ first: this layout must stay true without an LLM.
 | `clusters/<cluster>/<app>/` | what this app does differently here, and why | the defaults, restated |
 | `lib/<bucket>/` | what the libraries build, who calls them | the overall design |
 
+- **`_sample/` gets none of these**: it is not a cluster, and holds its values
+  file only — no README, no `BOOTSTRAP.md`, no per-app directory.
 - **Every catalog app gets its per-cluster README**, even with no override (one
   line saying so) and even disabled (say so first, and why — the label stays the
-  source of truth). Harmless to Argo CD: the per-cluster source reads only
-  `resources/*`, and directory sources skip `.md`.
+  source of truth). Argo CD ignores them: directory sources skip `.md`.
 - **Point with a pattern, never a list**: "what a cluster does differently is in
   `clusters/<cluster>/<app>/README.md`". Adding a cluster touches no app README;
   adding an app touches no cluster README.
@@ -135,8 +136,7 @@ first: this layout must stay true without an LLM.
 - **No deployment state**: never whether a stack is applied or an app synced.
 - **A root `lib/README.md` only if the validator allows a file there**;
   otherwise `ARCHITECTURE.md`'s bucket table is the index.
-- **Comments pointing at a README section move with it** — grep for "see the
-  README" after a split.
+- **Comments pointing at a README section move with it.**
 
 ## The catalog
 
