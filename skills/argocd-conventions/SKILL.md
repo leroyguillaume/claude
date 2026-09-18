@@ -12,7 +12,8 @@ description: >-
   `AppProject`, or any file in a GitOps/deployment repository that Argo CD
   reads; adding an app or a cluster to such a repo; bumping a chart version;
   user asks about Argo CD, ApplicationSets, GitOps layout, chart sources, sync
-  policy, or sync waves.
+  policy, or sync waves; writing or restructuring the READMEs of such a
+  repo.
   SKIP when: authoring the Helm chart itself (that is `helm-conventions`), or
   working on Kubernetes manifests with no Argo CD involvement.
 ---
@@ -46,7 +47,9 @@ the refactor they will ask for it.
 a single object rather than of the repository: `revisionHistoryLimit: 0`, OCI
 chart references, exact version pins resolved from the actual latest, no globs
 in `sourceRepos`, `RespectIgnoreDifferences` beside an `ignoreDifferences`,
-retry rather than cross-app sync waves. No automated sync belongs there too,
+retry rather than cross-app sync waves, and the READMEs (see
+[READMEs](#readmes) — in another layout, its per-app and per-environment
+directories get the same treatment). No automated sync belongs there too,
 with the one exception noted where the rule is written: a repo whose model
 *is* automated sync gets consistency instead, because a single app without it
 silently never deploys. Apply those to what you write, in the
@@ -70,18 +73,24 @@ is then a registration, not a sweep through every app.
 
 ```
 apps/
+  README.md                      # the four files below, and the one list of apps
   root.yaml                      # bootstrap Application, applied once by hand
   catalog.libsonnet              # what each app IS — chart, namespace, options
   appsets.jsonnet                # one ApplicationSet per catalog entry
   projects.jsonnet               # the AppProject, derived from the catalog
+  <app>/README.md                # what the app does, on every cluster
   <app>/<app>.yaml               # default Helm values, every cluster
   <app>/resources/*.jsonnet      # default extra manifests
 clusters/
+  README.md                      # the one list of clusters
   _sample/                       # onboarding reference, rendered like a cluster
+  <cluster>/README.md            # the cluster as a whole: access, bootstrap, landing zone
   <cluster>/<cluster>.yaml       # cluster-level values, under one `config:` root
+  <cluster>/<app>/README.md      # what this app does differently here — every app
   <cluster>/<app>/<app>.yaml     # per-cluster Helm value deltas
   <cluster>/<app>/resources/*.jsonnet
 lib/                             # shared jsonnet libraries
+  <bucket>/README.md             # what the libraries in it build, and for whom
 rendered/                        # `make render` output, reviewed not applied
 ```
 
@@ -95,6 +104,37 @@ Three layers, and the boundary between them is what keeps the repo readable:
 
 **A generic ApplicationSet template lives in `lib/`, not copy-pasted per app.**
 One app is one catalog entry, not one hand-written `ApplicationSet`.
+
+## READMEs
+
+**Every app, cluster and (cluster, app) directory has a `README.md`**, so a fact
+sits next to the config that produces it. Load `documentation-conventions`
+first: this layout must stay true without an LLM.
+
+| README | Says | Never says |
+| --- | --- | --- |
+| `apps/` | what the four top-level files do; the **one** list of apps, a line each on what it *is* | versions, namespaces — the catalog's |
+| `apps/<app>/` | what the app does, what its defaults and `resources/` hold | which clusters run it |
+| `clusters/` | the **one** list of clusters, where each runs, its infra repo | per-cluster details |
+| `clusters/<cluster>/` | the cluster as a whole: access, its full bootstrap, secret backend, DNS, TLS, databases, network | its apps, its disabled apps |
+| `clusters/<cluster>/<app>/` | what this app does differently here, and why | the defaults, restated |
+| `lib/<bucket>/` | what the libraries build, who calls them | the overall design |
+
+- **Every catalog app gets its per-cluster README**, even with no override (one
+  line saying so) and even disabled (say so first, and why — the label stays the
+  source of truth). Harmless to Argo CD: the per-cluster source reads only
+  `resources/*`, and directory sources skip `.md`.
+- **Point with a pattern, never a list**: "what a cluster does differently is in
+  `clusters/<cluster>/<app>/README.md`". Adding a cluster touches no app README;
+  adding an app touches no cluster README.
+- **Each cluster's bootstrap lives whole in its own README**, with its real
+  names — it is that cluster's procedure and changes with it. Why a step exists
+  at all goes once in `ARCHITECTURE.md`.
+- **No deployment state**: never whether a stack is applied or an app synced.
+- **A root `lib/README.md` only if the validator allows a file there**;
+  otherwise `ARCHITECTURE.md`'s bucket table is the index.
+- **Comments pointing at a README section move with it** — grep for "see the
+  README" after a split.
 
 ## The catalog
 
@@ -377,3 +417,8 @@ expression nothing resolves.
 - Never add an `automated` sync block — nor reach for it to work around an app
   somebody keeps forgetting to sync.
 - Never restate a default in a cluster file just to be explicit.
+- Never leave an app or a cluster directory without its `README.md`, and never
+  skip a per-cluster app README because the app has no override or is disabled.
+- Never list clusters in an app README, or apps in a cluster README — link the
+  pattern, and keep the one list of each in `apps/README.md` and
+  `clusters/README.md`.
