@@ -81,9 +81,12 @@ argument) in a procedure.
 global rule on present-tense docs. State is the extreme case of a fact nobody
 will remember to update.
 
-**Inventories only next to what they list.** A table of the files in a directory
-belongs in that directory's README — the person adding a file is standing right
-there. An inventory of something that lives elsewhere does not.
+**No inventories of files.** A README does not list the files beside it, nor
+what each one holds: the person adding or changing a file edits that file, not
+the README next to it, and a "what it holds" column is a summary of the file's
+own header. What a file does belongs in its header comment. A README says what
+the directory is *for*, and names a file only where the prose needs it — the
+one that is somewhere a reader would not look, the one a procedure edits.
 
 **Similar is not the same.** Before merging near-identical text from several
 places, ask whether it changes *together*. A procedure that belongs to one

@@ -115,7 +115,7 @@ first: this layout must stay true without an LLM.
 | README | Says | Never says |
 | --- | --- | --- |
 | `apps/` | what the four top-level files do; the **one** list of apps, a line each on what it *is* | versions, namespaces — the catalog's |
-| `apps/<app>/` | what the app does, what its defaults and `resources/` hold | which clusters run it |
+| `apps/<app>/` | what the app does, and what is unusual about how it is deployed | which clusters run it, an inventory of its files |
 | `clusters/` | the **one** list of clusters, where each runs, its infra repo | per-cluster details |
 | `clusters/<cluster>/` | the cluster as a whole: access, secret backend, DNS, TLS, databases, network | its apps, its disabled apps |
 | `clusters/<cluster>/<app>/` | what this app does differently here, and why | the defaults, restated |
