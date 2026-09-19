@@ -15,9 +15,9 @@ description: >-
 # Jsonnet conventions (Argo CD)
 
 For the jsonnet an Argo CD repository renders — `resources/` manifests and the
-libraries they import. The surrounding layout is in
-`argocd-layout-conventions`, and the same scoping applies: **in a repository already laid out some other way,
-follow its layout** — where its jsonnet lives, how it names things — and do
+libraries they import. The surrounding layout is THEREALM ALS (see
+`argocd-conventions`), and the same scoping applies: **in a repository already
+laid out some other way, follow its layout** — where its jsonnet lives, how it names things — and do
 not challenge it. The rules below about *what the jsonnet itself looks like*
 apply either way.
 
@@ -182,7 +182,7 @@ Instead:
   taking exactly the arguments that provider needs — no optional parameters
   covering the other one.
 - **Call it from the cluster's own jsonnet**
-  (`clusters/<cluster>/<app>/resources/<thing>.jsonnet`). The cluster knows its
+  (`clusters/<cluster>/<project>/<app>/resources/<thing>.jsonnet`). The cluster knows its
   cloud, so the choice is made where it is obvious, in one line, and the
   rendered shape can be read off the call site.
 

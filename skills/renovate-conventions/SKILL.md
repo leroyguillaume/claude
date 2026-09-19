@@ -247,7 +247,7 @@ else's format is unreadable six months later:
       // Chart versions in the app catalog:
       //     version: '1.2.3',  // renovate: datasource=docker depName=…
       customType: "regex",
-      managerFilePatterns: ["/^apps/catalog\\.libsonnet$/"],
+      managerFilePatterns: ["/^apps/[^/]+/catalog\\.libsonnet$/"],
       matchStrings: ["datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+version: '(?<currentValue>[^']+)'"],
       versioningTemplate: "semver",
     },
