@@ -1,160 +1,30 @@
 ---
 name: argocd-conventions
 description: >-
-  Argo CD GitOps repository conventions — the repository shape
-  (catalog-driven ApplicationSets over Argo CD's own cluster list, three
-  values layers) applies only when bootstrapping or when explicitly asked to
-  refactor; in an existing repo, follow the shape that is already there. The
-  object-level rules always apply: OCI chart references pinned to an exact
-  latest version, `revisionHistoryLimit: 0` everywhere, AppProject
-  `sourceRepos` as an allowlist.
+  Argo CD object conventions, true in any GitOps repository whatever its
+  layout — OCI chart references pinned to an exact latest version,
+  `revisionHistoryLimit: 0` everywhere, no automated sync, retry rather than
+  cross-app sync waves, AppProject `sourceRepos` as an allowlist, and the
+  ApplicationSet generator traps. The repository shape itself is
+  `argocd-layout-conventions`.
   TRIGGER when: creating or editing an `Application`, `ApplicationSet`,
   `AppProject`, or any file in a GitOps/deployment repository that Argo CD
-  reads; adding an app or a cluster to such a repo; bumping a chart version;
-  user asks about Argo CD, ApplicationSets, GitOps layout, chart sources, sync
-  policy, or sync waves; writing or restructuring the READMEs of such a
-  repo.
+  reads; bumping a chart version; user asks about Argo CD, ApplicationSets,
+  generators, chart sources, sync policy, or sync waves.
   SKIP when: authoring the Helm chart itself (that is `helm-conventions`), or
   working on Kubernetes manifests with no Argo CD involvement.
 ---
 
 # Argo CD conventions
 
-For a repository whose job is to deploy a set of applications onto a set of
-clusters.
+Rules about a single Argo CD object, which hold whatever shape the repository
+has. How a repository is laid out — catalog, directories, READMEs, which app
+lands where — is `argocd-layout-conventions`; load it too when bootstrapping a
+GitOps repository or adding an app or a cluster to one.
 
-## Read this first: when the layout applies
-
-**The repository shape described below is for a repo you are creating, not a
-verdict on one that already exists.** Two modes:
-
-- **Bootstrapping a new GitOps repository, or explicitly asked to refactor an
-  existing one to these conventions** — use the layout below in full. Deviate
-  only with a reason written down in `ARCHITECTURE.md`.
-- **Working in a repository that is already laid out some other way** — use
-  *its* layout. Read how it does things and match it: its directory names, its
-  templating (plain YAML, Kustomize, Helm-of-Helms, an `Application` per app
-  hand-written), where values live, how a cluster is onboarded.
-
-**In that second mode, do not challenge the structure.** Not in a comment, not
-in a "note that this would be cleaner as…", not by quietly introducing a
-`lib/` beside the existing files. A GitOps layout is load-bearing for people
-and pipelines you cannot see, and a repo that is half one shape and half
-another is worse than either. The user knows this skill exists; if they want
-the refactor they will ask for it.
-
-**What still applies in both modes** is everything below that is a property of
-a single object rather than of the repository: `revisionHistoryLimit: 0`, OCI
-chart references, exact version pins resolved from the actual latest, no globs
-in `sourceRepos`, `RespectIgnoreDifferences` beside an `ignoreDifferences`,
-retry rather than cross-app sync waves, and the READMEs (see
-[READMEs](#readmes) — in another layout, its per-app and per-environment
-directories get the same treatment). No automated sync belongs there too,
-with the one exception noted where the rule is written: a repo whose model
-*is* automated sync gets consistency instead, because a single app without it
-silently never deploys. Apply those to what you write, in the
-local idiom — do not sweep the repo to retrofit them, and if an existing
+**In a repository laid out some other way, apply these to what you write, in
+the local idiom.** Do not sweep the repo to retrofit them, and if an existing
 choice is a genuine correctness problem, say it once, plainly, then let it go.
-
-## The model: one list, not two
-
-**Argo CD's own cluster list is the deployment target list.** Register a
-cluster and every app in the catalog lands on it; unregister it and nothing in
-the repository mentions it. No per-cluster branch, no `envs/` matrix, no
-second inventory to keep in step — a list that has to be kept in step is a
-list that eventually is not.
-
-Apps are **enabled by default and disabled by exception**: a label on the
-cluster's Argo CD Secret takes one app off one cluster, and the selector uses
-`NotIn` so that a cluster carrying no label at all matches. Adding a cluster
-is then a registration, not a sweep through every app.
-
-## Layout
-
-```
-apps/
-  README.md                      # the four files below, and the one list of apps
-  root.yaml                      # bootstrap Application, applied once by hand
-  catalog.libsonnet              # what each app IS — chart, namespace, options
-  appsets.jsonnet                # one ApplicationSet per catalog entry
-  projects.jsonnet               # the AppProject, derived from the catalog
-  <app>/README.md                # what the app does, on every cluster
-  <app>/<app>.yaml               # default Helm values, every cluster
-  <app>/resources/*.jsonnet      # default extra manifests
-clusters/
-  README.md                      # the one list of clusters
-  _sample/_sample.yaml           # onboarding reference, rendered like a cluster — nothing else
-  <cluster>/README.md            # the cluster as a whole: access, landing zone
-  <cluster>/BOOTSTRAP.md         # its full bootstrap, with its real names
-  <cluster>/<cluster>.yaml       # cluster-level values, under one `config:` root
-  <cluster>/<app>/README.md      # what this app does differently here — every app
-  <cluster>/<app>/<app>.yaml     # per-cluster Helm value deltas
-  <cluster>/<app>/resources/*.jsonnet
-lib/                             # shared jsonnet libraries
-  <bucket>/README.md             # what the libraries in it build, and for whom
-rendered/                        # `make render` output, reviewed not applied
-```
-
-Three layers, and the boundary between them is what keeps the repo readable:
-
-1. **The catalog** — what an app *is*. Same on every cluster.
-2. **`apps/<app>/`** — what an app looks like *by default*, everywhere.
-3. **`clusters/<cluster>/`** — what *this* cluster does differently, and
-   nothing else. A cluster file that restates a default is drift waiting to
-   happen; delete the line.
-
-**A generic ApplicationSet template lives in `lib/`, not copy-pasted per app.**
-One app is one catalog entry, not one hand-written `ApplicationSet`.
-
-## READMEs
-
-**Every app, cluster and (cluster, app) directory has a `README.md`**, so a fact
-sits next to the config that produces it. Load `documentation-conventions`
-first: this layout must stay true without an LLM.
-
-| README | Says | Never says |
-| --- | --- | --- |
-| `apps/` | what the four top-level files do; the **one** list of apps, a line each on what it *is* | versions, namespaces — the catalog's |
-| `apps/<app>/` | what the app does, and what is unusual about how it is deployed | which clusters run it, an inventory of its files |
-| `clusters/` | the **one** list of clusters, where each runs, its infra repo | per-cluster details |
-| `clusters/<cluster>/` | the cluster as a whole: access, secret backend, DNS, TLS, databases, network | its apps, its disabled apps |
-| `clusters/<cluster>/<app>/` | what this app does differently here, and why | the defaults, restated |
-| `lib/<bucket>/` | what the libraries build, who calls them | the overall design |
-
-- **`_sample/` gets none of these**: it is not a cluster, and holds its values
-  file only — no README, no `BOOTSTRAP.md`, no per-app directory.
-- **Every catalog app gets its per-cluster README**, even with no override (one
-  line saying so) and even disabled (say so first, and why — the label stays the
-  source of truth). Argo CD ignores them: directory sources skip `.md`.
-- **Point with a pattern, never a list**: "what a cluster does differently is in
-  `clusters/<cluster>/<app>/README.md`". Adding a cluster touches no app README;
-  adding an app touches no cluster README.
-- **Each cluster's bootstrap lives whole in `clusters/<cluster>/BOOTSTRAP.md`**,
-  with its real names — it is that cluster's procedure and changes with it, and
-  out of the README it keeps both files readable. Why a step exists at all goes
-  once in `ARCHITECTURE.md`.
-- **No deployment state**: never whether a stack is applied or an app synced.
-- **A root `lib/README.md` only if the validator allows a file there**;
-  otherwise `ARCHITECTURE.md`'s bucket table is the index.
-- **Comments pointing at a README section move with it.**
-
-## The catalog
-
-One entry per app, carrying what the ApplicationSet template cannot infer:
-
-- `chart` — `repoURL`, `name`, `version` (see the two chart rules below).
-- `namespace` — where it lands.
-- `syncOptions` — optional, appended to the template's defaults.
-- `helmParameters` — optional, and the *only* place a value may depend on the
-  cluster, since these strings are rendered by the ApplicationSet. A parameter
-  beats every values file, so this is for what a cluster must not be able to
-  get wrong, never for a default it might want to override.
-- `ignoreDifferences` — optional, for a field another controller in the
-  cluster owns and rewrites.
-
-Everything else derives from the catalog rather than being restated: the
-`ApplicationSet` list, the `AppProject`'s `sourceRepos`. **Adding a chart
-repository must be a one-line change in one file**, or the two copies drift.
 
 ## Charts: OCI first
 
@@ -172,16 +42,16 @@ and an `index.yaml` that gets regenerated under you.
   when upstream publishes no OCI chart at all. State in `ARCHITECTURE.md` what
   has to exist for the line to become an OCI reference, so the exception is
   tracked rather than permanent.
-- **Mirrored registries**: keep the *registry* in the cluster's values file
-  and the *path* in the catalog, then build the reference from the two. The
-  path is a fact about the chart, the registry a fact about where the cluster
-  can reach. A registry that varies per cluster and is written once per chart
-  is the wrong way round.
+- **Mirrored registries**: keep the *registry* in the cluster's values and the
+  *path* beside the chart, then build the reference from the two. The path is
+  a fact about the chart, the registry a fact about where the cluster can
+  reach. A registry that varies per cluster and is written once per chart is
+  the wrong way round.
 
 ## Chart versions: the latest, pinned exactly
 
 Two rules that sound opposed and are not — freshness is a property of the
-moment you edit the catalog, never a runtime behaviour.
+moment you edit the version, never a runtime behaviour.
 
 - **Always resolve the actual latest version before writing one.** Never a
   version from memory, never "bump the patch and hope". Look it up:
@@ -203,11 +73,11 @@ moment you edit the catalog, never a runtime behaviour.
   apart run different code, and a rollback is no longer a revert. If the
   version is not in the diff, nobody reviewed it.
 - **Keep "latest" true over time with a bot, not a range** — Renovate (a
-  custom manager over the catalog, or its `argocd` manager over plain
-  `Application` YAML). A bumped pin arrives as a reviewable PR, which is the
-  whole difference.
+  custom manager over wherever versions live, or its `argocd` manager over
+  plain `Application` YAML). A bumped pin arrives as a reviewable PR, which is
+  the whole difference.
 
-## The generated Application
+## The Application
 
 ### `revisionHistoryLimit: 0`, on every Application
 
@@ -224,53 +94,21 @@ a revert and a sync. Read the commit log, not the cluster.
 (The chart-level `revisionHistoryLimit` — the one that caps ReplicaSets — is a
 separate knob, set in the app's values file. Same reasoning, same answer.)
 
-### Multi-source: chart plus values from this repo
+### Sources
 
-Four sources, in this order:
+- **A `$values` ref source takes no `path`.** With one it contributes
+  manifests as well as values.
+- **Argo CD fails an Application whose source `path` does not exist.** For a
+  directory that may be absent, point `path` at a parent that always exists
+  and narrow with `directory.include`; matching nothing is legal and empty,
+  missing is fatal.
+- **`ignoreMissingValueFiles: true`** is what lets an optional values file be
+  optional — and it hides typos in those paths, which is what a render check
+  exists for.
 
-1. **The upstream chart** — `repoURL` + `chart` + `targetRevision`, with
-   `helm.valueFiles` pointing into the repo via `$values`, most specific last:
-   `$values/apps/<app>/<app>.yaml`, then
-   `$values/clusters/<cluster>/<app>/<app>.yaml`.
-2. **The `$values` ref** — this repository, `ref: values`, **no `path`**. With
-   a path it would contribute manifests as well as values.
-3. **Default extra manifests** — `apps/<app>/resources/`.
-4. **Per-cluster extra manifests** — these *concatenate* with the defaults,
-   they do not override them.
+### Passing values into jsonnet
 
-Two traps worth knowing before you hit them:
-
-- **`ignoreMissingValueFiles: true`** is required, because most clusters
-  override nothing and most of those files do not exist. It also hides typos
-  in those paths — which is what the render check exists for.
-- **Argo CD fails an Application whose source `path` does not exist.** For the
-  per-cluster source, point `path` at a directory that always exists
-  (`clusters`) and narrow with `directory.include`; matching nothing is legal
-  and empty, missing is fatal.
-
-### Generators
-
-A **matrix** over Argo CD's cluster list and the cluster's own values file.
-Order is load-bearing, not stylistic: the generator that *consumes* a
-parameter comes after the one that produces it, so the clusters generator
-comes first and the git generator interpolates the cluster name.
-
-- **`goTemplate: true` with `goTemplateOptions: ['missingkey=error']`.** A
-  missing key must fail the render, not resolve to empty and deploy something
-  plausible.
-- **A matrix is a cartesian product**: a cluster with no values file produces
-  no parameters and therefore no Application — on every app at once, silently.
-  Assert in CI that every directory under `clusters/` has its file.
-- **`syncPolicy.applicationsSync: create-update`.** Disabling an app or
-  unregistering a cluster then orphans the `Application` instead of deleting
-  it, and with it the workloads. Removal stays a deliberate
-  `argocd app delete`.
-- Name the Application from `{{ .nameNormalized }}`, not `{{ .name }}` — a
-  cluster name is free text, an object name is not.
-
-### Passing cluster config into jsonnet
-
-One `extVar` carrying the whole config object as JSON (`{{ toJson .config }}`),
+One `extVar` carrying a whole config object as JSON (`{{ toJson .config }}`),
 decoded with `std.parseJson`, rather than one extVar per key. It scales to any
 schema without adding a goTemplate expression, and the set of expressions that
 can reach a rendered Application stays small enough to reproduce offline.
@@ -290,6 +128,7 @@ as jsonnet, which turns a values file into an execution channel for nothing.
 - `RespectIgnoreDifferences=true` alongside any `ignoreDifferences`. Without
   it the ignore silences the *report* only: every sync still pushes the field,
   the other controller rewrites it, and the two managers fight forever.
+
 ### No automated sync
 
 **No `automated` block. An app syncs when somebody asks it to.**
@@ -322,8 +161,33 @@ automated:
 
 **The one exception is a repo that already runs on automated sync.** There,
 a single Application without it silently never deploys — the worst failure
-mode in the list. Match the repo, say once that it is off-convention, and
-leave it (see the scoping section at the top).
+mode in the list. Match the repo and say once that it is off-convention.
+
+## ApplicationSets
+
+- **`goTemplate: true` with `goTemplateOptions: ['missingkey=error']`.** A
+  missing key must fail the render, not resolve to empty and deploy something
+  plausible.
+- **A matrix is a cartesian product, and it is silent.** A child that yields
+  nothing for one parameter set generates no Application there and reports
+  nothing. Whatever a matrix reads, assert in CI that it exists where it must.
+- **A matrix combines exactly two children and nests one level deep.** Three
+  generators are `matrix(matrix(a, b), c)`, and there is no room for a fourth.
+  A child *consuming* a parameter comes after the one producing it.
+- **A `pathParamPrefix` on every git generator in a matrix**, or their
+  `path.*` parameters collide. Top-level keys of a file the git generator reads
+  are never prefixed: keep them under one root (`config:`), or a bare `name:`
+  or `metadata:` shadows the clusters generator's own.
+- **Give the clusters generator a selector.** With none, Argo CD adds a
+  synthesised `in-cluster` entry that carries no `.metadata.labels`, which
+  trips `missingkey=error` on any template reading them.
+  `matchLabels: {argocd.argoproj.io/secret-type: cluster}` names what every
+  cluster Secret carries and nothing else.
+- **`syncPolicy.applicationsSync: create-update`.** An Application that stops
+  being generated is then orphaned instead of deleted, and its workloads with
+  it. Removal stays a deliberate `argocd app delete`.
+- Name the Application from `{{ .nameNormalized }}`, not `{{ .name }}` — a
+  cluster name is free text, an object name is not.
 
 ## Ordering
 
@@ -352,8 +216,6 @@ retry:
   a cluster's registry pulls a chart from wherever the typo resolves and
   reports nothing. Listed, the same typo is an Application Argo CD refuses by
   name.
-- Derive it from the catalog so adding a chart repository stays one line in
-  one file.
 - Create it **before** the ApplicationSets that reference it — a sync wave on
   the AppProject, inside the root app's own sync, is a wave that does
   something.
@@ -364,45 +226,17 @@ One `Application`, applied once by hand, that renders the directory it lives
 in — so a change to it goes out with a sync rather than waiting for somebody
 to remember the command.
 
-- **`directory.recurse: false`**, or it treats every values file under `apps/`
-  as a manifest.
+- **`directory.recurse: false`**, or it treats every values file below it as
+  a manifest.
 - **`argocd.argoproj.io/sync-options: Prune=false` on the root itself.** A
   rename or a bad merge that removes this file is otherwise a root app that
   prunes itself out of existence, taking the AppProject and every
   ApplicationSet with it via the finalizer.
-- It runs in the `default` project: the AppProject it would otherwise use is
-  generated by this very app, so it cannot be its own prerequisite.
+- It runs in the `default` project: an AppProject it generates cannot be its
+  own prerequisite.
 - `in-cluster` is named **here and nowhere else** — it is applied before any
   cluster Secret exists, and Argo CD resolves that name from a built-in
   special case.
-
-## Cluster values files
-
-- **Everything under one `config:` root.** The git generator prefixes `path.*`
-  and nothing else — a file's own top-level keys land in the same parameter
-  set as the clusters generator's, so a bare `name:`, `server:` or
-  `metadata:` would shadow Argo CD's own.
-- **Only what varies per cluster** *and* is actually read. A one-off literal
-  inside a plain manifest stays where it is.
-- **Keep a `_sample` cluster** as the onboarding reference, with values that
-  are obviously dead (`.invalid` hostnames, zero UUIDs) so a copied file with
-  a line left unchanged fails loudly instead of pointing somewhere plausible.
-  Render it like a real cluster in CI — that is what stops it rotting into a
-  description of a repository that no longer exists.
-- The values file's name must match its directory: it is the lookup
-  (`clusters/{{ .name }}/{{ .name }}.yaml`), not a convention. Assert it in
-  CI, because Argo CD will not — it just generates nothing.
-
-## Render before you merge
-
-**Render every (cluster, app) pair into `rendered/` and review the diff.**
-A `make render` / `make validate` pair, run in CI, is what turns "the template
-looks right" into "this is the manifest that will land". It catches the
-failure modes above that Argo CD reports as silence: the missing cluster file,
-the values path typo hidden by `ignoreMissingValueFiles`, the goTemplate
-expression nothing resolves.
-
-`rendered/` is committed and reviewed, never applied.
 
 **Never:**
 
@@ -410,17 +244,9 @@ expression nothing resolves.
 - Never use a semver range in `targetRevision`, and never write a chart
   version from memory instead of looking up the latest.
 - Never prefix an OCI chart `repoURL` with `oci://` in an `Application`.
-- Never hand-write one `ApplicationSet` per app — the template lives in `lib/`
-  and the difference lives in the catalog.
 - Never glob an entry in `sourceRepos`.
 - Never give the `$values` source a `path`, and never point a source `path` at
   a directory that may not exist.
 - Never rely on sync waves to order one Application against another.
 - Never add an `automated` sync block — nor reach for it to work around an app
   somebody keeps forgetting to sync.
-- Never restate a default in a cluster file just to be explicit.
-- Never leave an app or a cluster directory without its `README.md`, and never
-  skip a per-cluster app README because the app has no override or is disabled.
-- Never list clusters in an app README, or apps in a cluster README — link the
-  pattern, and keep the one list of each in `apps/README.md` and
-  `clusters/README.md`.

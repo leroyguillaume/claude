@@ -15,8 +15,8 @@ description: >-
 # Jsonnet conventions (Argo CD)
 
 For the jsonnet an Argo CD repository renders — `resources/` manifests and the
-libraries they import. The surrounding layout is in `argocd-conventions`, and
-the same scoping applies: **in a repository already laid out some other way,
+libraries they import. The surrounding layout is in
+`argocd-layout-conventions`, and the same scoping applies: **in a repository already laid out some other way,
 follow its layout** — where its jsonnet lives, how it names things — and do
 not challenge it. The rules below about *what the jsonnet itself looks like*
 apply either way.
