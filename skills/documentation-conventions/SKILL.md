@@ -57,7 +57,7 @@ forgets to update. Typical offenders:
   N+1th thing should touch one.
 
 Point from the many to the one with a **pattern** instead of an enumeration:
-"what a cluster does differently is in `clusters/<cluster>/<app>/README.md`".
+"what a cluster does differently is in `clusters/<cluster>/<project>/<app>/README.md`".
 **Adding a component or an environment should touch its own new files and at
 most one index**, never every sibling's docs.
 

@@ -5,12 +5,15 @@ description: >-
   layout — OCI chart references pinned to an exact latest version,
   `revisionHistoryLimit: 0` everywhere, no automated sync, retry rather than
   cross-app sync waves, AppProject `sourceRepos` as an allowlist, and the
-  ApplicationSet generator traps. The repository shape itself is
-  `argocd-layout-conventions`.
+  ApplicationSet generator traps. A new GitOps repository, or one being
+  refactored, follows the latest release of THEREALM ALS (THEREALM ArgoCD
+  Layout Specification).
   TRIGGER when: creating or editing an `Application`, `ApplicationSet`,
   `AppProject`, or any file in a GitOps/deployment repository that Argo CD
-  reads; bumping a chart version; user asks about Argo CD, ApplicationSets,
-  generators, chart sources, sync policy, or sync waves.
+  reads; bootstrapping such a repository or adding a project, app or cluster
+  to one; bumping a chart version; user asks about Argo CD, ApplicationSets,
+  generators, chart sources, sync policy, sync waves, or how a GitOps
+  repository is laid out.
   SKIP when: authoring the Helm chart itself (that is `helm-conventions`), or
   working on Kubernetes manifests with no Argo CD involvement.
 ---
@@ -18,13 +21,44 @@ description: >-
 # Argo CD conventions
 
 Rules about a single Argo CD object, which hold whatever shape the repository
-has. How a repository is laid out — catalog, directories, READMEs, which app
-lands where — is `argocd-layout-conventions`; load it too when bootstrapping a
-GitOps repository or adding an app or a cluster to one.
+has.
 
-**In a repository laid out some other way, apply these to what you write, in
-the local idiom.** Do not sweep the repo to retrofit them, and if an existing
-choice is a genuine correctness problem, say it once, plainly, then let it go.
+## Repository layout: THEREALM ALS, latest release
+
+**How a GitOps repository is laid out — projects, catalogs, directories,
+which app lands where, what CI checks — is the
+[THEREALM ArgoCD Layout Specification](https://github.com/therealm-tech/argocd-layout-spec)
+(THEREALM ALS).** Follow its latest release, never `main` and never what you
+remember of it. Releases are named `YYYYMMDD-N`:
+
+```bash
+gh release view --repo therealm-tech/argocd-layout-spec --json tagName --jq .tagName
+```
+
+Then read `SPEC.md` at that tag before writing anything:
+
+```text
+https://raw.githubusercontent.com/therealm-tech/argocd-layout-spec/<tag>/SPEC.md
+```
+
+- **Bootstrapping a GitOps repository, or explicitly asked to refactor one**:
+  conform to the spec in full, and record the release conformed to in the
+  repository's `README.md`, as the spec's §1 requires.
+- **A repository that already cites a version**: follow *that* version. Moving
+  it to a newer one is a refactor, done when asked, one version's changes at a
+  time.
+- **A repository laid out some other way**: use *its* layout — its directory
+  names, its templating, where its values live, how it onboards a cluster and
+  switches an app on. Do not challenge the structure: not in a comment, not in
+  a "this would be cleaner as…", not by quietly adding a `lib/`. A layout is
+  load-bearing for people and pipelines you cannot see, and a repository that
+  is half one shape and half another is worse than either. If the user wants
+  the refactor, they will ask.
+
+The rules below hold in all three cases. **In a repository laid out some other
+way, apply them to what you write, in the local idiom.** Do not sweep the repo
+to retrofit them, and if an existing choice is a genuine correctness problem,
+say it once, plainly, then let it go.
 
 ## Charts: OCI first
 
@@ -105,6 +139,10 @@ separate knob, set in the app's values file. Same reasoning, same answer.)
 - **`ignoreMissingValueFiles: true`** is what lets an optional values file be
   optional — and it hides typos in those paths, which is what a render check
   exists for.
+- **`directory.include` and `exclude` globs have no path separator**: they
+  match the path relative to the source's `path`, and `*` crosses `/`. So
+  `*/*.yaml` matches `a/b/c.yaml` too; bound the depth with an `exclude`
+  (`*/*/*` keeps only files one directory down).
 
 ### Passing values into jsonnet
 
@@ -226,8 +264,9 @@ One `Application`, applied once by hand, that renders the directory it lives
 in — so a change to it goes out with a sync rather than waiting for somebody
 to remember the command.
 
-- **`directory.recurse: false`**, or it treats every values file below it as
-  a manifest.
+- **It renders only manifests**: `directory.recurse: false`, or a recursive
+  source whose `include` / `exclude` pin exactly the files it owns — anything
+  else treats every values file below it as a manifest.
 - **`argocd.argoproj.io/sync-options: Prune=false` on the root itself.** A
   rename or a bad merge that removes this file is otherwise a root app that
   prunes itself out of existence, taking the AppProject and every
