@@ -9,9 +9,9 @@ description: >-
   documentation — READMEs, ARCHITECTURE.md, docs/, runbooks; adding a README per
   directory, component, app or environment; writing an index, a table or a list
   that enumerates components, files, clusters, versions or settings; user says
-  the docs are too long, too hard to maintain, or drift. SKIP when: the change is
-  a one-line fix to an existing sentence that does not add a list, a table or a
-  copy.
+  the docs are too long, too hard to maintain, or drift; editing, moving or
+  deleting a claim other pages may repeat. SKIP when: the change is a wording or
+  typo fix that alters no claim and adds no list, table or copy.
 ---
 
 # Documentation conventions
@@ -97,6 +97,17 @@ them, and the first divergence splits it again. Extract only what is the same
 thing by construction — the design reason behind a step goes once in the
 architecture doc, the step itself stays where it is run.
 
+**Leave nothing contradicting what you wrote.** An edit does more than add a
+sentence: it can make a sentence three files away false, and the page you are
+editing is not the only one that talked about the thing you changed. Before
+calling the change done, look for every page that mentions it — grep the term,
+the file name, the command, the value — and read what each one claims, including
+the rest of the page in front of you. Two pages disagreeing is worse than either
+being wrong on its own: the reader cannot tell which is stale, so they trust
+neither, and the next person "fixes" the one that was right. Resolve it in the
+same change — correct the other page, or delete its copy and link to the home of
+the fact.
+
 **Link, do not describe, what sits in another repository.** Point at the
 infrastructure repo, the upstream doc, the ticket. A description of someone
 else's system is a copy of it.
@@ -114,6 +125,9 @@ the change*: what changes together lives together.
   person making it will be editing this file anyway.
 - Grep for the facts you wrote in more than one place; keep one, link from the
   rest.
+- For each claim you changed, moved or deleted: grep the term and read every
+  other page that mentions it. One that now says the opposite is fixed here, not
+  left for a reader to arbitrate.
 - Check every relative link and anchor still resolves — a split moves headings,
   and dead anchors are its usual casualty.
 - Check that comments in code pointing at a doc section ("see the README's DNS
