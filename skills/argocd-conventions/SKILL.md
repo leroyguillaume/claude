@@ -221,9 +221,17 @@ mode in the list. Match the repo and say once that it is off-convention.
   trips `missingkey=error` on any template reading them.
   `matchLabels: {argocd.argoproj.io/secret-type: cluster}` names what every
   cluster Secret carries and nothing else.
-- **`syncPolicy.applicationsSync: create-update`.** An Application that stops
-  being generated is then orphaned instead of deleted, and its workloads with
-  it. Removal stays a deliberate `argocd app delete`.
+- **`syncPolicy.applicationsSync: sync`, with `preserveResourcesOnDeletion:
+  true`.** The controller owns the Application objects — one that stops being
+  generated goes, rather than lingering as a permanently broken app pointing
+  at configuration that no longer exists — and the workloads underneath it
+  stay. Deleting what is running is a separate, deliberate act, like every
+  other apply here.
+- **No value of `applicationsSync` survives deleting the ApplicationSet
+  itself.** The generated Applications carry an ownerReference, so Kubernetes
+  cascades regardless — `create-update` reads like protection and gives none
+  here. `preserveResourcesOnDeletion` is what stands between a fat-fingered
+  `kubectl delete appset` and every workload it generated.
 - Name the Application from `{{ .nameNormalized }}`, not `{{ .name }}` — a
   cluster name is free text, an object name is not.
 
@@ -287,5 +295,6 @@ to remember the command.
 - Never give the `$values` source a `path`, and never point a source `path` at
   a directory that may not exist.
 - Never rely on sync waves to order one Application against another.
+- Never write an `ApplicationSet` without `preserveResourcesOnDeletion: true`.
 - Never add an `automated` sync block — nor reach for it to work around an app
   somebody keeps forgetting to sync.
