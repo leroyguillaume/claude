@@ -1,37 +1,32 @@
 ---
 name: jsonnet-conventions
 description: >-
-  Jsonnet conventions for an Argo CD / GitOps repository — stay
-  simple (no library for a handful of lines, extract only what is big and
+  Jsonnet conventions — stay simple (no library for a handful of lines, extract only what is big and
   genuinely shared), document every exported function and constant, fail loudly
   at render time, `jsonnetfmt` in pre-commit.
-  TRIGGER when: creating or editing any `.jsonnet` / `.libsonnet` file; adding
-  a manifest under a `resources/` directory Argo CD renders with jsonnet;
-  factoring shared jsonnet into `lib/`; user asks about jsonnet structure,
+  TRIGGER when: creating or editing any `.jsonnet` / `.libsonnet` file;
+  factoring shared jsonnet into a library; user asks about jsonnet structure,
   extVars, libsonnet layout, or whether to extract a helper.
   SKIP when: no jsonnet is being written and the user isn't asking about it.
 ---
 
-# Jsonnet conventions (Argo CD)
+# Jsonnet conventions
 
-For the jsonnet an Argo CD repository renders — `resources/` manifests and the
-libraries they import. The surrounding layout is THEREALM ALS (see
-`argocd-conventions`), and the same scoping applies: **in a repository already
-laid out some other way, follow its layout** — where its jsonnet lives, how it names things — and do
-not challenge it. The rules below about *what the jsonnet itself looks like*
-apply either way.
+**In an existing repository, follow its layout** — where its jsonnet lives,
+how it names things — and do not challenge it. The rules below about *what the
+jsonnet itself looks like* apply either way.
 
-**Jsonnet here is configuration, not a program.** Its reader is someone
-debugging a failed sync at an inconvenient hour, working backwards from a
-rendered manifest to the file that produced it. Every clever construct is one
+**Jsonnet is configuration, not a program.** Its reader is someone debugging a
+broken deployment at an inconvenient hour, working backwards from the rendered
+output to the file that produced it. Every clever construct is one
 more hop on that path.
 
 ## Stay simple: earn the abstraction
 
 **Do not extract a library for a handful of lines.** A `libsonnet` costs a file
 to open, an import to resolve, and a jump away from the manifest being read —
-and Argo CD's errors point at the *rendered output*, never at your
-abstraction. Four lines repeated three times cost nothing to read and nothing
+and whatever consumes the output reports errors against the *rendered
+output*, never against your abstraction. Four lines repeated three times cost nothing to read and nothing
 to change; a helper hiding them costs both, forever.
 
 Extraction has **two axes, and repetition alone is not enough**:
@@ -63,8 +58,8 @@ And do not:
   readable; three is a debugging session. If you cannot see the final object in
   your head, neither can the person on call.
 - **Reach for jsonnet when nothing varies.** A manifest with no computation is
-  a `.yaml` file — Argo CD renders both from the same directory. Jsonnet earns
-  its place by computing something: reading a cluster value, deriving a name,
+  a `.yaml` file. Jsonnet earns its place by computing something: reading a
+  config value, deriving a name,
   fanning out over a list.
 - **Hide a difference inside an abstraction.** Duplication that is obviously
   duplicated beats a helper whose two call sites differ in a way you have to
@@ -73,7 +68,7 @@ And do not:
 ## Document every exported function and constant
 
 This is the deliberate exception to the sparse-comment rule, and it is narrow:
-**the contract of a `lib/` export is documented; the body is not.**
+**the contract of a library export is documented; the body is not.**
 
 The reason is specific to the language. Jsonnet has no types and no
 signatures — `new(name, app)` tells the reader nothing about what `app` must
@@ -86,8 +81,8 @@ For every **function** exported from a `libsonnet`, in two to five lines:
 - what it returns (the kind of object, or the shape),
 - what each parameter is — format, units, allowed values, which keys an object
   parameter must carry and which are optional,
-- what it assumes about its context: an extVar being set, the destination
-  namespace, a CRD existing.
+- what it assumes about its context: an extVar being set, a namespace, a CRD
+  existing.
 
 For every **constant**: where the value comes from (a `tofu output`, an
 upstream default, a measurement, a hard limit) and **what breaks if it
@@ -98,8 +93,8 @@ Keep it a contract, not an essay:
 ```jsonnet
 // A NetworkPolicy allowing ingress to `port` from the namespaces in
 // `fromNamespaces` (a list of names, matched on the standard
-// kubernetes.io/metadata.name label). Renders without a namespace: it lands
-// in the Application's destination namespace like every resources/ manifest.
+// kubernetes.io/metadata.name label). Renders without a namespace: the
+// caller decides where it lands.
 allowFrom(name, port, fromNamespaces):: { ... }
 ```
 
@@ -118,10 +113,10 @@ saying what breaks without the line.
 ## Fail loudly at render time
 
 A missing value must stop the render, never produce a plausible manifest. An
-empty string interpolated into a ConfigMap deploys, syncs green, and fails at
+empty string interpolated into a ConfigMap deploys, reports healthy, and fails at
 runtime with no clue pointing back here.
 
-- Read a required cluster value directly (`config.registry.host`): jsonnet
+- Read a required config value directly (`config.registry.host`): jsonnet
   errors on a missing field, which is the behaviour you want.
 - Use `std.get(obj, 'key', default)` **only where the key is genuinely
   optional** and the default is correct. It is not a way to make an error go
@@ -131,14 +126,14 @@ runtime with no clue pointing back here.
 
   ```jsonnet
   if !std.objectHas(config, 'oidc') then
-    error 'this cluster has no config.oidc; SSO cannot be rendered for it'
+    error 'config.oidc is missing; SSO cannot be rendered without it'
   ```
 
 ## Idioms
 
 - **Imports at the top**, one per line, `local` bindings named after the
-  thing, not the path. Paths resolve against the `libs` root Argo CD is
-  configured with, so they are stable regardless of the importing file's depth.
+  thing, not the path. Resolve them against a library search path (`-J`),
+  so they are stable regardless of the importing file's depth.
 - **Decode extVars once**, at the top of the file:
 
   ```jsonnet
@@ -158,21 +153,21 @@ runtime with no clue pointing back here.
   field is how you express the difference.
 - **`%` formatting for derived strings** (`'%s-%s' % [prefix, name]`), not
   chained `+`.
-- **A `.jsonnet` under `resources/` evaluates to a list of manifests**, even
-  when there is one. A list of one stays a list; the next manifest is then an
+- **A `.jsonnet` producing manifests evaluates to a list**, even when there
+  is one. A list of one stays a list; the next manifest is then an
   added line rather than a restructure.
 - `std.set` to dedupe, `std.objectFields` to iterate a map, `std.flattenArrays`
   over nested comprehensions. Prefer a comprehension to a fold.
 - **Never `std.native` or anything that reaches outside the render.** The
-  render must be a pure function of the repository and the extVars, or the
-  offline render check stops matching what Argo CD produces.
+  render must be a pure function of the repository and the extVars, or two
+  renders of the same commit stop producing the same output.
 
-## Cloud-specific shapes: a function per provider, picked by the cluster
+## Cloud-specific shapes: a function per provider, picked by the caller
 
 When the same resource takes a different shape per cloud or provider (GKE vs
 AKS, GCS vs Azure Storage), **never branch on it inside a shared manifest** —
 no `if std.objectHas(config, 'gcsBucket') then … else …`, no assert that
-exactly one of two provider keys is set. A shared app's `resources/` stays
+exactly one of two provider keys is set. Shared jsonnet stays
 provider-agnostic.
 
 Instead:
@@ -181,10 +176,9 @@ Instead:
   (`promptLogs.gcp(bucket)`, `promptLogs.azure(account, fileSystem)`), each
   taking exactly the arguments that provider needs — no optional parameters
   covering the other one.
-- **Call it from the cluster's own jsonnet**
-  (`clusters/<cluster>/<project>/<app>/resources/<thing>.jsonnet`). The cluster knows its
-  cloud, so the choice is made where it is obvious, in one line, and the
-  rendered shape can be read off the call site.
+- **Call it from the jsonnet that already knows the provider** — the file
+  specific to one environment or cluster. The choice is then made where it is
+  obvious, in one line, and the rendered shape can be read off the call site.
 
 The library earns its place here from the invariant the constructors share
 (a resource name another manifest refers to, the key spelling a binary reads),
@@ -224,11 +218,11 @@ packages, not the tools a system hook shells out to.
 - Never extract a library for a few lines, and never on the second copy of
   something small.
 - Never add a parameter, flag or branch for a caller that does not exist yet.
-- Never export a function or constant from `lib/` without its contract
+- Never export a function or constant from a library without its contract
   comment — and never narrate the body to compensate.
 - Never use `std.get` with a default to paper over a value that is actually
   required.
-- Never reach outside the render (`std.native`, environment lookups): it
-  breaks the offline render check.
+- Never reach outside the render (`std.native`, environment lookups): the
+  same commit must always render the same output.
 - Never write jsonnet for a manifest that computes nothing — that is a
   `.yaml` file.
