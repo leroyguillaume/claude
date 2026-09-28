@@ -237,6 +237,15 @@ Concrete rules:
 - **If a secret does leak** (mine or the user's mistake): stop, say so plainly,
   and tell the user to rotate/revoke it immediately. Don't bury it.
 
+## Source `~/.zshrc` before reading an environment variable
+
+The shell the tools run in inherits an environment snapshot that can be stale:
+a token rotated since shows up with its old, revoked value. So **any command
+that reads an environment variable I set — a token, a registry URL, anything —
+starts with `source ~/.zshrc >/dev/null 2>&1;`**, in the same command, since
+shell state does not carry over between calls. The redirect matters: the rc
+file's own output has no business in the transcript.
+
 ## No uploads to claude.ai
 
 **Never publish anything to claude.ai.** Deliverables stay local, on my
