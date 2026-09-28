@@ -4,7 +4,8 @@ description: >-
   Conventions for opening GitHub pull requests with the `gh` CLI —
   always apply the right labels at creation time so the PR lands in the correct
   release-notes category. Derive the label set from the repo (and
-  `.github/release.yaml`), never from memory. Rebase the branch onto an
+  `.github/release.yaml`), never from memory; never a category label that
+  file doesn't list; `breaking` on top whenever the PR breaks something. Rebase the branch onto an
   up-to-date `main` before opening it. A PR stacked on another PR's branch is
   opened as a draft.
   TRIGGER when: creating/opening a pull request (`gh pr create`), opening a
@@ -117,6 +118,11 @@ section. Two consequences that drive every choice below:
   the whole command with `labels not found: <name>`. Creating new labels is a
   separate, deliberate act (see `github-repo-settings`); do not conjure one
   mid-PR.
+- **Never apply a category label that `.github/release.yaml` doesn't list.**
+  A label that exists on the repo but is absent from `release.yaml` (`bug`,
+  `enhancement`, a leftover from an old config) sorts nothing: the PR falls to
+  "Other". The only labels allowed outside `release.yaml` are the area labels
+  below.
 - **Apply exactly one changelog-category label**, taken from
   `.github/release.yaml` — that file is the source of truth, and it differs
   from repo to repo. The table below is only the fallback for a repo that has
@@ -124,9 +130,10 @@ section. Two consequences that drive every choice below:
 
   | Change | Category label |
   | --- | --- |
-  | Backwards-incompatible change | `breaking` |
   | Security fix | `security` |
+  | Deprecation of something still working, removed later | `deprecation` |
   | New capability | `feature` |
+  | Performance improvement, no behaviour change | `performance` |
   | Bug fix | `fix` |
   | Documentation only | `documentation` |
   | Dependency bump | `dependencies` |
@@ -137,6 +144,15 @@ section. Two consequences that drive every choice below:
   without a `Maintenance` category sends `chore` straight to "Other". Match the
   labels that repo actually maps.
 
+- **Add `breaking` on top of the category label when the PR breaks
+  something** — a removed or renamed API, CLI flag, env var, config key or
+  chart value; a changed default, wire format or schema that needs a migration;
+  a dropped platform or version. Anything that forces a user to change
+  something to upgrade. It is the one label that stacks with the category
+  label: `breaking` + `feature` lands under *Breaking changes* because that
+  category comes first in `release.yaml`. Say what breaks, and how to migrate,
+  in the PR description. If the repo has no `breaking` label or no *Breaking
+  changes* category, don't drop the flag — say so (see below).
 - **Add the area / technology labels that apply** on top of the category label.
   Area labels never select a category on their own, so they are safe to stack:
   a Rust PR gets `rust` as well as `feature`/`fix`/…. A PR typically ends up

@@ -2,7 +2,8 @@
 name: github-repo-settings
 description: >-
   GitHub repository settings administered via the `gh` CLI — sync
-  issue/PR labels to the set referenced in `.github/release.yaml`, restrict
+  issue/PR labels to the set referenced in `.github/release.yaml` (always
+  including a `breaking` label), restrict
   the allowed merge methods to squash-only, and auto-delete head branches on
   merge.
   TRIGGER when: the user asks to configure/clean up the GitHub repo's labels,
@@ -70,6 +71,8 @@ gh label create dependencies  --description "Dependency updates"            --co
 gh label create documentation --description "Documentation only"            --color 0075ca --force
 gh label create breaking      --description "Backwards-incompatible change" --color b60205 --force
 gh label create security      --description "Security fix"                  --color b60205 --force
+gh label create deprecation   --description "Deprecates a feature, removed in a later release" --color fbca04 --force
+gh label create performance   --description "Performance improvement"       --color 5319e7 --force
 # the exclude label, only when release.yaml has an `exclude.labels` entry
 gh label create ignore-for-release --description "Exclude from release changelog" --color ededed --force
 # issue-triage labels stay even though release.yaml never maps them
@@ -80,9 +83,12 @@ gh label list --limit 100   # verify
 
 Notes:
 
-- Only create the category labels the repo's `release.yaml` actually maps — a
-  `breaking` label on a repo with no *Breaking changes* category is dead weight,
-  and the exclude label only makes sense alongside an `exclude.labels` entry.
+- **`breaking` is always created**, on every repo. If `release.yaml` has no
+  *Breaking changes* category, add one — as the **first** category, since
+  GitHub files a PR under the first match and a breaking PR also carries its
+  `feature`/`fix` label (see `github-actions-conventions` for the baseline file).
+- Otherwise, only create the category labels the repo's `release.yaml` actually
+  maps; the exclude label only makes sense alongside an `exclude.labels` entry.
 - **Leave the ecosystem labels to Dependabot.** It creates `rust`,
   `github_actions`, `docker`, `python`, `npm_and_yarn` itself, black and
   described as "Pull requests that update … code". Creating your own variant
