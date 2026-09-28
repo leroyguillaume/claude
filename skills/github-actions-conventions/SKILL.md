@@ -107,7 +107,50 @@ the job that needs it).
   `chart-*` tag — the app and the chart version independently.
 - **`.github/release.yaml`** — always, when a `release` workflow exists. The
   GitHub auto-generated-notes config (categorise PRs by label, exclude noise).
-  `gh release create --generate-notes` reads it.
+  `gh release create --generate-notes` reads it. GitHub files a PR under the
+  **first** category whose labels match, so **Breaking changes comes first,
+  always**: a breaking PR also carries its usual `feature`/`fix`/… label, and
+  only the order keeps it out of that section. Baseline:
+
+  ```yaml
+  changelog:
+    exclude:
+      labels:
+        - ignore-for-release
+    categories:
+      - title: Breaking changes
+        labels:
+          - breaking
+      - title: Security
+        labels:
+          - security
+      - title: Deprecations
+        labels:
+          - deprecation
+      - title: Features
+        labels:
+          - feature
+      - title: Performance
+        labels:
+          - performance
+      - title: Fixes
+        labels:
+          - fix
+      - title: Documentation
+        labels:
+          - documentation
+      - title: Dependencies
+        labels:
+          - dependencies
+      - title: Maintenance
+        labels:
+          - chore
+      - title: Other changes
+        labels:
+          - "*"
+  ```
+
+  Every label listed here must exist on the repo (see `github-repo-settings`).
 
 ## Trivy — always, and not only as a gate
 
