@@ -5,9 +5,10 @@ description: >-
   always apply the right labels at creation time so the PR lands in the correct
   release-notes category. Derive the label set from the repo (and
   `.github/release.yaml`), never from memory. Rebase the branch onto an
-  up-to-date `main` before opening it.
-  TRIGGER when: creating/opening a pull request (`gh pr create`), or fixing an
-  existing PR's labels.
+  up-to-date `main` before opening it. A PR stacked on another PR's branch is
+  opened as a draft.
+  TRIGGER when: creating/opening a pull request (`gh pr create`), opening a
+  stack of dependent PRs, or fixing an existing PR's labels.
   SKIP when: managing the repo's label *definitions* or merge methods (that is
   `github-repo-settings`), or authoring workflow/release-note YAML (that is
   `github-actions-conventions`).
@@ -47,6 +48,33 @@ If the rebase conflicts, resolve it and **re-run the tests and the linters
 before opening the PR** — a conflict resolution is fresh code that nothing has
 checked yet. On a branch that was already pushed, force-push with
 `--force-with-lease`, never a bare `--force`.
+
+## A stacked PR is opened as a draft
+
+**A PR whose base is another PR's branch — not `main` — is opened with
+`--draft`**, and stays a draft until everything under it has merged:
+
+```bash
+gh pr create --draft --base <parent-branch> --head <branch> …
+```
+
+The reason is the merge button. On a stacked PR it merges into the *parent's
+branch*, not into `main`: the change silently folds into the PR below it, which
+then carries two changes under one title and one description. Draft status is
+what makes that button unavailable while the stack is waiting.
+
+A draft leaves the stack's dependency visible, and gets a normal review in the
+meantime. Mark it ready only when its base is `main` again: the parent has
+merged, the PR has been retargeted to `main`, and the branch has been rebased
+onto it (see above; with squash merges, `git rebase --onto origin/main
+<old-parent-tip>`, so the parent's pre-squash commits are dropped):
+
+```bash
+gh pr ready <number>
+```
+
+Only the bottom PR of a stack, the one based on `main`, is ever ready for
+review. Say in each stacked PR's description which PR it sits on.
 
 ## Labels
 
