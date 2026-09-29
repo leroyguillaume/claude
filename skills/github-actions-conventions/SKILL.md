@@ -83,11 +83,11 @@ the job that needs it).
   by `docker buildx imagetools create`). Never hand-roll tag strings.
 - **`security`** — always. The Trivy vulnerability scans (see below): `trivy
   fs` on the repo, and `trivy image` on the published image when the repo
-  builds one. Runs on every pull request, on push to the default branch, and
-  **on a `schedule`** — a nightly or weekly re-scan is the whole point, since
-  CVEs are disclosed against code that hasn't changed. Uploads SARIF to GitHub
-  code scanning, so it needs `security-events: write` in that job and nowhere
-  else.
+  builds one. Runs on every pull request, on push to the default branch,
+  **daily on a `schedule`**, and on `workflow_dispatch` — the scheduled re-scan
+  is the whole point, since CVEs are disclosed against code that hasn't
+  changed (see "The scheduled re-scan" below). Uploads SARIF to GitHub code
+  scanning, so it needs `security-events: write` in that job and nowhere else.
 - **`chart`** — when a Helm chart exists. **Publishes** the chart as an **OCI
   artifact** to GHCR (`helm push` → `oci://ghcr.io/<owner>/charts`). The chart
   has its **own release lifecycle, decoupled from the app**: trigger it on a
@@ -208,6 +208,41 @@ How to run it:
   across every job, and the failure mode is a rate-limited registry taking the
   whole pipeline down, not merely a slow step.
 
+### The scheduled re-scan
+
+Every repo's `security` workflow carries both triggers, whatever else it has:
+
+```yaml
+on:
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+```
+
+- **Daily.** The vulnerability DB is rebuilt several times a day; a weekly
+  scan leaves a disclosed CVE unnoticed for up to six days. Pick an **off-hour
+  minute**, never `0`: runs queued at the top of the hour are the first to be
+  delayed or dropped when Actions is under load.
+- **Scan what is published, not a rebuild.** A cron has no fresh build to
+  scan, and rebuilding `main` would pull patched base layers and report a
+  clean image that nobody runs. On `schedule`, `trivy image` targets the image
+  of the **latest stable release** in the registry (the greatest `vX.Y.Z` tag
+  without a hyphen, pulled by that tag), which needs `packages: read` for a
+  private GHCR image. `trivy fs` runs on the default branch checkout as usual.
+  A repo that publishes no image runs the `trivy fs` scan alone.
+- **Keep the gate on the scheduled run.** Nobody is waiting on a cron, so its
+  failure is the notification: a red scheduled run is how a new `HIGH` /
+  `CRITICAL` CVE reaches someone. Same `exit-code` / `ignore-unfixed` split as
+  above, same `if: always()` SARIF upload.
+- **Give each SARIF upload its own `category`** (`trivy-fs`, `trivy-image`).
+  Code scanning keys alerts on the category; two uploads sharing one replace
+  each other, and the alerts of the first scan are closed as "fixed".
+- **Scheduled workflows only run from the default branch**, and GitHub
+  **disables them after 60 days without activity** on a public repo, silently.
+  A dormant repo that still ships an image needs it re-enabled from the
+  Actions tab; the `workflow_dispatch` trigger is also what makes a manual
+  re-scan possible after a fix.
+
 **No self-authorised ignores** — same standing rule as everywhere else. Do not
 add a `.trivyignore` entry, a `--skip-dirs`, or a severity downgrade to get a
 green run. Fix the finding at the source: bump the dependency, change the base
@@ -289,8 +324,9 @@ can be **slower** than a clean fetch, and a stale cache is worse than none.
 - Never push or publish an image that has not been Trivy-scanned in the same
   job first, and never silence a finding with a `.trivyignore` entry,
   `--skip-dirs` or a severity downgrade to get a green run.
-- Never rely on the PR scan alone — without the scheduled re-scan the repo
-  only knows about the CVEs that existed on merge day.
+- Never rely on the PR scan alone — without the daily scheduled re-scan of the
+  published image the repo only knows about the CVEs that existed on merge
+  day.
 - Never ship a workflow without a `concurrency:` group, and never set
   `cancel-in-progress` to anything but `true` — not `false`, not an expression,
   not even on `release`/`chart`.

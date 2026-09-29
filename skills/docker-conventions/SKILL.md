@@ -47,8 +47,10 @@ description: >-
   not contain — harmless, since an image with no shell and no `sshd` has no
   login path to refuse in the first place.
 - **Scan the built image in CI** (`trivy image` / `grype`) and fail the build
-  on `HIGH`/`CRITICAL`. A skinny base is what makes that gate cheap enough to
-  keep enabled.
+  on `HIGH`/`CRITICAL`, then **re-scan the published image daily** — a CVE
+  lands on an image nobody rebuilt (the scheduled workflow is in
+  `github-actions-conventions`). A skinny base is what makes that gate cheap
+  enough to keep enabled.
 - **Scan the `Dockerfile` itself with `trivy config`, and fix every finding.**
   These are the `DS-xxxx` checks (`DS-0002` running as root, `DS-0026` missing
   `HEALTHCHECK`, `DS-0001` `:latest` tag, `DS-0009` relative `WORKDIR`, …).
