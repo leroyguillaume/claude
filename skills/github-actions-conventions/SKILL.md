@@ -105,6 +105,17 @@ the job that needs it).
   into the image tag **at build time** — never edit a `version`/`appVersion`
   field in a file to cut a release. **Release the chart separately** via its
   `chart-*` tag — the app and the chart version independently.
+
+  **A pre-release tag (`vX.Y.Z-rcN`, any tag with a `-`) publishes the image
+  and stops there — no GitHub Release.** An rc exists to be tested; a release
+  page for it would carry the full auto-generated changelog, then the final
+  release would repeat it (or, diffed against the rc, show almost nothing).
+  Gate step (3) on the tag having no hyphen. And for a stable release, pass
+  **`--notes-start-tag` with the previous stable tag** (the greatest
+  `vX.Y.Z` without a hyphen below the current one, `sort -V`), so the notes
+  cover everything since the last stable version whatever rc releases exist
+  from before this rule. When there is no previous stable tag, omit the flag
+  and let GitHub pick.
 - **`.github/release.yaml`** — always, when a `release` workflow exists. The
   GitHub auto-generated-notes config (categorise PRs by label, exclude noise).
   `gh release create --generate-notes` reads it. GitHub files a PR under the
@@ -269,6 +280,8 @@ can be **slower** than a clean fetch, and a stale cache is worse than none.
   via `workflow_dispatch` or the `release` orchestration.
 - Never cut a release by editing a version field — derive the version from the
   git tag at build time.
+- Never create a GitHub Release for a pre-release (`-rcN`) tag, and never let
+  a stable release's generated notes start from an rc.
 - Never QEMU-emulate a Rust multi-arch build when native runners exist, and
   never share one unscoped build cache across architectures.
 - Never split the quality gate: `pre-commit` + tests live in the single
