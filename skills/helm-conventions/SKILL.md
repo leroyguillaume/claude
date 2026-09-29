@@ -244,6 +244,23 @@ description: >-
     the actual anti-pattern.
   Both are documented, chart-wide exceptions agreed up front — not a licence
   to silence the next finding that's inconvenient.
+  **When either shows up as an open GitHub code-scanning alert, dismiss it
+  as `won't fix` without asking** — that is the standing decision, not a
+  per-repo call. Never with a `.trivyignore` or a `--skip-check`: the scan
+  keeps reporting them, the alert is closed where people look. Dismissed
+  alerts stay dismissed for the same rule and location, so this is once per
+  chart:
+  ```bash
+  gh api 'repos/{owner}/{repo}/code-scanning/alerts?state=open&per_page=100' \
+    --jq '.[] | select(.rule.id == "KSV-0011" or .rule.id == "KSV-0110") | .number' |
+  while read -r n; do
+    gh api -X PATCH "repos/{owner}/{repo}/code-scanning/alerts/$n" \
+      -f state=dismissed -f dismissed_reason="won't fix" \
+      -f dismissed_comment="Chart convention: no CPU limit (throttling); namespace comes from helm install --namespace."
+  done
+  ```
+  Only these two. Any other `KSV-xxxx` alert gets fixed, or raised with the
+  user.
 - Always set `resources.requests` for **CPU, memory, and ephemeral
   storage**, and `resources.limits` for **memory and ephemeral storage
   only**. Memory and ephemeral storage are non-compressible and must be
