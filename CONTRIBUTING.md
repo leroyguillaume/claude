@@ -88,8 +88,8 @@ and `--only` / `--skip` select among them. Two failures come up often:
   `references/` file is only read if something opens it.
 
 A new skill needs frontmatter with `name`, a `description` carrying `TRIGGER` /
-`SKIP` guidance, and an entry in the "Conventions (load on demand)" section of
-[CLAUDE.md](CLAUDE.md).
+`SKIP` guidance. It is not listed in [CLAUDE.md](CLAUDE.md): clients list the
+available skills themselves, and a copy there only goes stale.
 
 ## Pre-commit hooks
 

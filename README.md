@@ -1,32 +1,70 @@
-# Claude Code configuration
+# Agent skills and Claude Code configuration
 
-Version-controlled personal configuration for [Claude Code](https://claude.com/claude-code).
-This repository lives at `~/.claude` and tracks only the parts of that directory
-worth sharing across machines: the global instructions (`CLAUDE.md`) and the
-on-demand convention **skills**. Everything else Claude Code writes into
-`~/.claude` (sessions, cache, history, telemetry, plugins, …) is deliberately
-ignored.
+Personal engineering conventions, packaged as [Agent Skills](https://agentskills.io):
+one `skills/<name>/SKILL.md` per topic (Python, Rust, Helm, Docker, CI, YAML,
+logging, …), each loading on demand when its triggers match. The skills follow
+the open specification, so any client that reads it — Claude Code, Cursor,
+Codex, Gemini CLI, Copilot, OpenCode, … — can use them.
+
+The repository also holds the global instructions for
+[Claude Code](https://claude.com/claude-code), `CLAUDE.md`, and doubles as that
+tool's `~/.claude` directory.
 
 ## What's in here
 
 | Path | Purpose |
 | --- | --- |
-| `CLAUDE.md` | Global, non-negotiable rules applied to **every** project unless a project-level `CLAUDE.md` overrides a specific rule. |
-| `skills/<name>/SKILL.md` | Convention skills that load on demand, triggered by file paths or topics (Python, Rust, Helm, Docker, CI, YAML, logging, …). |
+| `skills/<name>/SKILL.md` | Convention skills that load on demand, triggered by file paths or topics. Client-agnostic. |
+| `CLAUDE.md` | Global, non-negotiable rules Claude Code applies to **every** project unless a project-level `CLAUDE.md` overrides a specific rule. |
 
 The `.gitignore` is allow-list based — it ignores `**` and then re-includes
-`CLAUDE.md` and `skills/**/*.md`. If you add a new skill, it is picked up
-automatically; runtime state never ends up in a commit.
+`CLAUDE.md` and `skills/**/*.md`. A new skill is picked up automatically;
+Claude Code's runtime state never ends up in a commit.
 
 ## Requirements
 
-- [Claude Code](https://docs.claude.com/en/docs/claude-code) installed.
 - `git` to clone and update.
+- An Agent Skills client, such as
+  [Claude Code](https://docs.claude.com/en/docs/claude-code).
+- [pollen](https://github.com/groupbees/pollen), to deploy the skills into
+  another client.
 
 ## Install
 
-Claude Code reads its configuration from `~/.claude`. To use this repo as that
-directory:
+### Any Agent Skills client, with pollen
+
+[pollen](https://groupbees.github.io/pollen/) deploys skills from a git
+repository into the directories the clients read. This `pollen.yaml` installs
+every skill from this repository for the current user, in both Claude Code's
+directory and the cross-client `~/.agents/skills/`:
+
+```yaml
+targets:
+  - ~/.claude/skills
+  - ~/.agents/skills
+repos:
+  - repo: https://github.com/leroyguillaume/claude
+    revision: main
+    paths:
+      - path: skills/
+```
+
+```sh
+pollen update
+```
+
+Drop the `targets` block to install into the current project instead
+(`.claude/skills/` and `.agents/skills/`). Re-run `pollen update` to pull new
+revisions; skills removed here are removed from the targets too.
+
+This installs the skills only. `CLAUDE.md` is specific to Claude Code; for
+another client, copy the rules you want into its own instructions file (such
+as `AGENTS.md`).
+
+### Claude Code, as `~/.claude`
+
+Claude Code reads its configuration from `~/.claude`. To use this repository
+as that directory, skills and `CLAUDE.md` together:
 
 ```bash
 # Back up an existing config first if you have one
@@ -52,22 +90,22 @@ git checkout -f main
 
 ## Usage
 
-There is nothing to run — the configuration takes effect the moment Claude Code
-starts in any project on the machine.
+There is nothing to run — the skills take effect the next time a client
+starts.
 
-- **Global rules** in `CLAUDE.md` apply unconditionally (tests must exist,
-  baseline pre-commit hooks, README kept current, rule-of-three for
-  duplication, env-var naming, versioning policy, …).
 - **Skills** load automatically when their triggers match. Each
   `skills/<name>/SKILL.md` starts with frontmatter describing when to load
-  (`TRIGGER`) and when to skip (`SKIP`). You can also invoke one explicitly with
-  `/<skill-name>` in a Claude Code session.
+  (`TRIGGER`) and when to skip (`SKIP`). Most clients also let you invoke one
+  explicitly — `/<skill-name>` in Claude Code.
+- **Global rules** in `CLAUDE.md` apply unconditionally in Claude Code (tests
+  must exist, baseline pre-commit hooks, README kept current, rule-of-three for
+  duplication, env-var naming, versioning policy, …).
 
 ## Adding or editing a skill
 
 1. Create `skills/<my-skill>/SKILL.md`.
 2. Add YAML frontmatter with a `name`, a `description`, and clear `TRIGGER` /
-   `SKIP` guidance so Claude knows when to load it. The description is a
+   `SKIP` guidance so the client knows when to load it. The description is a
    folded block scalar (`>-`) because it embeds `TRIGGER when:` — a `:` inside
    a plain multi-line scalar is not valid YAML:
 
@@ -85,21 +123,18 @@ starts in any project on the machine.
    The actual conventions go here.
    ```
 
-3. Reference it from the "Conventions (load on demand)" section of `CLAUDE.md`.
-
 See [CONTRIBUTING.md](CONTRIBUTING.md) for validating a skill before pushing,
 and [ARCHITECTURE.md](ARCHITECTURE.md) for why conventions live in skills and
 what happens when one outgrows its token budget.
 
 ## Updating
 
+With pollen, `pollen update`. As `~/.claude`:
+
 ```bash
 cd ~/.claude
 git pull --ff-only
 ```
-
-Commit changes to `CLAUDE.md` or any skill as you would any other repo; runtime
-files stay ignored, so commits remain focused on configuration.
 
 ## Contributing
 
