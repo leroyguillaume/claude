@@ -104,7 +104,7 @@ include:
 ```
 
 - A full SHA with the version as a comment, bumped by Renovate
-  (`renovate-conventions`). Never a branch, never a bare tag.
+  (`dependency-update-conventions`). Never a branch, never a bare tag.
 - No `include: remote:` from a URL you don't control. Mirror the file into a
   project and include it by SHA.
 - `include: local:` is the repo itself and needs no pin.
