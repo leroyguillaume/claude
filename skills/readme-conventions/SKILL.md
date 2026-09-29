@@ -104,7 +104,18 @@ zero to a running project without leaving this section.
   the most common invocations after it. If the project is a library, show a
   minimal code example instead.
 - **Deployment**, when it applies — how to build the image / apply the chart /
-  run the terraform, commands only.
+  run the terraform, commands only. A published chart is installed from its
+  registry with an explicit **`--version` set to the latest stable chart
+  release**:
+
+  ```bash
+  helm install <release> oci://<registry>/charts/<chart> --version 1.4.0
+  ```
+
+  Never omit `--version`, since that makes the command install whatever is
+  newest the day someone reads it. Never write a placeholder either. The
+  number is kept in step by the release script (`release-script-conventions`),
+  not by hand.
 
 Every command must actually work as written, from a fresh clone, in that
 order. Run them if you can; a README that lies is worse than no README.

@@ -1,275 +1,173 @@
 ---
 name: github-actions-conventions
 description: >-
-  GitHub Actions / CI conventions (canonical
-  quality/build/security/chart/release workflows, mandatory Trivy scanning
-  with SARIF upload, SHA-pinned actions, OCI chart publish, multi-arch Rust
-  builds on native runners, pragmatic caching).
+  GitHub Actions mechanics — workflow file layout, SHA-pinned actions kept
+  fresh by Dependabot, `concurrency` groups (and the `workflow_call` trap),
+  Trivy SARIF upload to code scanning, `.github/release.yaml` release-note
+  categories, GitHub Releases via `gh`, native `ubuntu-24.04-arm` runners,
+  `type=gha` build cache, required checks vs `paths` filters. The
+  platform-agnostic rules (which pipelines exist, scanning policy, path
+  filters, caching) are in `ci-conventions`; load it alongside this one.
   TRIGGER when: editing or creating any file under `.github/workflows/`,
   `.github/actions/`, `.github/release.yaml`, or a composite-action
-  `action.yaml`/`action.yml`; setting up CI for a new repo on GitHub;
-  configuring container/chart publishing or releases; wiring vulnerability or
-  image scanning into CI; user asks about GitHub Actions, runners, CI cache,
-  Trivy/CVE scanning, or release automation in this repo.
-  SKIP when: pure Python/Rust/Helm/Docker work with no workflow file touched and
-  the user isn't asking about CI.
+  `action.yaml`/`action.yml`; setting up CI for a repo hosted on GitHub; user
+  asks about GitHub Actions, runners, SARIF, GitHub Releases or release
+  notes.
+  SKIP when: the repo is not on GitHub (see `gitlab-ci-conventions`), or no
+  workflow file is touched and the user isn't asking about GitHub Actions.
 ---
 
 # GitHub Actions conventions
 
-Apply these when the repo is hosted on GitHub.
+How the pipelines from `ci-conventions` are written on GitHub. One workflow
+file per canonical pipeline: `.github/workflows/quality.yaml`, `build.yaml`,
+`security.yaml`, `chart.yaml`, `release.yaml`.
 
-## YAML style (workflows and `.github/` config)
+## YAML style
 
-- **No leading `---`** document marker at the top of workflow or other
-  `.github/` config YAML files. Start directly with the first key.
-- Write the trigger key as bare **`on:`**, never quoted `"on":`. (Modern
-  parsers and `actionlint` handle the YAML truthiness of `on` fine.)
+- **No leading `---`** in workflow or other `.github/` config files. Start
+  with the first key.
+- Write the trigger key as bare **`on:`**, never quoted `"on":`.
 - Block style only, consistent with `yaml-conventions`.
 
 ## Step naming
 
-- **Every step has a `name:`** — mandatory for `uses:` steps, and expected on
-  `run:` steps too. A nameless action step reads as a bare SHA in the UI.
-- Step names start with a **lowercase letter** (not sentence-cased): `name: set
-  up the Rust toolchain`, not `name: Set up the Rust toolchain`. Proper nouns
-  inside the name keep their capitals (`Rust`, `GHCR`, `GitHub`).
-- Keep step names **static** — never interpolate a `${{ }}` expression into a
-  `name:`. A conditional/templated label adds noise for no real benefit; pick
-  one fixed name (`name: build the image`, not
-  `name: build${{ inputs.push && ' and push' || '' }}`).
+- **Every step has a `name:`**. It is mandatory for `uses:` steps and
+  expected on `run:` steps. A nameless action step reads as a bare SHA in the
+  UI.
+- Step names start with a **lowercase letter**: `name: set up the Rust
+  toolchain`. Proper nouns keep their capitals (`Rust`, `GHCR`, `GitHub`).
+- Keep step names **static**. Never interpolate `${{ }}` into a `name:`.
 
 ## Pin actions by SHA
 
 - Pin **every** `uses:` to a full commit SHA, with a trailing comment naming
-  the tag it corresponds to — and that comment must track the **latest**
-  release tag of the action:
+  the **latest** release tag it corresponds to:
   ```yaml
   - uses: actions/checkout@<40-char-sha>  # v4.2.2
   ```
-  A tag is mutable; a SHA is not. Resolve the SHA of the latest tag with
-  `git ls-remote --tags https://github.com/<owner>/<repo> '<tag>^{}'`.
+  Resolve it with `git ls-remote --tags https://github.com/<owner>/<repo>
+  '<tag>^{}'`.
 - Add **`.github/dependabot.yaml`** with the `github-actions` ecosystem so the
-  pinned SHAs (and their tag comments) are bumped automatically. The rest of
-  that file, and where Renovate fits beside it, is `renovate-conventions`.
-- Never use a bare branch or tag ref (`@v4`, `@main`, `@stable`) in a
-  committed workflow.
+  SHAs and their tag comments are bumped. The rest of that file is
+  `renovate-conventions`.
+- Never use a bare branch or tag ref (`@v4`, `@main`, `@stable`).
 
-## The canonical workflow set
+## Permissions
 
-Create exactly these workflows, conditioned on what the repo contains. Give
-each least-privilege `permissions:` (default `contents: read`; widen only in
-the job that needs it).
+Top-level `permissions: contents: read`. Widen only in the job that needs
+it: `packages: write` to push to GHCR, `security-events: write` for the SARIF
+upload, `contents: write` for `gh release create`, `packages: read` to pull a
+private image on the scheduled scan.
 
-- **`quality`** — always. Runs `pre-commit run --all-files` **and** the test
-  suite, on push to the default branch and on every pull request. Because the
-  `language: system` hooks shell out to real binaries, the job must install
-  **every** tool the hooks need (toolchain + `helm`, `helm-docs`, `hadolint`,
-  `actionlint`, …) before running `pre-commit`. This is the single quality
-  gate — do not scatter fmt/lint/test across ad-hoc workflows.
-- **`build`** — when a `Dockerfile` exists. Builds the image, and **pushes
-  only when explicitly asked**: triggered by `workflow_dispatch` (a `push`
-  boolean input) or invoked via `workflow_call` with `push: true`. On a plain
-  push/PR it builds **without** pushing (validation only). Expose `push` and
-  `version` as `workflow_call`/`workflow_dispatch` inputs. Multi-arch Rust:
-  always a **static `matrix` over both architectures** — `amd64` on
-  `ubuntu-24.04` and `arm64` on `ubuntu-24.04-arm` — each on its **own native
-  runner**. Never QEMU-emulate a Rust build, and never drop an architecture
-  from the matrix on PRs (validate both). When pushing, each arch job
-  build/pushes **by digest** and a final `manifest` job assembles the
-  multi-arch manifest (that job runs only when pushing). Derive image
-  **tags and labels with `docker/metadata-action`** — labels on each per-arch
-  build, tags in the `manifest` job (consumed from `DOCKER_METADATA_OUTPUT_JSON`
-  by `docker buildx imagetools create`). Never hand-roll tag strings.
-- **`security`** — always. The Trivy vulnerability scans (see below): `trivy
-  fs` on the repo, and `trivy image` on the published image when the repo
-  builds one. Runs on every pull request, on push to the default branch,
-  **daily on a `schedule`**, and on `workflow_dispatch` — the scheduled re-scan
-  is the whole point, since CVEs are disclosed against code that hasn't
-  changed (see "The scheduled re-scan" below). Uploads SARIF to GitHub code
-  scanning, so it needs `security-events: write` in that job and nowhere else.
-- **`chart`** — when a Helm chart exists. **Publishes** the chart as an **OCI
-  artifact** to GHCR (`helm push` → `oci://ghcr.io/<owner>/charts`). The chart
-  has its **own release lifecycle, decoupled from the app**: trigger it on a
-  dedicated tag namespace **`chart-*`** (plus `workflow_dispatch` for manual
-  publishes), never on PR (PR validation is `helm lint` inside `pre-commit`).
-  Derive the chart version from the `chart-X.Y.Z` tag and pass it to
-  `helm package --version <v>`; leave `appVersion` to `Chart.yaml` (the app
-  image the chart targets evolves independently of the chart's own version).
-  The `release` workflow does **not** publish the chart.
-- **`release`** — always (the app-release orchestrator). Triggered by pushing a
-  git tag `vX.Y.Z`. It: (1) derives the version from the tag (strip the leading
-  `v` for a SemVer image tag); (2) calls **`build`** with `push: true` and the
-  version; (3) creates a **GitHub Release** with auto-generated notes
-  (`gh release create "$TAG" --generate-notes`). The version flows from the tag
-  into the image tag **at build time** — never edit a `version`/`appVersion`
-  field in a file to cut a release. **Release the chart separately** via its
-  `chart-*` tag — the app and the chart version independently.
+## Triggers per workflow
 
-  **A pre-release tag (`vX.Y.Z-rcN`, any tag with a `-`) publishes the image
-  and stops there — no GitHub Release.** An rc exists to be tested; a release
-  page for it would carry the full auto-generated changelog, then the final
-  release would repeat it (or, diffed against the rc, show almost nothing).
-  Gate step (3) on the tag having no hyphen. And for a stable release, pass
-  **`--notes-start-tag` with the previous stable tag** (the greatest
-  `vX.Y.Z` without a hyphen below the current one, `sort -V`), so the notes
-  cover everything since the last stable version whatever rc releases exist
-  from before this rule. When there is no previous stable tag, omit the flag
-  and let GitHub pick.
-- **`.github/release.yaml`** — always, when a `release` workflow exists. The
-  GitHub auto-generated-notes config (categorise PRs by label, exclude noise).
-  `gh release create --generate-notes` reads it. GitHub files a PR under the
-  **first** category whose labels match, so **Breaking changes comes first,
-  always**: a breaking PR also carries its usual `feature`/`fix`/… label, and
-  only the order keeps it out of that section. Baseline:
+| Workflow | Triggers |
+| --- | --- |
+| `quality` | `push` to the default branch, `pull_request`, no `paths` |
+| `build` | `push`/`pull_request` with `paths`, `workflow_dispatch` and `workflow_call` with `push` and `version` inputs |
+| `security` | `push` to the default branch, `pull_request`, `schedule`, `workflow_dispatch`, no `paths` |
+| `chart` | `push` of tags `chart-*`, `workflow_dispatch` |
+| `release` | `push` of tags `v*` |
 
-  ```yaml
-  changelog:
-    exclude:
-      labels:
-        - ignore-for-release
-    categories:
-      - title: Breaking changes
-        labels:
-          - breaking
-      - title: Security
-        labels:
-          - security
-      - title: Deprecations
-        labels:
-          - deprecation
-      - title: Features
-        labels:
-          - feature
-      - title: Performance
-        labels:
-          - performance
-      - title: Fixes
-        labels:
-          - fix
-      - title: Documentation
-        labels:
-          - documentation
-      - title: Dependencies
-        labels:
-          - dependencies
-      - title: Maintenance
-        labels:
-          - chore
-      - title: Other changes
-        labels:
-          - "*"
-  ```
+Path filters do not apply to tag, `schedule`, `workflow_dispatch` or
+`workflow_call` events, so don't write them there.
 
-  Every label listed here must exist on the repo (see `github-repo-settings`).
+**A `paths`-filtered workflow must never be a required status check.** When
+the filter skips it, the check never reports and the PR waits on it forever.
+Only `quality` and `security` (never filtered) go into branch protection.
 
-## Trivy — always, and not only as a gate
+## `build` and `release`
 
-**Every repo runs Trivy in CI.** `trivy config` already runs in `pre-commit`
-(the `DS-xxxx` / `KSV-xxxx` / `AVD-xxxx` misconfiguration checks — see
-`docker-conventions`, `helm-conventions`, `terraform-conventions`); CI is
-where the *vulnerability* side lives, because that one needs a database that
-changes every day and a network to fetch it.
+- Multi-arch: a static `matrix` with `amd64` on `ubuntu-24.04` and `arm64` on
+  `ubuntu-24.04-arm`.
+- Tags and labels come from **`docker/metadata-action`**: labels on each
+  per-arch build, tags in the `manifest` job, consumed from
+  `DOCKER_METADATA_OUTPUT_JSON` by `docker buildx imagetools create`.
+- Scan before push: `docker/build-push-action` with `load: true`, then
+  `trivy image` on the loaded image, then the same build again with a push
+  by digest. That second build is a full cache hit, so the pushed layers are
+  the ones that were scanned.
+- Layer cache: `type=gha,scope=<arch>`. An unscoped `type=gha` cache is
+  shared, so the two arch jobs overwrite each other.
+- `release` calls `build` through `workflow_call` with `push: true`, then
+  `gh release create "$TAG" --generate-notes` gated on the tag containing no
+  `-`. For a stable tag, pass `--notes-start-tag` with the previous stable
+  tag.
 
-That difference is the reason the CI scan cannot be replaced by a hook: a
-misconfiguration finding is deterministic and belongs at commit time, while a
-CVE appears against code nobody touched. **A repo that only scans on PR is
-scanning the day it merged, not today** — hence the `schedule`.
+## `.github/release.yaml`
 
-What to run:
-
-- **`trivy image`** on the image the `build` workflow just produced — **before
-  it is pushed**, in the same job, on PRs too. Publishing a known-vulnerable
-  image and scanning it afterwards is the wrong order.
-- **`trivy fs`** on the checkout, for the dependency lockfiles (`Cargo.lock`,
-  `uv.lock`, `package-lock.json`) and any secret hits. This is what catches a
-  vulnerable transitive dependency the manifest never mentions.
-
-How to run it:
-
-- **Fail the build on `HIGH` and `CRITICAL`** (`exit-code: 1`,
-  `severity: HIGH,CRITICAL`). Lower severities are reported, not blocking.
-- **`ignore-unfixed: true` on the blocking gate only.** A CVE with no upstream
-  fix cannot be actioned by the contributor in front of it; blocking on it
-  just teaches everyone that the red X is normal, which is how a real finding
-  gets waved through. Report it — see SARIF below — and act on it as its own
-  piece of work.
-- **Upload SARIF to GitHub code scanning** with
-  `github/codeql-action/upload-sarif` (SHA-pinned like every other action).
-  Run the reporting scan **without** `exit-code` so the upload still happens
-  when findings exist, and give the step `if: always()` so a failed gate does
-  not swallow the report. That is what makes the non-blocking findings visible
-  instead of lost in a log.
-- Pin `aquasecurity/trivy-action` by SHA with its tag comment, like everything
-  else.
-- **Cache the vulnerability database** (`cache: true`, or an explicit
-  `~/.cache/trivy` cache). This one is worth it despite the "don't cache
-  downloads" rule: the DB is a large artefact pulled from GHCR on every run
-  across every job, and the failure mode is a rate-limited registry taking the
-  whole pipeline down, not merely a slow step.
-
-### The scheduled re-scan
-
-Every repo's `security` workflow carries both triggers, whatever else it has:
+Always present when a `release` workflow exists. `--generate-notes` reads it.
+GitHub files a PR under the **first** category whose labels match, so
+**Breaking changes comes first**. A breaking PR also carries its usual
+`feature`/`fix` label, and only the order keeps it out of that section.
 
 ```yaml
-on:
-  schedule:
-    - cron: "23 4 * * *"
-  workflow_dispatch:
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: Breaking changes
+      labels:
+        - breaking
+    - title: Security
+      labels:
+        - security
+    - title: Deprecations
+      labels:
+        - deprecation
+    - title: Features
+      labels:
+        - feature
+    - title: Performance
+      labels:
+        - performance
+    - title: Fixes
+      labels:
+        - fix
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Dependencies
+      labels:
+        - dependencies
+    - title: Maintenance
+      labels:
+        - chore
+    - title: Other changes
+      labels:
+        - "*"
 ```
 
-- **Daily.** The vulnerability DB is rebuilt several times a day; a weekly
-  scan leaves a disclosed CVE unnoticed for up to six days. Pick an **off-hour
-  minute**, never `0`: runs queued at the top of the hour are the first to be
-  delayed or dropped when Actions is under load.
-- **Scan what is published, not a rebuild.** A cron has no fresh build to
-  scan, and rebuilding `main` would pull patched base layers and report a
-  clean image that nobody runs. On `schedule`, `trivy image` targets the image
-  of the **latest stable release** in the registry (the greatest `vX.Y.Z` tag
-  without a hyphen, pulled by that tag), which needs `packages: read` for a
-  private GHCR image. `trivy fs` runs on the default branch checkout as usual.
-  A repo that publishes no image runs the `trivy fs` scan alone.
-- **Keep the gate on the scheduled run.** Nobody is waiting on a cron, so its
-  failure is the notification: a red scheduled run is how a new `HIGH` /
-  `CRITICAL` CVE reaches someone. Same `exit-code` / `ignore-unfixed` split as
-  above, same `if: always()` SARIF upload.
-- **Give each SARIF upload its own `category`** (`trivy-fs`, `trivy-image`).
-  Code scanning keys alerts on the category; two uploads sharing one replace
-  each other, and the alerts of the first scan are closed as "fixed".
-- **Scheduled workflows only run from the default branch**, and GitHub
-  **disables them after 60 days without activity** on a public repo, silently.
-  A dormant repo that still ships an image needs it re-enabled from the
-  Actions tab; the `workflow_dispatch` trigger is also what makes a manual
-  re-scan possible after a fix.
+Every label listed here must exist on the repo (see `github-repo-settings`).
 
-**No self-authorised ignores** — same standing rule as everywhere else. Do not
-add a `.trivyignore` entry, a `--skip-dirs`, or a severity downgrade to get a
-green run. Fix the finding at the source: bump the dependency, change the base
-image, fix the misconfiguration. If an entry is genuinely unavoidable, the
-user decides, and it carries a comment with the CVE, the reason, and the
-condition that lifts it — never a bare ID.
+## Trivy on GitHub
 
-## Path filters — don't trigger for nothing
+- `aquasecurity/trivy-action`, SHA-pinned. `cache: true` for the DB.
+- The gate step: `exit-code: 1`, `severity: HIGH,CRITICAL`,
+  `ignore-unfixed: true`.
+- The reporting step: `format: sarif`, **no** `exit-code`, then
+  `github/codeql-action/upload-sarif` with `if: always()` so a failed gate
+  doesn't swallow the report.
+- **Each SARIF upload has its own `category`** (`trivy-fs`, `trivy-image`).
+  Code scanning keys alerts on it. Two uploads sharing one replace each other,
+  and the first scan's alerts get closed as "fixed".
+- The schedule:
+  ```yaml
+  on:
+    schedule:
+      - cron: "23 4 * * *"
+    workflow_dispatch:
+  ```
+  **Scheduled workflows only run from the default branch**, and GitHub
+  **disables them after 60 days without activity** on a public repo, without
+  telling anyone. A dormant repo that still ships an image needs it
+  re-enabled from the Actions tab.
 
-- A workflow triggered on `push`/`pull_request` must carry a **`paths:`** (or
-  `paths-ignore:`) filter so it only runs when files that actually affect it
-  change. A multi-arch image `build` must not fire on a docs-only or
-  chart-only change; scope it to its real inputs (e.g. `src/**`, `Cargo.toml`,
-  `Cargo.lock`, `Dockerfile`, `.dockerignore`, and the workflow file itself).
-- **Exception — the `quality` workflow (pre-commit + tests) is never
-  path-filtered.** It is the universal gate and must run on every push and pull
-  request, whatever changed.
-- Tag-triggered workflows (`chart` on `chart-*`, `release` on `v*`),
-  `schedule`, and `workflow_dispatch` / `workflow_call` take **no** `paths` —
-  path filters do not apply to those events.
-- **The `security` workflow is not path-filtered either**, for the same reason
-  as `quality`: a new CVE lands without any file changing.
+## Concurrency
 
-## Concurrency — one run per workflow per ref
-
-**Every** workflow carries a top-level `concurrency:` block keyed on the ref, so
-two runs of the same workflow never overlap on the same branch or tag:
+Every workflow has a top-level block:
 
 ```yaml
 concurrency:
@@ -277,56 +175,24 @@ concurrency:
   cancel-in-progress: true
 ```
 
-- **`cancel-in-progress: true`, always — no exceptions, publishing workflows
-  included.** A run for a superseded commit is dead weight; kill it and free the
-  runner. Do not reach for `false` on `release`/`chart` to protect a push
-  mid-flight: registries are the place to make a partial publish safe (immutable
-  tags, digest-addressed pushes, a re-run of the same tag), not the concurrency
-  block. Never write `cancel-in-progress: false`, and never make it conditional
-  on the event.
-- **In a reusable (`workflow_call`) workflow, hardcode the workflow name in the
-  group instead of `${{ github.workflow }}`.** In a called run that expression
-  resolves to the **caller**, so `build` would land in the same group as
-  `release` and cancel the very job waiting on it. Write
-  `group: build-${{ github.ref }}`.
-- Key on `github.ref`, not `github.head_ref` — the latter is empty outside
-  `pull_request` events and would collapse every push into one shared group.
+- `cancel-in-progress: true`, literally. Never `false`, never an expression.
+- **In a `workflow_call` workflow, hardcode the name**:
+  `group: build-${{ github.ref }}`. In a called run `github.workflow`
+  resolves to the **caller**, so `build` would share `release`'s group and
+  cancel the very job waiting on it.
+- Key on `github.ref`, not `github.head_ref`. The latter is empty outside
+  `pull_request`, and every push would collapse into one group.
 
-## Cache deliberately, and pragmatically
+## Lint
 
-Cache what is expensive to **recompute**, not what is cheap to **re-download**.
-The crates.io / registry download is fast; restoring a large dependency cache
-can be **slower** than a clean fetch, and a stale cache is worse than none.
+The `actionlint` pre-commit hook, always, on a repo with workflows.
 
-- **Keep**: the Docker layer cache, scoped **per architecture**
-  (`type=gha,scope=<arch>`) so the two arch runners never clobber each other;
-  and the compiled-dependency cache (`cargo-chef` in the `Dockerfile`,
-  `Swatinem/rust-cache` for non-Docker Rust jobs) — these cache **CPU work**,
-  not downloads.
-- **Skip**: caches wrapped around a fast download just because you can. Measure
-  before adding one.
-
-**Never:**
+## Never
 
 - Never start a workflow file with `---`, and never quote `"on"`.
-- Never use a bare branch/tag action ref — pin the SHA (with a tag comment) and
-  let Dependabot bump it.
-- Never push an image or publish a chart on a pull request; pushing happens only
-  via `workflow_dispatch` or the `release` orchestration.
-- Never cut a release by editing a version field — derive the version from the
-  git tag at build time.
-- Never create a GitHub Release for a pre-release (`-rcN`) tag, and never let
-  a stable release's generated notes start from an rc.
-- Never QEMU-emulate a Rust multi-arch build when native runners exist, and
-  never share one unscoped build cache across architectures.
-- Never split the quality gate: `pre-commit` + tests live in the single
-  `quality` workflow.
-- Never push or publish an image that has not been Trivy-scanned in the same
-  job first, and never silence a finding with a `.trivyignore` entry,
-  `--skip-dirs` or a severity downgrade to get a green run.
-- Never rely on the PR scan alone — without the daily scheduled re-scan of the
-  published image the repo only knows about the CVEs that existed on merge
-  day.
-- Never ship a workflow without a `concurrency:` group, and never set
-  `cancel-in-progress` to anything but `true` — not `false`, not an expression,
-  not even on `release`/`chart`.
+- Never use a bare branch/tag action ref.
+- Never make a `paths`-filtered workflow a required check.
+- Never share one unscoped `type=gha` cache across architectures.
+- Never use `${{ github.workflow }}` in the concurrency group of a reusable
+  workflow.
+- Never let two SARIF uploads share a `category`.
