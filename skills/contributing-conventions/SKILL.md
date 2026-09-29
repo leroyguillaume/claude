@@ -11,7 +11,7 @@ description: >-
   the repo, or where to document the CI.
   SKIP when: writing the user-facing `README.md` (that is `readme-conventions`)
   or authoring the workflow/hook files themselves (that is
-  `github-actions-conventions` / `pre-commit-conventions`).
+  `ci-conventions` and its platform skills / `pre-commit-conventions`).
 ---
 
 # CONTRIBUTING conventions

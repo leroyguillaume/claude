@@ -281,8 +281,9 @@ missing:
       (see `helm-conventions` skill)
 - [ ] For Docker: non-root `USER` in every `Dockerfile`, `hadolint` hook
       (see `docker-conventions` skill)
-- [ ] For GitHub-hosted repos: CI workflow running `pre-commit`,
-      `actionlint` hook (see `github-actions-conventions` skill)
+- [ ] CI running `pre-commit` and the tests (see `ci-conventions` skill);
+      on GitHub with an `actionlint` hook (`github-actions-conventions`),
+      on GitLab with a `check-gitlab-ci` hook (`gitlab-ci-conventions`)
 
 ## Baseline `.pre-commit-config.yaml` hooks
 

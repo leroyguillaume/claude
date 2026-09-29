@@ -71,6 +71,9 @@ Anything generated from the version must be regenerated in the same commit, or
 the release commit fails its own pre-commit gate:
 
 - `helm-docs` chart READMEs — the badges embed `version` **and** `appVersion`
+- the `helm install … --version X.Y.Z` command in the root `README.md`, on a
+  stable chart release only, since an rc must not become what the README
+  tells people to install
 - lockfiles — handled by the ecosystem tool above
 - any `--help` dump or generated doc that prints the version
 
@@ -144,7 +147,8 @@ to run when the committed file disagrees:
 ```
 
 This is what makes hand-tagging fail fast instead of publishing a mislabelled
-artefact.
+artefact. For a stable chart tag, the guard checks both `version` in
+`Chart.yaml` and the `--version` in the README's `helm install` command.
 
 ## `--dry-run`
 

@@ -174,7 +174,7 @@ A test suite is none of those things:
   parallel, with the services it needs.
 
 So: **the test suite belongs in CI**, in the `quality` workflow next to
-`pre-commit run --all-files` (see `github-actions-conventions`), as its own
+`pre-commit run --all-files` (see `ci-conventions`), as its own
 job. Not in `.pre-commit-config.yaml`.
 
 If a repo already has a test hook, **remove it and add the CI job in the same
