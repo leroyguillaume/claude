@@ -158,6 +158,7 @@ it blocks, and how to reproduce it locally.** A table carries this well:
 | --- | --- | --- | --- |
 | `quality.yaml` | every PR | `pre-commit run --all-files`, unit tests | `pre-commit run --all-files` |
 | `build.yaml` | every PR, `main` | builds the image, `trivy` scan | `docker build .` |
+| `security.yaml` | every PR, `main`, daily | `trivy fs`, `trivy image` on the latest release | `trivy fs .` |
 | `release.yaml` | tag `v*` | publishes image + chart | — |
 ```
 
