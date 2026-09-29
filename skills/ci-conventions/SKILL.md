@@ -165,7 +165,7 @@ by letting stale runs finish.
 - **Every reference to third-party pipeline code is immutable**: an action or
   an included template/component pinned to a full commit SHA with the
   version in a comment, kept fresh by the dependency bot
-  (`renovate-conventions`). A mutable tag or branch is somebody else's
+  (`dependency-update-conventions`). A mutable tag or branch is somebody else's
   deploy key into your pipeline.
 - Tool images are pinned to an exact version tag, never `latest`.
 

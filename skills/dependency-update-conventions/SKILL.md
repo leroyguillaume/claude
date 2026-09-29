@@ -1,19 +1,22 @@
 ---
-name: renovate-conventions
+name: dependency-update-conventions
 description: >-
-  Dependency-update bot conventions — on GitHub, Dependabot for
-  everything it supports and Renovate only for the remainder (never both on
-  one ecosystem); off GitHub, Renovate for the lot. Never automerge, ever.
-  Dependency dashboard always on.
+  Dependency-update bot conventions, Dependabot and Renovate alike — on
+  GitHub, Dependabot for everything it supports and Renovate only for the
+  remainder (never both on one ecosystem); off GitHub, Renovate for the lot.
+  Never automerge, ever. Dependency dashboard always on. Packages released in
+  lockstep are grouped into one PR, majors included.
   TRIGGER when: creating or editing `renovate.json`/`.json5`/`.renovaterc`,
   a `renovate` key in `package.json`, or `.github/dependabot.yml`/`.yaml`;
   setting up automated dependency updates for a repo; adding a custom/regex
-  manager for a version string no manager knows; user asks about Renovate,
-  Dependabot, dependency PRs, grouping or update scheduling.
-  SKIP when: bumping a dependency by hand with no bot configuration involved.
+  manager for a version string no manager knows; triaging, merging or
+  working through open Dependabot/Renovate PRs; a bot PR failing CI,
+  especially several failing on the same package family; user asks about
+  Renovate, Dependabot, dependency PRs, grouping or update scheduling.
+  SKIP when: bumping a dependency by hand with no bot involved.
 ---
 
-# Renovate / Dependabot conventions
+# Dependency-update conventions
 
 ## On GitHub, Dependabot first
 
@@ -98,17 +101,82 @@ number of presses down with **grouping and scheduling**, never with automerge:
 
 - group patch and minor updates per ecosystem into one PR; keep every major
   on its own, because that one needs the release notes read;
-- **group what must move together**, which is a different reason and the one
-  that prevents breakage rather than noise: two charts version-locked
-  upstream, or the chart and the CRD set that are two sources of one
-  `Application`. Split across two PRs, one of them merges alone and the
-  cluster is briefly in a combination nobody tested. Match by file
-  (`matchFileNames`) when the second dependency's `depName` is a git URL
-  rather than a chart name;
+- **group what must move together** — a different reason, which prevents
+  breakage rather than noise; see the next section;
 - `minimumReleaseAge` (Renovate) / `cooldown` (Dependabot) so a release has to
   survive a few days in the wild before it is proposed;
 - `prConcurrentLimit` / `open-pull-requests-limit` so the queue stays a queue
   and not a wall.
+
+## Group what must move together
+
+Some packages are released in lockstep: a core crate and its SDK and
+exporters, a framework and its integrations, two charts version-locked
+upstream, the chart and the CRD set that are two sources of one `Application`.
+A bot opens **one PR per package**, and each of them is broken on its own —
+either it fails to build, or it merges alone and runs a combination nobody
+tested.
+
+**Spot it on the PRs themselves.** Several bot PRs for the same family, opened
+together, all red with type or trait mismatches between sibling packages
+(`expected X, found X` naming two versions of one crate, a method or trait
+impl that "does not exist" on a type from the sibling), are one lockstep
+group, not N bugs. Bumping one member leaves two versions of the core in the
+dependency graph; that is the whole error.
+
+**Then, instead of patching each PR:**
+
+1. Open one PR that bumps the whole family together, and fix the code there
+   if the new release genuinely needs it — usually it does not.
+2. Add the group to the bot config **in that same PR**, so the next release
+   arrives as one PR.
+3. Close the bot PRs it supersedes, each with a comment naming the PR that
+   replaces them.
+
+**The group takes every update type, majors included.** A lockstep family
+breaks on a major exactly as on a minor, and `0.x` families bump the minor for
+a breaking release anyway. Dependabot puts a dependency in the **first**
+matching group, so list lockstep groups before the patch/minor catch-all:
+
+```yaml
+- package-ecosystem: cargo
+  directory: /
+  schedule:
+    interval: weekly
+  groups:
+    # The SDK and exporters only compile against the matching
+    # `opentelemetry` release: bumped one at a time, each PR fails to build.
+    opentelemetry:
+      patterns:
+        - opentelemetry*
+```
+
+Renovate's `config:recommended` already groups the monorepos it knows
+(`group:monorepos`); add a rule only for a family it misses, and match by file
+(`matchFileNames`) when a member's `depName` is a git URL rather than a
+package name:
+
+```json
+{
+  "packageRules": [
+    {
+      "description": "SDK and exporters only compile against the matching opentelemetry release",
+      "matchPackageNames": ["opentelemetry*"],
+      "groupName": "opentelemetry"
+    }
+  ]
+}
+```
+
+Families that are known to move together — examples, not a whitelist; the
+failing PRs above are the real signal:
+
+| Ecosystem | Family |
+| --- | --- |
+| cargo | `opentelemetry*`; `tonic*` with `prost*`; `aws-sdk-*` with `aws-config`, `aws-smithy-*` |
+| npm | `@astrojs/*` with `astro`; `react` with `react-dom`; `@typescript-eslint/*` |
+| pip | `boto3` with `botocore` |
+| Helm / Argo CD | a chart and its separately-sourced CRDs |
 
 ## Dependency dashboard on
 
@@ -293,7 +361,9 @@ only, per `yaml-conventions`.
   (see `github-actions-conventions`).
 - Set `labels` to the same changelog-category label as Renovate's, and
   `open-pull-requests-limit` to something a human can actually work through.
-- **`groups`** for patch/minor per ecosystem; majors ungrouped.
+- **`groups`** for patch/minor per ecosystem; majors ungrouped — except
+  lockstep families, grouped whatever the update type and listed first (see
+  "Group what must move together").
 - **`cooldown`** for the same reason as Renovate's `minimumReleaseAge`.
 - **OCI registries: use a `docker-registry` entry, not `helm-registry`.** The
   Helm registry type does HTTP Basic auth against a classic chart repository
@@ -316,3 +386,5 @@ only, per `yaml-conventions`.
 - Never document a rule with a comment when it takes a `description`.
 - Never let a bot PR go in without the changelog-category label the repo's
   release notes sort on.
+- Never patch lockstep bot PRs one by one — bump the family together and add
+  the group in the same PR.

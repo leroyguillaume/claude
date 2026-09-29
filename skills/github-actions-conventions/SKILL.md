@@ -52,7 +52,7 @@ documentation site.
   '<tag>^{}'`.
 - Add **`.github/dependabot.yaml`** with the `github-actions` ecosystem so the
   SHAs and their tag comments are bumped. The rest of that file is
-  `renovate-conventions`.
+  `dependency-update-conventions`.
 - Never use a bare branch or tag ref (`@v4`, `@main`, `@stable`).
 
 ## Permissions
