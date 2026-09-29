@@ -14,5 +14,8 @@
 !/README.md
 !/skills/
 
+# Claude Code mirrors the claude.ai account's skills here on every session
+/skills/synced/
+
 # macOS Finder metadata, at any depth (including allowed-back directories)
 .DS_Store
