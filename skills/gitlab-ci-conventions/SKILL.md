@@ -1,19 +1,19 @@
 ---
 name: gitlab-ci-conventions
 description: >-
-  GitLab CI mechanics, written for a self-managed instance of any tier —
+  GitLab CI mechanics, for a self-managed instance of any tier —
   `workflow:rules` against duplicate branch/MR pipelines, `interruptible` +
   `auto_cancel`, the `rules:changes` traps, SHA-pinned `include`/components,
   protected tags and variables for publishing, scan-before-push image builds
   on per-arch runners, Trivy reports (`junit` on every tier,
   `container_scanning` on Ultimate), pipeline schedules, GitLab Releases with
-  changelog-API notes, `check-gitlab-ci` linting. The platform-agnostic rules
-  are in `ci-conventions`; load it alongside this one.
+  changelog-API notes, Pages, `check-gitlab-ci` linting. The
+  platform-agnostic rules are in `ci-conventions`; load it alongside this one.
   TRIGGER when: creating or editing `.gitlab-ci.yml`, anything under
   `.gitlab/ci/`, `.gitlab/changelog_config.yml`, or a CI/CD component
   `templates/*.yml`; setting up CI for a repo hosted on GitLab; user asks
   about GitLab CI rules, pipelines, runners, schedules, the vulnerability
-  report or GitLab Releases.
+  report, GitLab Releases or Pages.
   SKIP when: the repo is on GitHub (see `github-actions-conventions`), or no
   GitLab CI file is touched and the user isn't asking about GitLab CI.
 ---
@@ -28,7 +28,7 @@ vary, so read them from the repo or ask. Never guess a runner tag.
 
 - One `.gitlab-ci.yml`. Once it passes a couple of hundred lines, split it
   into `.gitlab/ci/<pipeline>.yml` (`quality`, `build`, `security`, `chart`,
-  `release`), pulled in with `include: local:`.
+  `release`, `docs`), pulled in with `include: local:`.
 - Each canonical pipeline is a **set of jobs**, not a file. Name jobs in
   lowercase kebab-case after what they do (`pre-commit`, `test`,
   `build-image`, `trivy-fs`), and keep them static. A `parallel: matrix`
@@ -209,6 +209,66 @@ release:
 On `$CI_COMMIT_TAG =~ /^chart-\d+\.\d+\.\d+$/` and manual runs: `helm
 package --version <v>` then `helm push` to `oci://<registry>/charts`.
 
+## `docs` and GitLab Pages
+
+What the pipeline does is in `starlight-conventions`. On GitLab:
+
+- **Any pipeline that runs a Pages job deploys**, whatever its ref; there is no
+  environment protection to fall back on. The `rules` are the only guard.
+- Two jobs. `docs-build` runs on MRs touching the site (validation only) and
+  on the default branch. `pages` deploys: a job with the `pages:` keyword,
+  `pages: publish: public`, run on the default branch only, never on a
+  schedule:
+  ```yaml
+  pages:
+    stage: deploy
+    image: node:24-bookworm-slim  # the major in docs/.nvmrc
+    variables:
+      GIT_DEPTH: 0
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "schedule"
+        when: never
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "pipeline"
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+        changes:
+          paths:
+            - docs/**/*
+            - logo.svg
+            - .gitlab/ci/docs.yml
+    script:
+      - git fetch --tags --force origin
+      - npm ci --prefix docs
+      - npm --prefix docs run build:versions
+      - mv docs/dist public
+    pages:
+      publish: public
+  ```
+  `docs-build` is the same script without `pages:`, with the MR rule instead.
+  On an instance older than the `pages:` keyword, the job must be named
+  `pages` and publish `public` through `artifacts: paths:`.
+- `GIT_DEPTH: 0` plus an explicit `git fetch --tags`: the runner's fetch
+  refspecs do not bring the release tags, and a shallow clone sees no version.
+- **After a stable release, deploy from the default branch, not the tag.** The
+  `release` job's pipeline triggers one on the default branch, which arrives
+  with `$CI_PIPELINE_SOURCE == "pipeline"` (hence the `pages` rule above):
+  ```yaml
+  docs:
+    stage: release
+    needs:
+      - release
+    rules:
+      - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    trigger:
+      project: $CI_PROJECT_PATH
+      branch: $CI_DEFAULT_BRANCH
+  ```
+- **The URL depends on the instance and the project**: new projects get a
+  unique domain served at `/`, others `<group>.<pages-domain>/<project>`, and
+  a custom domain overrides both. Read it from the project's Pages settings
+  before setting `site`/`base`.
+- Parallel deployments (`pages: path_prefix:`) are not how versions are
+  served: every version is built into the one artifact.
+
 ## Lint
 
 - The `check-gitlab-ci` hook from `check-jsonschema`, which validates against
@@ -225,3 +285,4 @@ package --version <v>` then `helm push` to `oci://<registry>/charts`.
   pipeline.
 - Never download a Trivy report template at run time.
 - Never create a GitLab Release for a tag with a `-`.
+- Never let a Pages job run outside the default branch.

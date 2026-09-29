@@ -5,14 +5,15 @@ description: >-
   fresh by Dependabot, `concurrency` groups (and the `workflow_call` trap),
   Trivy SARIF upload to code scanning, `.github/release.yaml` release-note
   categories, GitHub Releases via `gh`, native `ubuntu-24.04-arm` runners,
-  `type=gha` build cache, required checks vs `paths` filters. The
+  `type=gha` build cache, required checks vs `paths` filters, the `docs`
+  workflow deploying to GitHub Pages. The
   platform-agnostic rules (which pipelines exist, scanning policy, path
   filters, caching) are in `ci-conventions`; load it alongside this one.
   TRIGGER when: editing or creating any file under `.github/workflows/`,
   `.github/actions/`, `.github/release.yaml`, or a composite-action
   `action.yaml`/`action.yml`; setting up CI for a repo hosted on GitHub; user
-  asks about GitHub Actions, runners, SARIF, GitHub Releases or release
-  notes.
+  asks about GitHub Actions, runners, SARIF, GitHub Releases, release notes
+  or GitHub Pages.
   SKIP when: the repo is not on GitHub (see `gitlab-ci-conventions`), or no
   workflow file is touched and the user isn't asking about GitHub Actions.
 ---
@@ -21,7 +22,8 @@ description: >-
 
 How the pipelines from `ci-conventions` are written on GitHub. One workflow
 file per canonical pipeline: `.github/workflows/quality.yaml`, `build.yaml`,
-`security.yaml`, `chart.yaml`, `release.yaml`.
+`security.yaml`, `chart.yaml`, `release.yaml`, and `docs.yaml` for a
+documentation site.
 
 ## YAML style
 
@@ -69,6 +71,7 @@ private image on the scheduled scan.
 | `security` | `push` to the default branch, `pull_request`, `schedule`, `workflow_dispatch`, no `paths` |
 | `chart` | `push` of tags `chart-*`, `workflow_dispatch` |
 | `release` | `push` of tags `v*` |
+| `docs` | `push` to the default branch and `pull_request` with `paths`, `workflow_dispatch` |
 
 Path filters do not apply to tag, `schedule`, `workflow_dispatch` or
 `workflow_call` events, so don't write them there.
@@ -94,6 +97,48 @@ Only `quality` and `security` (never filtered) go into branch protection.
   `gh release create "$TAG" --generate-notes` gated on the tag containing no
   `-`. For a stable tag, pass `--notes-start-tag` with the previous stable
   tag.
+
+## `docs` and GitHub Pages
+
+What the pipeline does is in `starlight-conventions`. On GitHub:
+
+- **Pages source is "GitHub Actions"**: check with `gh api
+  repos/<o>/<r>/pages --jq .build_type` (`workflow`). A custom domain is set
+  in the repository's Pages settings (`.cname` in that answer), and the site's
+  `site`/`base` follow it. No `CNAME` file is needed with an Actions
+  deployment.
+- Two jobs. `build` checks out with `fetch-depth: 0` (the release tags), runs
+  `actions/setup-node` with `node-version-file: docs/.nvmrc`, `npm ci`, and the
+  versioned build, then `actions/upload-pages-artifact` with `path: docs/dist`
+  on non-PR runs of the default branch only. `deploy` (`needs: build`, same
+  condition) runs `actions/deploy-pages` in `environment: github-pages` with
+  `url: ${{ steps.deploy.outputs.page_url }}`.
+- `permissions: pages: write` and `id-token: write` on `deploy` alone; the
+  workflow stays `contents: read`.
+- **The `github-pages` environment deploys from the default branch only**, so
+  a tag run cannot deploy. After a stable release, `release` dispatches the
+  docs on the default branch, in a job that `needs:` the GitHub Release job
+  (skipped for an rc, so the docs are too):
+  ```yaml
+  docs:
+    name: docs
+    needs:
+      - github-release
+    permissions:
+      actions: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: rebuild the documentation site
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: gh workflow run docs.yaml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH"
+  ```
+  A `workflow_dispatch` sent with `GITHUB_TOKEN` does start a run, unlike most
+  events that token triggers.
+- `docs` is `paths`-filtered, so it is never a required check. The site's
+  tests run in `quality`, in their own job.
+- No npm cache in `setup-node`: it caches a download.
 
 ## `.github/release.yaml`
 
@@ -196,3 +241,4 @@ The `actionlint` pre-commit hook, always, on a repo with workflows.
 - Never use `${{ github.workflow }}` in the concurrency group of a reusable
   workflow.
 - Never let two SARIF uploads share a `category`.
+- Never deploy Pages from a tag run; dispatch the docs on the default branch.
