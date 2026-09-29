@@ -4,12 +4,14 @@ description: >-
   GitHub repository settings administered via the `gh` CLI — sync
   issue/PR labels to the set referenced in `.github/release.yaml` (always
   including a `breaking` label), restrict
-  the allowed merge methods to squash-only, and auto-delete head branches on
-  merge.
+  the allowed merge methods to squash-only, auto-delete head branches on
+  merge, and enable GitHub Pages in GitHub Actions deploy mode.
   TRIGGER when: the user asks to configure/clean up the GitHub repo's labels,
   align labels with the release changelog config, change which merge buttons
-  (squash / merge commit / rebase) a repo allows, or toggle automatic
-  head-branch deletion after merge.
+  (squash / merge commit / rebase) a repo allows, toggle automatic
+  head-branch deletion after merge, or enable/fix GitHub Pages; a repo gains a
+  workflow using `actions/deploy-pages` (a `docs` pipeline); a Pages deploy
+  fails because Pages is off or set to deploy from a branch.
   SKIP when: editing workflow logic or release-note categories themselves (that
   is `github-actions-conventions`), or any work that does not touch repo
   settings.
@@ -130,3 +132,49 @@ gh repo view --json deleteBranchOnMerge   # verify -> {"deleteBranchOnMerge":tru
 Once on, merging a PR deletes its head branch automatically (the branch is still
 recoverable from the PR's "Restore branch" button for a while). Pass
 `--delete-branch-on-merge=false` to turn it back off.
+
+## Enable GitHub Pages in GitHub Actions mode
+
+Any repo with a workflow that runs `actions/deploy-pages` (the `docs` pipeline
+of `github-actions-conventions`) needs Pages switched on with **source "GitHub
+Actions"** (`build_type: workflow`), never "Deploy from a branch" (`legacy`).
+Without it the `deploy` job fails with a 404 from the Pages API, and a
+`legacy` source would publish a `gh-pages` branch instead of the uploaded
+artifact. Do it as soon as the workflow lands, not after its first red run.
+
+Check first — the answer decides between create and update:
+
+```bash
+unset GITHUB_TOKEN
+gh api repos/{owner}/{repo}/pages --jq '{build_type, html_url, cname}'
+```
+
+A 404 means Pages is off; create it:
+
+```bash
+unset GITHUB_TOKEN
+gh api -X POST repos/{owner}/{repo}/pages -f build_type=workflow
+```
+
+Already on with `"build_type": "legacy"`; switch it:
+
+```bash
+unset GITHUB_TOKEN
+gh api -X PUT repos/{owner}/{repo}/pages -f build_type=workflow
+```
+
+Verify — `build_type` must read `workflow`:
+
+```bash
+unset GITHUB_TOKEN
+gh api repos/{owner}/{repo}/pages --jq .build_type
+```
+
+Notes:
+
+- `gh api` fills `{owner}` and `{repo}` from the current directory's `origin`.
+- `html_url` in the answer is the public URL; a Starlight site's `site`/`base`
+  follow it (see `starlight-conventions`). Leave `cname` alone unless the user
+  asks for a custom domain — setting one changes every URL of the site.
+- Pages on a private repo needs a paid plan; the POST then fails with a 422.
+  Say so rather than making the repo public.

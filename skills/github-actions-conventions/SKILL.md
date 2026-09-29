@@ -103,7 +103,8 @@ Only `quality` and `security` (never filtered) go into branch protection.
 What the pipeline does is in `starlight-conventions`. On GitHub:
 
 - **Pages source is "GitHub Actions"**: check with `gh api
-  repos/<o>/<r>/pages --jq .build_type` (`workflow`). A custom domain is set
+  repos/<o>/<r>/pages --jq .build_type` (`workflow`). Switching it on is
+  `github-repo-settings`' job. A custom domain is set
   in the repository's Pages settings (`.cname` in that answer), and the site's
   `site`/`base` follow it. No `CNAME` file is needed with an Actions
   deployment.
