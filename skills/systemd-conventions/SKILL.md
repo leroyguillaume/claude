@@ -89,6 +89,7 @@ SystemCallArchitectures=native
 SystemCallFilter=@system-service
 UMask=0077
 StateDirectory=myapp
+StateDirectoryMode=0700
 ```
 
 What each of the load-bearing ones actually buys, since a directive nobody
@@ -121,13 +122,16 @@ plus `chown` in provisioning:
 
 | Need | Directive | Path | Owner/mode |
 | --- | --- | --- | --- |
-| Persistent state | `StateDirectory=myapp` | `/var/lib/myapp` | service user, `0700` |
-| Runtime sockets/PIDs | `RuntimeDirectory=myapp` | `/run/myapp` | service user, `0700`, wiped on stop |
-| Caches | `CacheDirectory=myapp` | `/var/cache/myapp` | service user, `0700` |
-| Own log files | `LogsDirectory=myapp` | `/var/log/myapp` | service user, `0700` |
+| Persistent state | `StateDirectory=myapp` + `StateDirectoryMode=0700` | `/var/lib/myapp` | service user, `0700` |
+| Runtime sockets/PIDs | `RuntimeDirectory=myapp` + `RuntimeDirectoryMode=0700` | `/run/myapp` | service user, `0700`, wiped on stop |
+| Caches | `CacheDirectory=myapp` + `CacheDirectoryMode=0700` | `/var/cache/myapp` | service user, `0700` |
+| Own log files | `LogsDirectory=myapp` + `LogsDirectoryMode=0700` | `/var/log/myapp` | service user, `0700` |
 | Config | `ConfigurationDirectory=myapp` | `/etc/myapp` | root-owned, readable |
 
-systemd creates them with the right owner and mode before `ExecStart=`, and
+Every `*DirectoryMode=` defaults to `0755`, and `UMask=` does not apply to
+these directories — without the explicit mode, the rest of the box can list
+and read them. systemd creates them with the right owner and mode before
+`ExecStart=`, and
 recreates them if they are missing — provisioning that pre-creates them by
 hand is one `chown` away from being wrong and never noticed. `ReadWritePaths=`
 is the last resort, for a path the app does not own (a data mount, a socket

@@ -13,8 +13,9 @@ description: >-
 
 These rules govern any reconcile path: the handler itself and everything it
 calls (clients, token providers, DB access). The mechanics below are written
-for **kopf**; the same principles map onto controller-runtime
-(`return ctrl.Result{Requeue: true}, err`) and Operator SDK.
+for **kopf**; the same principles map onto controller-runtime and Operator
+SDK: `return ctrl.Result{}, err` (the `Result` is ignored when `err` is
+non-nil), or `ctrl.Result{RequeueAfter: d}, nil` for a chosen delay.
 
 ## Error handling — always requeue, never abandon
 
@@ -47,8 +48,8 @@ This is the non-negotiable core rule.
 - **Centralise this in one module** exposing a single requeue chokepoint plus
   helpers that extract the cause from each client's error, log it, and
   requeue. Route every reconcile-path failure through it instead of scattering
-  bare status checks and re-raises. Extract a shared helper by CLAUDE.md's rule
-  of three: on the third copy, not before.
+  bare status checks and re-raises. Extract a shared helper on the third copy of
+  the same logic, not before.
 - **Validate the spec first** and requeue on invalid input the same way — a
   malformed spec is a slow-retry client error, not a silent no-op and not a
   crash.

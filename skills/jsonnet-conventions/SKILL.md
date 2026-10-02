@@ -132,7 +132,7 @@ runtime with no clue pointing back here.
 
   ```jsonnet
   if !std.objectHas(config, 'oidc') then
-    error 'config.oidc is missing; SSO cannot be rendered without it'
+    error 'config.oidc is missing: add an oidc block to config/<env>.json'
   ```
 
 ## Idioms
@@ -179,7 +179,7 @@ provider-agnostic.
 Instead:
 
 - Write **one function per provider** in a library, named after the provider
-  (`promptLogs.gcp(bucket)`, `promptLogs.azure(account, fileSystem)`), each
+  (`bucketLogs.gcp(bucket)`, `bucketLogs.azure(account, fileSystem)`), each
   taking exactly the arguments that provider needs — no optional parameters
   covering the other one.
 - **Call it from the jsonnet that already knows the provider** — the file
