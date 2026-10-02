@@ -21,11 +21,11 @@ workflows, docs, and example snippets in `README.md`.
 
   ```yaml
   applications:
-    kubeflow:
+    app:
       enabled: true
   ```
 
-  not `kubeflow: { enabled: true }`. The only acceptable inline form is an
+  not `app: { enabled: true }`. The only acceptable inline form is an
   intentionally empty collection (`{}` / `[]`).
 
 - **Never write inline arrays.** A sequence must use block style, one item per
@@ -33,13 +33,13 @@ workflows, docs, and example snippets in `README.md`.
 
   ```yaml
   ports:
-    - "11434:11434"
+    - "8080:8080"
   command:
     - /bin/sh
     - -c
   ```
 
-  not `ports: ["11434:11434"]` or `command: ["/bin/sh", "-c"]`. The only
+  not `ports: ["8080:8080"]` or `command: ["/bin/sh", "-c"]`. The only
   exception is an intentionally empty list (`[]`).
 
 - **Never open a file with `---`.** The document start marker is optional in

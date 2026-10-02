@@ -36,3 +36,14 @@ mechanics (library, level names, env var) where they need to be made concrete.
 - Use the language's standard structured logging library, configured once at
   process start; never `print`/`println`/`echo`/`console.log` for
   diagnostics.
+
+## Log format — default to `text`, not `json`
+
+- **Default the log format to `text`, never `json`.** A human reading
+  `kubectl logs`, `docker logs` or a terminal parses key=value far more easily
+  than one JSON object per line. JSON is opt-in, for deployments whose log
+  pipeline parses it.
+- Drive it off `LOG_FORMAT` (`text` | `json`, default `text`) and keep the
+  **binary's default and every deployment default in sync** — a Helm chart's
+  `logging.format` value that disagrees with what the binary does on its own is
+  a bug.

@@ -6,8 +6,9 @@ on:
       - main
   pull_request:
   schedule:
-    # A CVE lands without any file changing, so re-scan on a fixed cadence.
-    - cron: "0 4 * * 1"
+    # A CVE lands without any file changing, so re-scan daily.
+    - cron: "23 4 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -37,7 +37,7 @@ pipx install pre-commit
 ```
 
 ```bash
-go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@v1.6.1
+go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@v1.6.2
 ```
 
 Go itself comes from your distribution (`apt install golang-go`,
@@ -49,6 +49,10 @@ Then, from a fresh clone:
 ```bash
 pre-commit install
 ```
+
+This installs both the `pre-commit` and the `commit-msg` hook types, as
+`default_install_hook_types` in the config asks. A clone where pre-commit was
+installed before that key existed needs the command run once more.
 
 The setup is good when this is green:
 
@@ -116,6 +120,7 @@ From [.pre-commit-config.yaml](.pre-commit-config.yaml):
 | `yamllint` | YAML style, per [.yamllint.yaml](.yamllint.yaml) | Fix the finding; block style only, no `---` opening a file |
 | `actionlint` | Workflow files are valid | Fix the expression or key it names |
 | `skill-validator` | Skill structure, links, content, contamination | See "Running the tests" above |
+| `no-co-authors` (`commit-msg` stage) | No `Co-Authored-By:` trailer or `Generated with` line in the commit message. Runs on `git commit` only: `pre-commit run --all-files`, and so CI, skips it | Rewrite the message; a commit has one author |
 
 `--no-verify` and `SKIP=` are not the fix. A red hook is a real finding: fix
 the content, or change the hook configuration in the same pull request and say
@@ -127,11 +132,11 @@ somewhere slower.
 | Workflow | Triggers on | What it does | Reproduce locally |
 | --- | --- | --- | --- |
 | [`quality.yaml`](.github/workflows/quality.yaml) | push to `main`, every PR, weekly | `pre-commit run --all-files`; a second job re-runs `skill-validator` with `--emit-annotations` so findings land on the diff, then checks the external links | `pre-commit run --all-files` and `skill-validator validate links skills/` |
-| [`security.yaml`](.github/workflows/security.yaml) | push to `main`, every PR, weekly | `trivy fs` over the checkout (vulnerabilities, secrets, misconfiguration), blocking on `HIGH`/`CRITICAL`; uploads SARIF to code scanning | `trivy fs .` |
+| [`security.yaml`](.github/workflows/security.yaml) | push to `main`, every PR, daily, manual | `trivy fs` over the checkout (vulnerabilities, secrets, misconfiguration), blocking on `HIGH`/`CRITICAL`; uploads SARIF to code scanning | `trivy fs .` |
 
-Both workflows are blocking, and both re-run weekly for the same reason: a
-vulnerability is disclosed, and a documentation URL dies, without any file here
-changing. A run on merge day only reports what was true that day.
+Both workflows are blocking, and both re-run on a schedule for the same reason:
+a vulnerability is disclosed, and a documentation URL dies, without any file
+here changing. A run on merge day only reports what was true that day.
 
 The external-link check is not a pre-commit hook because it needs the network —
 a gate that fails on a train is a gate people learn to bypass.
