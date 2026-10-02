@@ -352,6 +352,27 @@ list belongs here, it only goes stale. They auto-trigger from file paths and
 topics, but if you are about to touch a file one of them covers and the skill
 hasn't loaded, invoke it explicitly before writing code.
 
+## Work in a worktree, on its own branch
+
+**Unless I say otherwise, before modifying code in a git repository, create a
+worktree and a branch for the change.** Never edit directly in my main
+checkout, and never on the default branch: my working tree may hold work in
+progress of its own, and a second line of work landing on top of it is
+impossible to untangle cleanly.
+
+- **One worktree, one branch, one change.** Branch from an up-to-date default
+  branch, and name it after the change, following the repo's existing branch
+  naming when there is one.
+- **Use the harness's worktree tool when there is one**, otherwise
+  `git worktree add -b <branch> <path> <base>`. Already running in a worktree
+  made for this session? It counts — don't nest another one.
+- **Read-only work needs none**: exploring, answering a question, reviewing.
+  The rule kicks in at the first edit.
+- **A branch is not a commit.** Creating the worktree changes nothing in the
+  commit rules below: the work still sits uncommitted until I ask.
+- **Don't clean up behind my back.** Leave the worktree and its branch in place
+  when the work is done and tell me where they are; removing them is my call.
+
 ## Git commits
 
 Three non-negotiable rules, then the style.
