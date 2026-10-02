@@ -71,17 +71,22 @@ already exists?" — `useradd` exits 9 when it does, so the script fails on the
 second run. Every form below is idempotent by construction:
 
 - **`systemd-sysusers`** is the default on a systemd host or in an image —
-  `/usr/lib/sysusers.d/myapp.conf`, applied at package install and at boot:
+  `/usr/lib/sysusers.d/myapp.conf` when a package or image ships it,
+  `/etc/sysusers.d/myapp.conf` on a hand-provisioned host; applied at package
+  install and at boot:
 
   ```
   #Type Name  ID  GECOS            Home dir      Shell
   u     myapp -   "myapp service"  /var/lib/myapp /usr/sbin/nologin
   ```
 
-- **cloud-init**, when the account comes up with the machine:
+- **cloud-init**, when the account comes up with the machine. Keep
+  `- default` first: a `users:` list without it skips the distro's default
+  user, and top-level `ssh_authorized_keys` then lands on no account:
 
   ```yaml
   users:
+    - default
     - name: myapp
       system: true
       shell: /usr/sbin/nologin
@@ -117,7 +122,7 @@ modes around it.
 | Unit file, timers, `/etc/systemd/**` | `root:root` | `0644` | Writing them is a direct path back to root |
 | Config, `/etc/myapp/` | `root:myapp` | `0640` | Readable by the service, writable by nobody but root |
 | Secret file | `root:root`, or `root:myapp` when the service opens it itself | `0600`, or `0640` | `LoadCredential=` and `EnvironmentFile=` are read by PID 1 — see `systemd-conventions` |
-| State, `/var/lib/myapp/` | `myapp:myapp` | `0700` | The one place it writes |
+| State, `/var/lib/myapp/` | `myapp:myapp` | `0700` (`StateDirectoryMode=0700`; the default is `0755`) | The one place it writes |
 
 - **`chown -R myapp /opt/myapp` is not a fix.** When a permission error shows
   up, find the single path that must be writable and grant that one — usually
