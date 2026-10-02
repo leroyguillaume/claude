@@ -49,16 +49,12 @@ description: >-
   must be settable via an environment variable: always give each `clap`
   argument an `env = "..."` attribute — there is no config knob that can
   only be passed on the command line.
-- **Name those variables per the "Configuration via environment variables"
-  rules in `CLAUDE.md`**, which turn on who owns the environment. A service
-  in a container takes the bare name (`env = "BIND_ADDR"`); **a CLI or
-  tooling binary prefixes every one of its own variables with the tool's
-  name** (`env = "SKILLMGR_CONFIG_FILE"`, `env = "SKILLMGR_FORCE"`), because
-  it runs in a shell it shares with everything else and its flags are exactly
-  the generic words — `FORCE`, `DRY_RUN`, `OFFLINE`, `CONFIG_FILE` — that
-  something else has already exported. Never read a bare name as a fallback,
-  and never prefix a genuine cross-tool standard (`NO_COLOR`, `HTTP_PROXY`,
-  `SSL_CERT_FILE`).
+- **Name the variable after who owns the environment.** A service in a
+  container owns it and takes the bare name (`env = "BIND_ADDR"`); a CLI or
+  tooling binary shares a shell with everything else, so it prefixes its own
+  variables with its name (`env = "MYTOOL_FORCE"`). Read one name only, never
+  a bare-name fallback, and keep cross-tool standards (`NO_COLOR`,
+  `HTTP_PROXY`, `SSL_CERT_FILE`) as they are.
 - Prefer `default_value_t = <typed value>` over a stringly-typed
   `default_value = "..."` whenever the field's type is anything other than a
   `String`/`&str` — enums, integers, paths, durations, etc. `default_value_t`
@@ -118,8 +114,8 @@ description: >-
   with `#[cfg(unix)]` and fall back to `tokio::signal::ctrl_c()` under
   `#[cfg(not(unix))]`. A server hands it to its graceful-shutdown hook (see
   `rust-http-conventions`); a worker loop races it with `tokio::select!`.
-  `tokio::signal::ctrl_c` alone is **not** enough — it only covers `SIGINT`, so a container stopped with `SIGTERM`
-  would never drain.
+  `tokio::signal::ctrl_c` alone is **not** enough — it only covers `SIGINT`,
+  so a container stopped with `SIGTERM` would never drain.
 - Any HTTP surface — framework, OpenAPI, input validation with `validator` —
   follows `rust-http-conventions`; load it before touching a handler, a router
   or a request/response DTO.
@@ -128,14 +124,20 @@ description: >-
   `main`, configured with an `EnvFilter`. The filter directive must come
   from `clap` — a dedicated option (e.g. `--log-level` / `--log-filter`)
   carrying an `env = "LOG_FILTER"` attribute, or `<TOOL>_LOG_FILTER` when the
-  binary is a CLI — not read directly from the environment. **Never `RUST_LOG`**: the variable name should describe the
-  knob, not the language the binary happens to be written in, and `RUST_LOG`
-  is also read by other crates' own `from_default_env()` machinery, which is
-  exactly the direct-environment read this rule forbids. Document the
-  directive syntax in the option's help so `--help` is self-sufficient.
-  Instrument code with `tracing` spans/events; never `println!` /
-  `eprintln!` for diagnostics. Example:
+  binary is a CLI — not read directly from the environment. **Never
+  `RUST_LOG`**: the variable name should describe the knob, not the language
+  the binary happens to be written in, and `RUST_LOG` is also read by other
+  crates' own `from_default_env()` machinery, which is exactly the
+  direct-environment read this rule forbids. Document the directive syntax in
+  the option's help so `--help` is self-sufficient. The log format is a
+  `clap` option too (`LOG_FORMAT` / `<TOOL>_LOG_FORMAT`, `text` by default,
+  `json` opt-in). **`tracing_subscriber::fmt()` writes to stdout by
+  default**, which mixes logs into the program's result, so always point it
+  at stderr. Example:
   ```rust
+  #[derive(Clone, Copy, clap::ValueEnum)]
+  enum LogFormat { Text, Json }
+
   #[derive(clap::Parser)]
   struct Cli {
       /// `tracing` filter directive (e.g. `info`, `myapp=debug,axum=warn`)
@@ -143,20 +145,27 @@ description: >-
       /// Syntax: <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#directives>
       #[arg(long = "log-filter", env = "LOG_FILTER", default_value = "info")]
       log_filter: String,
+      #[arg(long, env = "LOG_FORMAT", value_enum,
+            default_value_t = LogFormat::Text)]
+      log_format: LogFormat,
   }
 
   fn main() {
       let cli = Cli::parse();
-      tracing_subscriber::fmt()
+      let fmt = tracing_subscriber::fmt()
           .with_env_filter(tracing_subscriber::EnvFilter::new(&cli.log_filter))
-          .with_writer(std::io::stderr)
-          .init();
+          .with_writer(std::io::stderr);
+      match cli.log_format {
+          LogFormat::Text => fmt.init(),
+          LogFormat::Json => fmt.json().init(), // needs the `json` feature
+      }
   }
   ```
 - Apply `logging-conventions`. Rust mechanics: `debug!` (and `trace!` for
-  very high-volume detail) via `tracing`, level controlled by `LOG_FILTER` through the `clap`-parsed
-  filter, structured fields (`debug!(%name, count, "…")`) — never string
-  interpolation.
+  very high-volume detail) via `tracing`, level controlled by the
+  `clap`-parsed filter above, structured fields (`debug!(%name, count, "…")`)
+  — never string interpolation, never `println!` / `eprintln!` for
+  diagnostics.
 - **Only the program's result goes to stdout; everything else goes to
   stderr.** `println!` is for what the program *produces* — the thing a caller
   would pipe into a file or another command. Error messages, usage hints and
@@ -165,16 +174,9 @@ description: >-
   audience, not by severity: stdout is for the next program in the pipeline,
   stderr is for the person at the terminal.
 
-  This does not loosen the rule below — diagnostics about the program's own
-  workings still go through `tracing`, never through either macro. And when
-  you install the subscriber, **`tracing_subscriber::fmt()` writes to stdout
-  by default**, which silently mixes logs into the result. Always redirect it:
-  ```rust
-  tracing_subscriber::fmt()
-      .with_env_filter(EnvFilter::new(&cli.log_filter))
-      .with_writer(std::io::stderr)
-      .init();
-  ```
+  This does not loosen the logging rule — diagnostics about the program's own
+  workings still go through `tracing` (writing to stderr, as above), never
+  through either macro.
 - Format with `rustfmt` and lint with `clippy` (`cargo clippy -- -D warnings`).
   Add local `cargo fmt --check` and `cargo clippy` hooks to
   `.pre-commit-config.yaml`.
@@ -247,23 +249,14 @@ description: >-
   ```
   Create this `build.rs` as soon as the crate calls `sqlx::migrate!`, not after
   the first stale-migration surprise.
-- **The same rule applies to any file embedded at compile time** —
-  `include_str!`, `include_bytes!`, and friends. As soon as a crate embeds a
-  file that lives outside `src/` (a template, a schema, a static asset), **add a
-  `build.rs`** that declares it, so the rebuild trigger is explicit rather than
-  inherited from whatever `rustc` happens to record in its dep-info:
-  ```rust
-  // build.rs
-  fn main() {
-      println!("cargo::rerun-if-changed=build.rs");
-      println!("cargo::rerun-if-changed=templates/report.md.liquid");
-  }
-  ```
-  Always emit `rerun-if-changed` for `build.rs` itself and for every embedded
-  path: a build script that emits **no** `rerun-if-changed` at all is re-run on
-  *any* file change in the package, which is strictly worse than no build script.
-  The `cargo::` form needs Rust ≥ 1.77; a crate whose `rust-version` is lower
-  keeps the single-colon `cargo:` form.
+- **This is specific to macros that read files themselves** (`sqlx::migrate!`
+  and similar proc macros). `include_str!` / `include_bytes!` need no
+  `build.rs`: `rustc` records the included file in its dep-info, and Cargo
+  rebuilds when it changes. Whenever a `build.rs` exists, emit
+  `rerun-if-changed` for `build.rs` itself and every path it watches: a build
+  script that emits **no** `rerun-if-changed` at all is re-run on *any* file
+  change in the package. The `cargo::` form needs Rust ≥ 1.77; a crate whose
+  `rust-version` is lower keeps the single-colon `cargo:` form.
 - Use `mockall` for test doubles. Define collaborators as traits, annotate
   them with `#[cfg_attr(test, mockall::automock)]` (or `mock!` when you
   cannot own the trait), and inject the mock in unit tests. Keep production

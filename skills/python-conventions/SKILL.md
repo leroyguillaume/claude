@@ -19,11 +19,12 @@ description: >-
   literal `camelCase` field names. When a model serialises to a wire format
   that wants `camelCase` (a Kubernetes CRD, a `camelCase` JSON API), keep the
   Python fields `snake_case` and let an alias bridge the gap: set
-  `alias_generator=to_camel` + `populate_by_name=True` on the base model, so
-  `endpoint_url` becomes `endpointUrl` on the wire while Python stays
-  idiomatic. Serialise with `by_alias=True` (and accept either spelling on the
-  way in). Keep ruff's `N815` (mixed-case class variable) **enabled** — it is
-  the guard that catches a stray `camelCase` field. Ruff's default rule set
+  `alias_generator=to_camel`, `validate_by_name=True` and
+  `serialize_by_alias=True` on the base model's `ConfigDict` (Pydantic ≥ 2.11;
+  `populate_by_name` is discouraged there), so `endpoint_url` becomes
+  `endpointUrl` on the wire while Python stays idiomatic, and either spelling
+  is accepted on the way in. Keep ruff's `N815` (mixed-case class variable)
+  **enabled** — it is the guard that catches a stray `camelCase` field. Ruff's default rule set
   does not include `pep8-naming`, so `select` must list `"N"`, and `N815`
   never goes in `ignore`.
 - Use `pyproject.toml` as the single source of truth for metadata,
@@ -42,13 +43,12 @@ description: >-
 - Build CLIs with `typer`. Configuration must resolve in this order:
   CLI flags → environment variables → defaults. Use `typer` option
   `envvar=...`, or `pydantic-settings` for richer config models.
-- **Name those variables per the "Configuration via environment variables"
-  rules in `CLAUDE.md`**: bare for a service that owns its environment
-  (`envvar="BIND_ADDR"`), prefixed with the tool's own name for a CLI
-  (`envvar="MYTOOL_CONFIG_FILE"`), which runs in a shell shared with
-  everything else. With `pydantic-settings` that is
-  `SettingsConfigDict(env_prefix="mytool_")` — set it on a CLI, leave it off
-  a service, and never keep a bare-name fallback beside it.
+- **Name the variable after who owns the environment**: bare for a service
+  that owns it (`envvar="BIND_ADDR"`), prefixed with the tool's name for a CLI
+  sharing a shell with everything else (`envvar="MYTOOL_CONFIG_FILE"`; in
+  `pydantic-settings`, `env_prefix="mytool_"`). Read one name only, never a
+  bare-name fallback; cross-tool standards (`NO_COLOR`, `HTTP_PROXY`) keep
+  their names.
 - Declare `typer` parameters with `Annotated[T, typer.Option(...)] = default`,
   not `param: T = typer.Option(default, ...)`. The `Annotated` form keeps the
   default value in the standard Python position and is the form `typer`
@@ -58,13 +58,15 @@ description: >-
   import typer
 
   def serve(
-      port: Annotated[int, typer.Option(envvar="PORT", help="Listen port")] = 8080,
+      port: Annotated[int, typer.Option(envvar="MYTOOL_PORT", help="Listen port")] = 8080,
   ) -> None: ...
   ```
 - Apply `logging-conventions`. Python mechanics: use the standard `logging`
   module (or `structlog` when the project already does), configured once at
-  process start; level controlled by an env var (e.g. `LOG_LEVEL`) routed
-  through the `typer` / `pydantic-settings` config layer. Log structured
+  process start; level controlled by an env var (e.g. `LOG_LEVEL`,
+  `MYTOOL_LOG_LEVEL` for a CLI) routed through the `typer` /
+  `pydantic-settings` config layer, and a `LOG_FORMAT` option beside it
+  (`text` by default, `json` opt-in) choosing the formatter. Log structured
   key-values (`logger.debug("fetched", extra={"url": url, "status": resp.status})`),
   never f-string interpolation of values into the message. The default
   `logging` formatter silently drops `extra=` fields, so install a structured

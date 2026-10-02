@@ -91,7 +91,8 @@ no endpoint is called `/list` or `/update`. Both apply to every HTTP endpoint.
     unbounded page. Missing params fall back to the defaults.
   - Return a **paginated envelope**, not a bare array:
     `{ "items": [...], "page": 1, "perPage": 50, "total": 1234 }` (`total`
-    being the unfiltered row count) so clients can compute the page count.
+    being the number of rows matching the request's filters, across all
+    pages) so clients can compute the page count.
   - Offset/limit is the default; reach for cursor/keyset pagination only when
     a specific endpoint has deep-pagination or stable-ordering needs that
     offset can't meet, and say why.

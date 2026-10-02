@@ -23,9 +23,9 @@ mechanics (library, level names, env var) where they need to be made concrete.
   re-running.
 - Reserve **info** for state transitions worth seeing at the default level;
   use **warn / error** for failures (with the cause).
-- Diagnostic verbosity is controlled **only by the log level** (env var or
-  config understood by the logging framework), never by a bespoke
-  `--verbose`-style flag that gates whole code paths.
+- Diagnostic verbosity is controlled **only by the log level**, set through
+  the application's config layer (flag, env var, config file), never by a
+  bespoke `--verbose`-style flag that gates whole code paths.
 - Always log with **structured fields/key-values**, never by interpolating
   values into the message string. One log call should change what the reader
   knows; no noise, no secrets.
@@ -39,7 +39,7 @@ mechanics (library, level names, env var) where they need to be made concrete.
   `kubectl logs`, `docker logs` or a terminal parses key=value far more easily
   than one JSON object per line. JSON is opt-in, for deployments whose log
   pipeline parses it.
-- Drive it off `LOG_FORMAT` (`text` | `json`, default `text`) and keep the
-  **binary's default and every deployment default in sync** — a Helm chart's
-  `logging.format` value that disagrees with what the binary does on its own is
-  a bug.
+- Drive it off `LOG_FORMAT` (`<TOOL>_LOG_FORMAT` for a CLI; `text` | `json`,
+  default `text`) and keep the **binary's default and every deployment
+  default in sync** — a Helm chart's `logging.format` value that disagrees
+  with what the binary does on its own is a bug.

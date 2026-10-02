@@ -55,10 +55,11 @@ description: >-
   params, `localStorage`) with a schema validator (e.g. `zod`) and infer the
   TypeScript type from the schema, so the runtime shape and the static type
   cannot drift.
-- Apply `logging-conventions`. Frontend mechanics: use one structured logger module configured at app startup, log
-  key-values (`logger.debug("fetch.done", { url, status })`), and gate
-  verbosity by a log level read from the environment
-  (`import.meta.env` / `process.env`), never by interpolating values into the
+- Apply `logging-conventions`. Frontend mechanics: use one structured logger
+  module configured at app startup, log key-values
+  (`logger.debug("fetch.done", { url, status })`), and gate verbosity by a
+  log level read from the environment (`import.meta.env` / `process.env`),
+  never by interpolating values into the
   message string.
 - Provide **tests** for components and logic with Vitest + React Testing
   Library (or the framework's first-party test runner). Test behaviour
