@@ -40,9 +40,10 @@ These two are complementary and must not drift into each other:
 it. Without them, the pressure to narrate the past leaks into the design doc
 and rots it (see `architecture-conventions`).
 
-**A decision that changes the design updates both, in the same commit**: the
-ADR records what was decided, and `ARCHITECTURE.md` is rewritten to describe
-the new state as though it had always been that way. `ARCHITECTURE.md` may
+**A decision that changes the design updates both, in the same commit**, when
+the project has an `ARCHITECTURE.md`: the ADR records what was decided, and
+`ARCHITECTURE.md` is rewritten to describe the new state as though it had
+always been that way. `ARCHITECTURE.md` may
 link an ADR as the record; it must never narrate the change.
 
 ## When to write one
@@ -59,15 +60,12 @@ test is blunt — **would someone drawing the architecture diagram have to redra
 it?** If not, then however good the decision is, however hard the call was,
 however credible the alternative, it is not an ADR.
 
-Write one when, and only when:
+Write one when, and only when, the diagram changes because:
 
 - a component, datastore or external dependency is added or removed;
 - how the parts talk changes — protocol, sync to async, who owns what data;
 - a constraint from outside — org policy, a platform limit, a quota, a
-  compliance rule — forces the design to bend around it;
-
-**and**, on top of that, the answer to "why is it like this?" takes more than
-two sentences *and* doing the opposite tomorrow would be expensive.
+  compliance rule — forces the design to bend around it.
 
 **When an ADR does carry a diagram, it is Mermaid** — the decision here is
 usually a shape, and two small diagrams (the option taken, the one rejected)

@@ -50,8 +50,8 @@ no endpoint is called `/list` or `/update`. Both apply to every HTTP endpoint.
   native casing. Apply it at the serialisation layer, not by renaming each
   field: in Rust put `#[serde(rename_all = "camelCase")]` on every
   request/response DTO (`schemars` honours it, so the OpenAPI schema matches
-  the wire). Path and query parameters keep the exact name of their URL
-  placeholder (do not camelCase a `{job_id}` segment).
+  the wire). Path and query parameters are `camelCase` too — `{jobId}`,
+  `?teamId=` — so a name reads the same in the URL and in the body.
 - **Name foreign-key fields consistently as `<entity>_id`** (→ `<entity>Id`
   on the wire): `creator_id`, `game_id` — never a mix like `created_by`
   alongside `game_id`. The referenced entity's own identifier stays `id`.

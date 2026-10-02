@@ -55,7 +55,7 @@ running the project; this covers building on it.
   clone:
 
   ```bash
-  uv sync --all-extras --dev
+  uv sync --all-extras
   ```
 
   ```bash
@@ -172,9 +172,10 @@ Then, in a few lines:
 - **What secrets or permissions the pipeline needs**, by *name and purpose*
   only — never a value, never a token, not even a truncated one. Fork PRs
   usually can't see them; say which jobs are therefore skipped.
-- Keep the *why* out. Why the release job builds on native runners instead of
-  QEMU is `ARCHITECTURE.md` material; that it does, and that it takes twelve
-  minutes, is CI documentation.
+- Keep the *why* to a line. That the release job builds on native runners and
+  takes twelve minutes is CI documentation; why it uses them instead of QEMU
+  is one sentence here or in the workflow file's header comment — never
+  `ARCHITECTURE.md`, which leaves the CI out.
 
 ### 5. Submitting a change
 
@@ -190,13 +191,10 @@ Short and concrete:
 
 ## Links
 
-Same rule as everywhere: **relative inside the repo, `https://` URLs for
-anything outside it.** `README.md#getting-started`, `.pre-commit-config.yaml`,
-`.github/workflows/quality.yaml` are all legitimate targets; never a path that
-climbs out of the project root (`../shared/CONTRIBUTING.md`, a sibling
-checkout), which breaks for every contributor who clones somewhere else. Link
-the workflow and config files you describe — a contributor reading about a
-hook should be one click from its definition.
+**Relative inside the repo, `https://` URLs for anything outside it** — never
+a path climbing out of the project root. Link the workflow and config files you
+describe — a contributor reading about a hook should be one click from its
+definition.
 
 ## Keeping it honest
 
@@ -204,8 +202,8 @@ hook should be one click from its definition.
   job. A setup section that misses a newly required binary costs every future
   contributor the same twenty minutes.
 - **Never duplicate the README or `ARCHITECTURE.md`.** One home per fact; link
-  across. Setup and gates here, usage in the README, reasoning in
-  `ARCHITECTURE.md`.
+  across. Setup and gates here, usage in the README, design reasoning in
+  `ARCHITECTURE.md` when the project has one.
 - **Every command must work from a fresh clone**, in the order written. Run
   them if you can.
 - Skip the boilerplate. A code of conduct is a separate file

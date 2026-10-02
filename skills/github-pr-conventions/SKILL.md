@@ -77,6 +77,14 @@ gh pr ready <number>
 Only the bottom PR of a stack, the one based on `main`, is ever ready for
 review. Say in each stacked PR's description which PR it sits on.
 
+## Title and body
+
+- **Link the issue it resolves** with `Closes #123` in the body, so the merge
+  closes it. Never close an issue by hand on the user's behalf.
+- **A follow-up spotted while opening the PR** goes in the body as
+  `Follow-up: #123`, after the issue is opened (see
+  `github-issue-conventions`) — never as a comment in the code.
+
 ## Labels
 
 **Every PR you open must carry the right labels, applied at creation time.** An
@@ -126,7 +134,7 @@ section. Two consequences that drive every choice below:
 - **Apply exactly one changelog-category label**, taken from
   `.github/release.yaml` — that file is the source of truth, and it differs
   from repo to repo. The table below is only the fallback for a repo that has
-  no `release.yaml` yet:
+  no `release.yaml`:
 
   | Change | Category label |
   | --- | --- |
@@ -185,12 +193,9 @@ changelog-only or release-plumbing PR.
 - **Dependabot and Renovate label their own PRs** (`dependencies`, plus the
   ecosystem label). Leave them alone: relabelling a bot PR by hand achieves
   nothing the bot didn't already do.
-- **Dependabot creates its ecosystem labels itself** — `rust`,
-  `github_actions`, `docker`, `python`, `npm_and_yarn` — all black
-  (`#000000`), described as "Pull requests that update … code". They show up
-  in `gh label list` without anyone having asked. Reuse those names verbatim as
-  your area labels rather than creating a parallel `Rust`/`ci` set that means
-  the same thing.
+- **Reuse Dependabot's ecosystem labels** (`rust`, `github_actions`, `docker`,
+  …) verbatim as your area labels rather than a parallel set that means the
+  same thing — see `github-repo-settings`.
 
 ## When the right label doesn't exist
 

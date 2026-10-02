@@ -58,12 +58,13 @@ it is created.
   '!'` all write the `!` that means "locked".
   Caveat worth knowing: **locking the password does not block SSH key auth.**
   `nologin` plus an empty `~/.ssh/authorized_keys` is what closes that door.
-- **No home directory under `/home`.** `/home` is for humans, is frequently a
-  separate or NFS-mounted filesystem, and `useradd -m` copies `/etc/skel`
-  dotfiles nobody will ever read. Either give the account no home at all, or
-  point it at the state directory the service already has
-  (`/var/lib/myapp`) — created by systemd's `StateDirectory=`, not by
-  `useradd -m`.
+- **Home is the state directory, or nothing.** Point it at the state
+  directory the service already has (`/var/lib/myapp`, created by systemd's
+  `StateDirectory=`, not by `useradd -m`); with no state directory, home is
+  `/nonexistent` and none is created. Never `/home` — it is for humans, is
+  frequently a separate or NFS-mounted filesystem, and `useradd -m` copies
+  `/etc/skel` dotfiles nobody will ever read. Never `/etc/myapp` — config is
+  root-owned, and a home there is how it ends up chowned to the service.
 - **No sudo, no `wheel`, no `adm`.** And specifically **no `docker` group**:
   a member can run `docker run -v /:/host`, which is root with extra steps.
   `lxd` and `libvirt` are the same trap. Adding a service account to any of
@@ -94,14 +95,16 @@ second run. Every form below is idempotent by construction:
       system: true
       shell: /usr/sbin/nologin
       lock_passwd: true
-      create_home: false
+      homedir: /var/lib/myapp
+      no_create_home: true
   ```
 
 - **Ansible**: `ansible.builtin.user` with `system: true`, `shell:
-  /usr/sbin/nologin`, `create_home: false`, `password: '!'`.
+  /usr/sbin/nologin`, `home: /var/lib/myapp`, `create_home: false`,
+  `password: '!'`.
 - **`Dockerfile`**: `useradd --system --uid 65532 --gid myapp --shell
-  /usr/sbin/nologin --home /etc/myapp myapp` (full form and rationale in
-  `docker-conventions`).
+  /usr/sbin/nologin --home /nonexistent --no-create-home myapp` (full form and
+  rationale in `docker-conventions`).
 - **A shell script, only when nothing above fits** — and then guarded:
 
   ```sh
@@ -122,7 +125,7 @@ modes around it.
 | Binary, `/usr/local/bin/myapp` | `root:root` | `0755` | A service that can write its own binary rewrites it after a compromise and survives every restart |
 | Unit file, timers, `/etc/systemd/**` | `root:root` | `0644` | Writing them is a direct path back to root |
 | Config, `/etc/myapp/` | `root:myapp` | `0640` | Readable by the service, writable by nobody but root |
-| Secret file | `root:myapp` | `0640`, or `0600` with `LoadCredential=` | See `systemd-conventions` |
+| Secret file | `root:root`, or `root:myapp` when the service opens it itself | `0600`, or `0640` | `LoadCredential=` and `EnvironmentFile=` are read by PID 1 — see `systemd-conventions` |
 | State, `/var/lib/myapp/` | `myapp:myapp` | `0700` | The one place it writes |
 
 - **`chown -R myapp /opt/myapp` is not a fix.** When a permission error shows

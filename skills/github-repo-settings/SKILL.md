@@ -25,9 +25,15 @@ is inferred from the current directory's `origin` remote unless `--repo` is give
 ## Auth gotcha
 
 A stale `GITHUB_TOKEN` in the environment shadows the keyring login and fails
-with `HTTP 401: Bad credentials`. Prefix the commands with `unset GITHUB_TOKEN`
-(per-invocation, since shell state does not persist between tool calls) to fall
-back to the keyring token. Confirm with `gh auth status` if a 401 appears.
+with `HTTP 401: Bad credentials`. Every `gh` command below therefore runs as
+
+```bash
+unset GITHUB_TOKEN; gh …
+```
+
+in one invocation, since shell state does not persist between tool calls, so
+`gh` falls back to the keyring token. Confirm with `gh auth status` if a 401
+appears.
 
 ## Sync labels to `.github/release.yaml`
 
@@ -63,9 +69,11 @@ Procedure:
 4. Only delete a label when the user actually wants it gone — never purely because
    it's absent from `release.yaml`.
 
+The block below is a superset: keep `breaking`, the issue-triage labels, and
+only the category and exclude labels the repo's `release.yaml` maps (see the
+notes after it).
+
 ```bash
-unset GITHUB_TOKEN
-# create / upsert the PR-changelog labels referenced by release.yaml (idempotent)
 gh label create feature       --description "New feature"                   --color 0e8a16 --force
 gh label create fix           --description "Bug fix"                       --color d73a4a --force
 gh label create chore         --description "Maintenance / housekeeping"    --color fef2c0 --force
@@ -92,7 +100,7 @@ Notes:
 - Otherwise, only create the category labels the repo's `release.yaml` actually
   maps; the exclude label only makes sense alongside an `exclude.labels` entry.
 - **Leave the ecosystem labels to Dependabot.** It creates `rust`,
-  `github_actions`, `docker`, `python`, `npm_and_yarn` itself, black and
+  `github_actions`, `docker`, `python`, `javascript` (npm) itself, black and
   described as "Pull requests that update … code". Creating your own variant
   gives the repo two labels for one concept.
 - `gh label create --force` upserts, so it is safe to re-run.
@@ -106,7 +114,6 @@ Notes:
 ## Restrict merge methods to squash-only
 
 ```bash
-unset GITHUB_TOKEN
 gh repo edit --enable-squash-merge --enable-merge-commit=false --enable-rebase-merge=false
 gh repo view --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed   # verify
 ```
@@ -124,7 +131,6 @@ PRs, leaving squash as the only option. Adjust the flags to allow other methods
 ## Auto-delete head branches on merge
 
 ```bash
-unset GITHUB_TOKEN
 gh repo edit --delete-branch-on-merge
 gh repo view --json deleteBranchOnMerge   # verify -> {"deleteBranchOnMerge":true}
 ```
@@ -145,28 +151,24 @@ artifact. Do it as soon as the workflow lands, not after its first red run.
 Check first — the answer decides between create and update:
 
 ```bash
-unset GITHUB_TOKEN
 gh api repos/{owner}/{repo}/pages --jq '{build_type, html_url, cname}'
 ```
 
 A 404 means Pages is off; create it:
 
 ```bash
-unset GITHUB_TOKEN
 gh api -X POST repos/{owner}/{repo}/pages -f build_type=workflow
 ```
 
 Already on with `"build_type": "legacy"`; switch it:
 
 ```bash
-unset GITHUB_TOKEN
 gh api -X PUT repos/{owner}/{repo}/pages -f build_type=workflow
 ```
 
 Verify — `build_type` must read `workflow`:
 
 ```bash
-unset GITHUB_TOKEN
 gh api repos/{owner}/{repo}/pages --jq .build_type
 ```
 

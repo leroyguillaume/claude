@@ -32,8 +32,8 @@ One script does all of it, in order, or none of it:
 4. tag
 5. **ask** before pushing
 
-The script is the only supported way to cut a release. Say so in `README.md`
-and `CONTRIBUTING.md`, and make CI enforce it (see the drift guard below).
+The script is the only supported way to cut a release. Say so in
+`CONTRIBUTING.md`, and make CI enforce it (see the drift guard below).
 
 ## The version lives in two places, and one tool writes both
 

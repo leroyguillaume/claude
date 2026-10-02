@@ -92,10 +92,8 @@ earn its place against the three reasons above.
   (which edits nowhere). For anything else, the source sits beside the export
   and both move in the same commit.
 - **Store it in the repository, next to the document that uses it**, and link
-  it relatively — an image link whose target is
-  `diagrams/reconcile-flow.excalidraw.svg`, say. A path that
-  climbs out of the project root is wrong here for the same reason it is wrong
-  anywhere else.
+  it relatively (`diagrams/reconcile-flow.excalidraw.svg`) — never by a path
+  climbing out of the project root.
 - **Never an externally hosted image** — a wiki, a Confluence page, a shared
   drive, an image CDN. A dead diagram waiting to happen, and invisible to
   anyone reading the repo offline or from a clone.
@@ -138,10 +136,11 @@ deleted rather than improved.
   once and let Mermaid lay it out; hand-placing nodes in a graph the renderer
   could lay out itself is ASCII art with extra steps.
 - **Keep it renderable by the plain renderer.** No `%%{init}%%` theme blocks, no
-  custom CSS classes, no fonts, no colour carrying meaning on its own — a
-  reader in dark mode, in a terminal preview, or in a diff viewer has to get the
-  same information. Colour may reinforce a grouping; it may never *be* the
-  grouping.
+  fonts, no colour carrying meaning on its own — a reader in dark mode, in a
+  terminal preview, or in a diff viewer has to get the same information. Colour
+  may reinforce a grouping, never *be* it: when it earns its place, one or two
+  Mermaid `classDef`s applied with `class`, with a stroke that reads on light
+  and dark backgrounds — never a per-node `style` line.
 - **A dozen or so boxes is the ceiling.** Past that, the diagram has stopped
   answering one question. Split it, or raise the altitude.
 

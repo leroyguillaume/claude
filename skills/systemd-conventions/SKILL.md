@@ -30,7 +30,7 @@ gap, and it costs about fifteen lines of `ini`.
 ## The service does not run as root
 
 - **`User=` and `Group=` in every unit, always.** A dedicated system account
-  per service, named after the app, with no login shell, no password, no home:
+  per service, named after the app, with no login shell and no password:
 
   ```ini
   [Service]
@@ -38,11 +38,10 @@ gap, and it costs about fifteen lines of `ini`.
   Group=myapp
   ```
 
-  Create it declaratively with `systemd-sysusers` (`/usr/lib/sysusers.d/
-  myapp.conf`, one line: `u myapp - "myapp service" /var/lib/myapp
-  /usr/sbin/nologin`) or from cloud-init's `users:` block — not with a
-  `useradd` buried in `runcmd`. The account's own properties — shell, password,
-  home, groups, and the file modes around it — are `system-user-conventions`.
+  Create it declaratively (`systemd-sysusers` or cloud-init's `users:`
+  block), never with a `useradd` buried in `runcmd`. How, and the account's
+  own properties — shell, password, home, groups, and the file modes around
+  it — are `system-user-conventions`.
 - **`DynamicUser=yes` when the service only touches its own state.** systemd
   allocates a transient UID for the lifetime of the unit, and implies
   `ProtectSystem=strict`, `PrivateTmp=`, `RemoveIPC=` and friends. Do not use
@@ -165,28 +164,32 @@ config, no `LogsDirectory=` at all in the normal case. See
   value in the unit — that is the same leak as `Environment=`, so only for
   non-secret data.
 - `EnvironmentFile=/etc/myapp/env` is the acceptable fallback for apps that
-  only read the environment: `root:myapp`, mode `0640`, never `0644`.
+  only read the environment: `root:root`, mode `0600` — PID 1 reads it, not
+  the service.
 
 ## cloud-init
 
 The provisioning file is where privileges are handed out for the life of the
 machine, and it is *very* easy to hand out too many.
 
-- **`runcmd` and `bootcmd` run as root**, once, at first boot, with no
-  sandbox. Use them to *install and enable* — `systemctl enable --now
+- **`runcmd` and `bootcmd` run as root** with no sandbox — `runcmd` once per
+  instance, `bootcmd` on every boot. Use them to *install and enable* — `systemctl enable --now
   myapp.service` — never to run the application itself. An app started from
   `runcmd` is a root process with no unit, no restart, no hardening and no
   journal identity.
 - **Every `write_files` entry carries explicit `owner:` and `permissions:`.**
   The defaults are `root:root` and `0644`; a credential written with the
   defaults is readable by every account on the machine. Quote the mode so
-  YAML does not mangle the leading zero:
+  YAML does not mangle the leading zero. An entry owned by the service account
+  needs `defer: true`, or it is written before `users:` creates the account
+  and the `chown` fails:
 
   ```yaml
   write_files:
-    - path: /etc/myapp/api-token
+    - path: /etc/myapp/config.toml
       owner: root:myapp
       permissions: '0640'
+      defer: true
       content: ""
     - path: /etc/systemd/system/myapp.service
       owner: root:root
@@ -196,16 +199,9 @@ machine, and it is *very* easy to hand out too many.
         Description=myapp
   ```
 
-- **The service account gets no sudo, ever.** Create it locked down, and keep
-  sudo for the human/admin account the user explicitly asked for:
-
-  ```yaml
-  users:
-    - name: myapp
-      system: true
-      shell: /usr/sbin/nologin
-      lock_passwd: true
-  ```
+- **The service account gets no sudo, ever.** Create it locked down
+  (`system-user-conventions` has the `users:` block), and keep sudo for the
+  human/admin account the user explicitly asked for.
 
 - **Lock the box's own doors**: `disable_root: true`, `ssh_pwauth: false`,
   keys via `ssh_authorized_keys` only. No password hashes in user-data.

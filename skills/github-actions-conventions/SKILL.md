@@ -27,10 +27,8 @@ documentation site.
 
 ## YAML style
 
-- **No leading `---`** in workflow or other `.github/` config files. Start
-  with the first key.
-- Write the trigger key as bare **`on:`**, never quoted `"on":`.
-- Block style only, consistent with `yaml-conventions`.
+Write the trigger key as bare **`on:`**, never quoted `"on":`. Everything else
+is `yaml-conventions`.
 
 ## Step naming
 
@@ -46,7 +44,7 @@ documentation site.
 - Pin **every** `uses:` to a full commit SHA, with a trailing comment naming
   the **latest** release tag it corresponds to:
   ```yaml
-  - uses: actions/checkout@<40-char-sha>  # v4.2.2
+  - uses: actions/checkout@<40-char-sha>  # vX.Y.Z
   ```
   Resolve it with `git ls-remote --tags https://github.com/<owner>/<repo>
   '<tag>^{}'`.
@@ -75,6 +73,9 @@ private image on the scheduled scan.
 
 Path filters do not apply to tag, `schedule`, `workflow_dispatch` or
 `workflow_call` events, so don't write them there.
+
+`chart` runs the same version drift guard as `release` before it packages
+(`release-script-conventions`).
 
 **A `paths`-filtered workflow must never be a required status check.** When
 the filter skips it, the check never reports and the PR waits on it forever.

@@ -48,9 +48,9 @@ and an `index.yaml` that gets regenerated under you.
   `helm` CLI's form, not the `Application`'s.)
 - The repository credential in Argo CD is `type: helm` with `enableOCI: true`.
 - **An HTTP chart repository is a documented exception**, not a fallback:
-  when upstream publishes no OCI chart at all. State in `ARCHITECTURE.md` what
-  has to exist for the line to become an OCI reference, so the exception is
-  tracked rather than permanent.
+  when upstream publishes no OCI chart at all. That reason goes beside the
+  line or in `ARCHITECTURE.md`; switching it to OCI once upstream publishes one
+  is tracked in an issue.
 - **Mirrored registries**: keep the *registry* in the cluster's values and the
   *path* beside the chart, then build the reference from the two. The path is
   a fact about the chart, the registry a fact about where the cluster can
@@ -178,9 +178,15 @@ mode in the list. Match the repo and say once that it is off-convention.
 
 ## ApplicationSets
 
-- **`goTemplate: true` with `goTemplateOptions: ['missingkey=error']`.** A
-  missing key must fail the render, not resolve to empty and deploy something
-  plausible.
+- **`goTemplate: true` with `missingkey=error`.** A missing key must fail the
+  render, not resolve to empty and deploy something plausible.
+
+  ```yaml
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  ```
+
 - **A matrix is a cartesian product, and it is silent.** A child that yields
   nothing for one parameter set generates no Application there and reports
   nothing. Whatever a matrix reads, assert in CI that it exists where it must.
@@ -193,9 +199,15 @@ mode in the list. Match the repo and say once that it is off-convention.
   or `metadata:` shadows the clusters generator's own.
 - **Give the clusters generator a selector.** With none, Argo CD adds a
   synthesised `in-cluster` entry that carries no `.metadata.labels`, which
-  trips `missingkey=error` on any template reading them.
-  `matchLabels: {argocd.argoproj.io/secret-type: cluster}` names what every
-  cluster Secret carries and nothing else.
+  trips `missingkey=error` on any template reading them. This selector names
+  what every cluster Secret carries and nothing else:
+
+  ```yaml
+  selector:
+    matchLabels:
+      argocd.argoproj.io/secret-type: cluster
+  ```
+
 - **`syncPolicy.applicationsSync: sync`, with `preserveResourcesOnDeletion:
   true`.** The controller owns the Application objects — one that stops being
   generated goes, rather than lingering as a permanently broken app pointing

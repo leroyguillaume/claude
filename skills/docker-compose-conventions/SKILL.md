@@ -19,5 +19,4 @@ description: >-
   the same recognisable name.
 - If a repo already has a `compose.yaml`, `compose.yml`, or `docker-compose.yml`,
   rename it to `docker-compose.yaml` rather than leaving the variant in place.
-- YAML inside the file follows the `yaml-conventions` skill: block style only,
-  no flow style, no inline arrays.
+- YAML inside the file follows `yaml-conventions`.
