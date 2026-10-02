@@ -8,7 +8,7 @@ on:
   schedule:
     # For the external-link check below: upstream reorganises its docs and the
     # link dies without any file here changing.
-    - cron: "0 4 * * 2"
+    - cron: "41 4 * * 2"
 
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
           go-version: stable
 
       - name: install pre-commit
-        run: pip install pre-commit
+        run: python -m pip install pre-commit==4.6.2
 
       - name: run pre-commit
         run: pre-commit run --all-files --show-diff-on-failure
@@ -53,8 +53,12 @@ jobs:
         with:
           go-version: stable
 
+      # Dependabot cannot bump a version inside a `run:` line, so read the one it
+      # does bump: the hook's `rev` in .pre-commit-config.yaml.
       - name: install skill-validator
-        run: go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@v1.6.1
+        run: |
+          version="$(yq '.repos[] | select(.repo == "https://github.com/agent-ecosystem/skill-validator") | .rev' .pre-commit-config.yaml)"
+          go install "github.com/agent-ecosystem/skill-validator/cmd/skill-validator@${version}"
 
       # The pre-commit job already gates on this. This one exists for
       # --emit-annotations, which anchors each finding on the offending line of

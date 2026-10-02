@@ -53,8 +53,7 @@ skill that says "kopf posts a Warning event for free when you raise
 TemporaryError, provided posting.enabled is on" is **wrong** — it needs
 `posting.loggers`.
 
-The `K8sPoster` logging handler filter (`kopf/_core/engines/posting.py`)
-requires **all** of: `posting.enabled`, `record.levelno >= posting.level`,
+kopf's log-to-event handler posts a record only when **all** of these hold: `posting.enabled`, `record.levelno >= posting.level`,
 **`posting.loggers`**, and the record carrying a `k8s_ref` (i.e. it was logged
 on the *object* logger, not a module-level `logging.getLogger(...)`).
 
@@ -65,25 +64,27 @@ on the *object* logger, not a module-level `logging.getLogger(...)`).
   event per outcome, no framework duplication. Wrap the handler:
 
   ```python
-  @kopf.on.create(...); @kopf.on.resume(...); @kopf.on.update(...)
+  @kopf.on.create(GROUP, VERSION, PLURAL)
+  @kopf.on.resume(GROUP, VERSION, PLURAL)
+  @kopf.on.update(GROUP, VERSION, PLURAL)
   async def reconcile(spec, body, name, logger, **_):
       try:
-          await _reconcile(spec, body, name, logger)   # all work; raises via errors.py
+          await _reconcile(spec, body, name, logger)
       except Exception as exc:
-          kopf.event(body, type="Warning", reason="ProvisioningFailed",
-                     message=f"Tenant provisioning failed: {exc}")
-          raise                                          # re-raise so kopf requeues
-      kopf.event(body, type="Normal", reason="Provisioned",
-                 message="Tenant fully provisioned.")
+          kopf.event(body, type="Warning", reason="ReconcileFailed",
+                     message=f"Reconcile failed: {exc}")
+          raise
+      kopf.event(body, type="Normal", reason="Reconciled",
+                 message="Desired state applied.")
   ```
 
   Make the raised `TemporaryError` message carry the failing operation + cause
-  (e.g. `"AI Registry publisher creation failed: 500 ..."`) so the single
-  rolled-up `ProvisioningFailed` event still names what broke. Re-raising
+  (e.g. `"creating the backing database failed: 500 ..."`) so the single
+  rolled-up `ReconcileFailed` event still names what broke. Re-raising
   preserves the requeue.
 
 - **Granular log-posted events (set both knobs).** If you want one event per
-  failing operation straight from the `errors.py` chokepoint without plumbing
+  failing operation straight from the shared error chokepoint without plumbing
   `body` everywhere, set in the startup handler:
 
   ```python
@@ -107,9 +108,18 @@ genuinely want per-line mirroring. Don't half-set it (`enabled` without
   object kopf posts the event into the operator's *own* namespace
   (`get_default_namespace()`, falling back to `default`), with `involvedObject`
   pointing at the CR. `kubectl describe <clusterscoped>` still finds it by uid.
-- **RBAC.** The operator's (Cluster)Role needs
-  `apiGroups: [""], resources: ["events"], verbs: ["create", "patch"]`. Missing
-  this is silent (see next point).
+- **RBAC.** The operator's (Cluster)Role needs this rule; missing it is
+  silent (see next point):
+
+  ```yaml
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  ```
 - **POST failures are swallowed.** `events.post_event` catches API errors and
   only emits `logger.warning("Failed to post an event. ... Code: 403 ...")`.
   Events never fail the handling cycle — so when events are mysteriously

@@ -17,9 +17,9 @@ tool's `~/.claude` directory.
 | `skills/<name>/SKILL.md` | Convention skills that load on demand, triggered by file paths or topics. Client-agnostic. |
 | `CLAUDE.md` | Global, non-negotiable rules Claude Code applies to **every** project unless a project-level `CLAUDE.md` overrides a specific rule. |
 
-The `.gitignore` is allow-list based — it ignores `**` and then re-includes
-`CLAUDE.md` and `skills/**/*.md`. A new skill is picked up automatically;
-Claude Code's runtime state never ends up in a commit.
+The [`.gitignore`](.gitignore) is an allow-list: it ignores every top-level
+entry and re-includes only what the repository versions. A new skill is picked
+up automatically; Claude Code's runtime state never ends up in a commit.
 
 ## Requirements
 
@@ -73,9 +73,10 @@ mv ~/.claude ~/.claude.bak 2>/dev/null || true
 git clone git@github.com:leroyguillaume/claude.git ~/.claude
 ```
 
-Because the ignore rules only track `CLAUDE.md` and `skills/`, you can safely
-keep using `~/.claude` as your live Claude Code directory — new sessions, cache,
-and history land beside the tracked files without polluting `git status`.
+Because the [`.gitignore`](.gitignore) allow-list leaves everything else
+untracked, you can safely keep using `~/.claude` as your live Claude Code
+directory — new sessions, cache, and history land beside the tracked files
+without polluting `git status`.
 
 Already running Claude Code from `~/.claude` and just want version control?
 Initialise it in place instead of cloning:
@@ -97,9 +98,8 @@ starts.
   `skills/<name>/SKILL.md` starts with frontmatter describing when to load
   (`TRIGGER`) and when to skip (`SKIP`). Most clients also let you invoke one
   explicitly — `/<skill-name>` in Claude Code.
-- **Global rules** in `CLAUDE.md` apply unconditionally in Claude Code (tests
-  must exist, baseline pre-commit hooks, README kept current, rule-of-three for
-  duplication, env-var naming, versioning policy, …).
+- **Global rules** in [`CLAUDE.md`](CLAUDE.md) apply unconditionally in
+  Claude Code.
 
 ## Adding or editing a skill
 

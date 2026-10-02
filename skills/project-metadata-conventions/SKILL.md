@@ -32,7 +32,7 @@ description: >-
 **This rule is about *writing* metadata, never about auditing it.** It applies
 when a field is empty, or when you are the one setting it. A manifest that
 already carries an author, a maintainer or a repository URL has had a human
-decide it, and that decision needs no justification from me.
+decide it, and that decision needs no justification.
 
 So, when `authors` / `maintainers` / `repository` already holds a real value:
 

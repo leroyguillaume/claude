@@ -31,16 +31,24 @@ to change; a helper hiding them costs both, forever.
 
 Extraction has **two axes, and repetition alone is not enough**:
 
-| | small | big |
+| | small | big, or carries an invariant |
 | --- | --- | --- |
-| **repeated twice** | leave it | leave it, note it |
+| **repeated twice** | leave it | extract |
 | **repeated three times or more** | leave it | extract |
 
-The rule of three is a necessary condition, not a sufficient one. Three copies
-of a four-line `ConfigMap` stay three copies. One eighty-line object that every
-app must render *identically* is a library on its first duplication, because
-there the risk is not typing it again — it is the copies diverging without
-anyone noticing.
+This departs from CLAUDE.md's rule of three in both directions, deliberately:
+
+- **Small stays duplicated, even past three copies.** Three copies of a
+  four-line `ConfigMap` stay three copies: in jsonnet a helper costs more to
+  read than the repetition it saves, for the reasons above.
+- **Big or invariant-carrying is extracted on its first duplication.** One
+  eighty-line object that every app must render *identically* is a library as
+  soon as it exists twice, because there the risk is not typing it again — it
+  is the copies diverging without anyone noticing.
+
+A duplication left in place is left silently: no `TODO`, no "copied from"
+or "keep in sync with" marker comment. Either it earns extraction or it does
+not.
 
 Extract when at least one of these is true, and say which in the file header:
 
