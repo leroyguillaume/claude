@@ -34,3 +34,20 @@ updates:
         update-types:
           - minor
           - patch
+
+  - package-ecosystem: pip
+    directory: /.github
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 3
+    groups:
+      pip:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
