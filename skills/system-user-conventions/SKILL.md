@@ -1,21 +1,12 @@
 ---
 name: system-user-conventions
 description: >-
-  Unix account conventions — a service account is not a person. One
-  dedicated system account per service, `nologin` shell, locked password, no
-  home under `/home`, no sudo and no root-equivalent group (`docker`,
-  `wheel`), never `nobody`, never shared. Created declaratively (`systemd-
-  sysusers`, cloud-init `users:`, Ansible, `useradd --system`), never by an
-  interactive `adduser`. The service never owns its own binary, config is
-  `root:<app>` `0640`, state is `0700`, and `chown -R` is not a fix.
-  TRIGGER when: creating or reviewing a Unix account or group —
-  `useradd`/`usermod`/`groupadd`, a `sysusers.d` file, a cloud-init `users:`
-  block, an Ansible `user` task, a `Dockerfile` `USER`; granting sudo or
-  adding someone to a group; setting ownership or modes on files a service
-  reads or writes; wiring SSH access, authorized keys or a deploy/CI
-  account; user asks who a process runs as, why a login fails, or how to
-  lock an account down.
-  SKIP when: no account, group, ownership or login path is involved.
+  Unix service accounts, groups, ownership and modes.
+  TRIGGER when: creating or reviewing an account or group (`useradd`,
+  `groupadd`, `sysusers.d`, cloud-init `users:`, Ansible `user`, `Dockerfile`
+  `USER`); granting sudo or a group; setting ownership or modes on service
+  files; SSH access or a deploy/CI account; user asks who a process runs as.
+  SKIP when: no account, group, ownership or login is involved.
 ---
 
 # System user conventions

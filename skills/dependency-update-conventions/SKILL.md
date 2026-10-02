@@ -1,18 +1,11 @@
 ---
 name: dependency-update-conventions
 description: >-
-  Dependency-update bot conventions, Dependabot and Renovate alike — on
-  GitHub, Dependabot for everything it supports and Renovate only for the
-  remainder (never both on one ecosystem); off GitHub, Renovate for the lot.
-  Never automerge, ever. Dependency dashboard always on. Packages released in
-  lockstep are grouped into one PR, majors included.
-  TRIGGER when: creating or editing `renovate.json`/`.json5`/`.renovaterc`,
-  a `renovate` key in `package.json`, or `.github/dependabot.yml`/`.yaml`;
-  setting up automated dependency updates for a repo; adding a custom/regex
-  manager for a version string no manager knows; triaging, merging or
-  working through open Dependabot/Renovate PRs; a bot PR failing CI,
-  especially several failing on the same package family; user asks about
-  Renovate, Dependabot, dependency PRs, grouping or update scheduling.
+  Dependabot and Renovate configuration and their PRs.
+  TRIGGER when: editing `renovate.json`/`.json5`, `.renovaterc`, a `renovate`
+  key in `package.json`, or `.github/dependabot.yml`/`.yaml`; setting up
+  automated updates; adding a regex manager; triaging or merging bot PRs,
+  especially failing ones; user asks about update grouping or scheduling.
   SKIP when: bumping a dependency by hand with no bot involved.
 ---
 

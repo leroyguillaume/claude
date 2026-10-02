@@ -1,17 +1,12 @@
 ---
 name: contributing-conventions
 description: >-
-  CONTRIBUTING.md conventions (English only, three mandatory blocks —
-  dev environment setup, running the tests, pre-commit, what the CI runs and
-  how to reproduce it locally — described from the repo's actual config,
-  never from memory).
-  TRIGGER when: creating or editing `CONTRIBUTING.md`; scaffolding a new
-  project; a change adds a dev dependency, a pre-commit hook, or a CI workflow
-  job; user asks what belongs in `CONTRIBUTING.md`, how contributors set up
-  the repo, or where to document the CI.
-  SKIP when: writing the user-facing `README.md` (that is `readme-conventions`)
-  or authoring the workflow/hook files themselves (that is
-  `ci-conventions` and its platform skills / `pre-commit-conventions`).
+  CONTRIBUTING.md: dev setup, tests, pre-commit and CI.
+  TRIGGER when: creating or editing `CONTRIBUTING.md`; scaffolding a project;
+  a change adds a dev dependency, pre-commit hook or CI job; user asks how
+  contributors set up the repo or where to document the CI.
+  SKIP when: writing `README.md` (`readme-conventions`), or the workflow/hook
+  files themselves (`ci-conventions`, `pre-commit-conventions`).
 ---
 
 # CONTRIBUTING conventions

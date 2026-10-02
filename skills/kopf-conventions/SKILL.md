@@ -1,18 +1,13 @@
 ---
 name: kopf-conventions
 description: >-
-  kopf-specific mechanics for Python Kubernetes operators — event
-  posting (the posting.enabled vs posting.loggers gotcha), explicit kopf.event
-  lifecycle events, cluster-scoped event namespacing, status-based progress
-  storage, on.resume rollouts, handler argument injection, and timers.
-  TRIGGER when: editing or creating code that imports `kopf` or defines
-  `@kopf.on.*` / `@kopf.timer` / `@kopf.on.startup` handlers; wiring
-  `OperatorSettings` (posting, persistence, finalizer); emitting Kubernetes
-  events from a Python operator; the user asks why events don't show up, about
-  `kopf.event` / `kopf.TemporaryError`, progress annotations, or `on.resume`.
-  SKIP when: the operator is not Python/kopf (controller-runtime, Operator SDK
-  in Go), or the work is framework-agnostic reconcile design — use
-  `kubernetes-operator-conventions` for the cross-framework principles.
+  kopf mechanics for Python Kubernetes operators.
+  TRIGGER when: code imports `kopf` or defines `@kopf.on.*`/`@kopf.timer`
+  handlers; wiring `OperatorSettings`; emitting events from a Python operator;
+  user asks why events don't show up, or about `kopf.event`,
+  `kopf.TemporaryError` or `on.resume`.
+  SKIP when: the operator is not kopf, or the question is framework-agnostic
+  reconcile design (`kubernetes-operator-conventions`).
 ---
 
 # kopf conventions

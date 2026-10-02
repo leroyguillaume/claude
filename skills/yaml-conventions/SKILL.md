@@ -1,14 +1,11 @@
 ---
 name: yaml-conventions
 description: >-
-  YAML formatting conventions (block style only, no flow style, no
-  `---` opening a file).
+  YAML formatting: block style, document start markers.
   TRIGGER when: editing or creating any `.yaml`/`.yml` file (manifests, Helm
-  charts/values, GitHub Actions workflows, compose files, config); writing a
-  YAML snippet inside docs or a `README.md`; user asks about YAML style, flow
-  vs block style, document start markers, or inline collections in this repo.
-  SKIP when: no YAML is being written or edited and the user isn't asking about
-  YAML formatting.
+  values, workflows, compose, config); writing a YAML snippet in docs or a
+  README; user asks about YAML style, flow vs block or document markers.
+  SKIP when: no YAML is involved.
 ---
 
 # YAML formatting

@@ -1,20 +1,14 @@
 ---
 name: github-repo-settings
 description: >-
-  GitHub repository settings administered via the `gh` CLI — sync
-  issue/PR labels to the set referenced in `.github/release.yaml` (always
-  including a `breaking` label), restrict
-  the allowed merge methods to squash-only, auto-delete head branches on
-  merge, and enable GitHub Pages in GitHub Actions deploy mode.
-  TRIGGER when: the user asks to configure/clean up the GitHub repo's labels,
-  align labels with the release changelog config, change which merge buttons
-  (squash / merge commit / rebase) a repo allows, toggle automatic
-  head-branch deletion after merge, or enable/fix GitHub Pages; a repo gains a
-  workflow using `actions/deploy-pages` (a `docs` pipeline); a Pages deploy
-  fails because Pages is off or set to deploy from a branch.
-  SKIP when: editing workflow logic or release-note categories themselves (that
-  is `github-actions-conventions`), or any work that does not touch repo
-  settings.
+  GitHub repo settings via `gh`: labels, merge methods, branch deletion,
+  Pages.
+  TRIGGER when: user asks to sync labels with `.github/release.yaml`, change
+  merge methods, toggle head-branch deletion, or enable GitHub Pages; a repo
+  gains an `actions/deploy-pages` workflow; a Pages deploy fails because Pages
+  is off.
+  SKIP when: editing workflows or release-note categories
+  (`github-actions-conventions`).
 ---
 
 # GitHub repository settings (`gh` CLI)

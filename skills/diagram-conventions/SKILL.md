@@ -1,20 +1,13 @@
 ---
 name: diagram-conventions
 description: >-
-  Mermaid is the default diagram format, and inside a markdown file it is the
-  answer — inline, in a fenced block, in the file that needs it. ASCII art is
-  fine in chat and never in a committed file; Excalidraw and images are for
-  what Mermaid genuinely cannot draw, committed with their editable source and
-  never hosted outside the repo. Covers which diagram type answers which
-  question, labelling edges, and keeping a diagram honest as the code moves.
-  TRIGGER when: about to draw anything with boxes and arrows — a component
-  graph, a call flow, a state machine, a sequence, an entity relationship, a
-  deployment topology; typing `┌`, `─`, `│`, `+---+`, `-->` inside a fenced
-  block; adding or editing a diagram in any document; a `.png`/`.svg`/`.drawio`
-  /`.excalidraw` is about to be committed or linked as a diagram; user asks for
-  a schema, a schéma, a diagram, or "draw me".
-  SKIP when: the picture is a screenshot of a running UI, a photograph, or a
-  generated plot of real data — those are images and stay images.
+  Diagrams in committed files: format and diagram type.
+  TRIGGER when: drawing boxes and arrows (components, call flow, state
+  machine, sequence, ER, topology); typing ASCII box art (`┌`, `─`, `│`,
+  `+--+`) outside a mermaid block; adding a diagram to a document; committing
+  a `.png`/`.svg`/`.drawio`/`.excalidraw` diagram; user asks for a diagram, a
+  schéma or "draw me".
+  SKIP when: a screenshot, a photograph or a plot of real data.
 ---
 
 # Diagram conventions

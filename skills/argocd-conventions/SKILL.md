@@ -1,19 +1,13 @@
 ---
 name: argocd-conventions
 description: >-
-  Argo CD object conventions, true in any GitOps repository whatever its
-  layout — OCI chart references pinned to an exact latest version,
-  `revisionHistoryLimit: 0` everywhere, no automated sync, retry rather than
-  cross-app sync waves, AppProject `sourceRepos` as an allowlist, and the
-  ApplicationSet generator traps. The repository's own layout is followed,
-  never challenged.
+  Argo CD objects in any GitOps repository.
   TRIGGER when: creating or editing an `Application`, `ApplicationSet`,
-  `AppProject`, or any file in a GitOps/deployment repository that Argo CD
-  reads; adding a project, app or cluster to such a repository; bumping a
-  chart version; user asks about Argo CD, ApplicationSets, generators, chart
-  sources, sync policy, or sync waves.
-  SKIP when: authoring the Helm chart itself (that is `helm-conventions`), or
-  working on Kubernetes manifests with no Argo CD involvement.
+  `AppProject` or any file Argo CD reads; adding a project, app or cluster;
+  bumping a chart version there; user asks about Argo CD, generators, sync
+  policy or sync waves.
+  SKIP when: authoring the chart itself (`helm-conventions`), or manifests
+  with no Argo CD involvement.
 ---
 
 # Argo CD conventions

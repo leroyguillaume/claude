@@ -1,18 +1,12 @@
 ---
 name: github-pr-conventions
 description: >-
-  Conventions for opening GitHub pull requests with the `gh` CLI —
-  always apply the right labels at creation time so the PR lands in the correct
-  release-notes category. Derive the label set from the repo (and
-  `.github/release.yaml`), never from memory; never a category label that
-  file doesn't list; `breaking` on top whenever the PR breaks something. Rebase the branch onto an
-  up-to-date `main` before opening it. A PR stacked on another PR's branch is
-  opened as a draft.
-  TRIGGER when: creating/opening a pull request (`gh pr create`), opening a
-  stack of dependent PRs, or fixing an existing PR's labels.
-  SKIP when: managing the repo's label *definitions* or merge methods (that is
-  `github-repo-settings`), or authoring workflow/release-note YAML (that is
-  `github-actions-conventions`).
+  Opening GitHub pull requests with `gh`: labels, rebasing, stacked PRs.
+  TRIGGER when: creating a pull request (`gh pr create`), opening a stack of
+  dependent PRs, or fixing a PR's labels.
+  SKIP when: managing label definitions or merge methods
+  (`github-repo-settings`), or authoring workflow/release-note YAML
+  (`github-actions-conventions`).
 ---
 
 # GitHub pull request conventions (`gh` CLI)

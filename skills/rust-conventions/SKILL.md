@@ -1,18 +1,14 @@
 ---
 name: rust-conventions
 description: >-
-  Rust project conventions (clap, tokio, tracing, mockall, static dispatch,
-  module and workspace layout, clippy and toolchain pinning, `.cargo/config.toml`
-  development defaults, cargo-chef for Docker builds).
-  TRIGGER when: editing or creating `.rs` files; touching `Cargo.toml`,
-  `Cargo.lock`, `rust-toolchain*`, or `.cargo/config.toml`; adding/removing a
-  Rust dependency; setting up a Rust CLI, server, async trait, mock, or logging
-  subscriber; a `cargo run` / `cargo test` invocation that needs environment
-  variables in front of it; user asks about Rust tooling, deps, traits, async,
-  clippy, or rustfmt in this repo.
-  SKIP when: pure Python/Helm/Docker/CI work with no Rust file touched and the
-  user isn't asking about Rust. For the HTTP stack itself (axum, aide, Scalar,
-  OpenAPI, validator) load `rust-http-conventions` alongside this one.
+  Rust projects: crate choices (clap, tokio, tracing, mockall), layout and
+  toolchain.
+  TRIGGER when: editing `.rs` files; touching `Cargo.toml`, `Cargo.lock`,
+  `rust-toolchain*` or `.cargo/config.toml`; adding a Rust dependency; setting
+  up a Rust CLI, server, async trait, mock or subscriber; a `cargo run`/`cargo
+  test` needing env vars.
+  SKIP when: no Rust is involved. Load `rust-http-conventions` alongside for
+  HTTP.
 ---
 
 # Rust conventions

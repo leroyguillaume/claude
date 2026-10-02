@@ -1,21 +1,13 @@
 ---
 name: ci-conventions
 description: >-
-  Platform-agnostic CI conventions — the canonical
-  quality/build/security/chart/release pipelines, a single pre-commit + tests
-  quality gate, mandatory Trivy vulnerability scanning (scan before push, gate
-  on HIGH/CRITICAL, daily re-scan of what is published), path filtering and
-  its exceptions, cancelling superseded runs, least privilege, immutable
-  references, pragmatic caching, native multi-arch builds, tag-driven
-  releases. Load `github-actions-conventions` or `gitlab-ci-conventions`
-  alongside for the platform syntax.
+  Platform-agnostic CI pipelines: quality gate, Trivy scans, path filters,
+  caching, releases.
   TRIGGER when: creating or editing any CI definition (`.github/workflows/`,
-  `.github/actions/`, `.gitlab-ci.yml`, `.gitlab/ci/`, or any other CI
-  system's pipeline file); setting up CI for a new repo; deciding what a
-  pipeline runs, when it triggers, what it publishes or how it scans; user
-  asks about CI design, pipeline triggers, path filters, CVE/image scanning,
-  CI caching, multi-arch builds or release automation.
-  SKIP when: no pipeline file is touched and the user isn't asking about CI.
+  `.gitlab-ci.yml`, `.gitlab/ci/`, …); setting up CI; user asks about
+  triggers, path filters, CVE scanning, CI caching or release automation.
+  SKIP when: no pipeline is involved. Load `github-actions-conventions` or
+  `gitlab-ci-conventions` alongside.
 ---
 
 # CI conventions

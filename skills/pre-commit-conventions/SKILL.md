@@ -1,17 +1,11 @@
 ---
 name: pre-commit-conventions
 description: >-
-  pre-commit conventions — never use Docker-backed hooks, always run
-  the linter binary directly (`language: system` / native pre-commit language),
-  always ship a `yamllint` hook in a repo containing YAML, always ship a
-  `commit-msg` hook rejecting `Co-Authored-By` / "Generated with" lines,
-  never run a test suite from a hook.
-  TRIGGER when: creating or editing `.pre-commit-config.yaml`; adding, replacing
-  or bumping a pre-commit hook; a hook repo only ships a `docker` /
-  `docker_image` variant; setting up linting for a repo containing YAML; wiring
-  a test suite (`cargo test`, `pytest`, `vitest`, `go test`, …) into a commit
-  gate; user asks why a hook is slow, why it needs Docker, or how to run a
-  linter in pre-commit.
+  pre-commit configuration and hook choice.
+  TRIGGER when: creating or editing `.pre-commit-config.yaml`; adding,
+  replacing or bumping a hook; a hook only ships a `docker` variant; setting
+  up linting for a repo with YAML; wiring a test suite (`pytest`, `cargo
+  test`, …) into a commit gate; user asks why a hook is slow or needs Docker.
   SKIP when: not touching pre-commit configuration.
 ---
 

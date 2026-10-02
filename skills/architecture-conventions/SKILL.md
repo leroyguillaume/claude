@@ -1,20 +1,12 @@
 ---
 name: architecture-conventions
 description: >-
-  ARCHITECTURE.md conventions — a present-tense description of the
-  system as it stands today (components, data flow, standing design
-  trade-offs, invariants, limitations). Never a history: no past changes, no
-  migrations, no changelog, no dated decision log. Never the CI.
-  TRIGGER when: creating or editing `ARCHITECTURE.md`; a *why* paragraph shows
-  up in the README or the README passes ~150 lines; adding a component, a
-  datastore, an external dependency, or an invariant other code must respect;
-  user asks how the system fits together, why a design choice was made, or
-  where to document a trade-off.
-  SKIP when: writing install/run/test instructions (that is
-  `readme-conventions`), or documenting dev setup, pre-commit or the CI
-  pipeline (that is `contributing-conventions`).
-  Diagrams here are Mermaid, inline in the file — load `diagram-conventions`
-  before drawing one.
+  ARCHITECTURE.md: the system as it stands, in the present tense.
+  TRIGGER when: creating or editing `ARCHITECTURE.md`; a *why* paragraph lands
+  in the README; adding a component, datastore, external dependency or
+  invariant; user asks how the system fits together or where a trade-off goes.
+  SKIP when: install/run instructions (`readme-conventions`), or dev setup,
+  pre-commit or CI (`contributing-conventions`).
 ---
 
 # ARCHITECTURE conventions

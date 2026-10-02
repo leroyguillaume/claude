@@ -1,15 +1,12 @@
 ---
 name: readme-conventions
 description: >-
-  README conventions (English only, three mandatory blocks —
-  description, getting started, contributing/licence links — operational
-  content only, design rationale lives in `ARCHITECTURE.md`).
-  TRIGGER when: creating or editing any `README.md`; scaffolding a new
-  project; a change alters install/config/run/deploy instructions;
-  adding or updating `CONTRIBUTING.md` or `LICENSE`; user asks what belongs
-  in the README, how to structure it, or where to document something.
-  SKIP when: writing `ARCHITECTURE.md` design rationale with no README impact,
-  or editing docs under `docs/` that aren't a README.
+  README.md: what goes in it and how it is structured.
+  TRIGGER when: creating or editing any `README.md`; adding a `LICENSE`;
+  scaffolding a project; a change alters install, config, run or deploy steps;
+  user asks what belongs in the README.
+  SKIP when: editing `CONTRIBUTING.md` (`contributing-conventions`),
+  `ARCHITECTURE.md` rationale, or non-README docs under `docs/`.
 ---
 
 # README conventions

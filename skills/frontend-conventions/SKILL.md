@@ -1,14 +1,13 @@
 ---
 name: frontend-conventions
 description: >-
-  Frontend project conventions (TypeScript, React, Biome, enforced
-  typing, mobile-first). TRIGGER when: editing or creating `.ts`/`.tsx` files;
-  touching `package.json`, `tsconfig*.json`, `biome.json`/`biome.jsonc`, or a
-  frontend lockfile; adding/removing a frontend dependency; building a React
-  component, hook, or page; styling or laying out UI; user asks about frontend
-  tooling, types, React, Biome, or responsive/mobile layout in this repo.
-  SKIP when: pure backend/infra work (Python/Rust/Helm/Docker/CI) with no
-  frontend file touched and the user isn't asking about the frontend.
+  Frontend code: TypeScript, React, Biome, mobile-first.
+  TRIGGER when: editing `.tsx`, `.ts` in a frontend app, or React components,
+  hooks or pages; touching a frontend `package.json`, `tsconfig*.json`,
+  `biome.json`/`.jsonc` or lockfile; styling or laying out UI; user asks about
+  frontend tooling, React or Biome.
+  SKIP when: server-side TypeScript (Node backends, CDK, Pulumi) or no
+  frontend code.
 ---
 
 # Frontend conventions

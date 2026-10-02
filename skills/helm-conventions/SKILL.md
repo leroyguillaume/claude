@@ -1,16 +1,12 @@
 ---
 name: helm-conventions
 description: >-
-  Helm chart conventions (values structure, security context,
-  Trivy `KSV-xxxx` compliance, templates layout, helm-docs, resources
-  requests/limits).
-  TRIGGER when: editing or creating any file under a chart's `templates/`,
-  `values.yaml`, `values-*.yaml`, `Chart.yaml`, `.helmignore`, or a chart's
-  `README.md`; adding/removing a Kubernetes object in a chart; user asks about
-  Helm values, RBAC, security context, resources, chart scanning / KSV
-  findings, or helm-docs in this repo.
-  SKIP when: pure Python/Rust/Docker/CI work with no chart file touched and the
-  user isn't asking about Helm.
+  Helm charts: values, security context, KSV, templates, helm-docs, resources.
+  TRIGGER when: editing a chart's `templates/`, `values.yaml`,
+  `values-*.yaml`, `Chart.yaml`, `.helmignore` or `README.md`; adding a
+  Kubernetes object to a chart; user asks about Helm values, RBAC, security
+  context, KSV findings or helm-docs.
+  SKIP when: no chart file is touched and the user isn't asking about Helm.
 ---
 
 # Helm chart conventions

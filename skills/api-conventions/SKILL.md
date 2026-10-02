@@ -1,20 +1,14 @@
 ---
 name: api-conventions
 description: >-
-  HTTP/RPC API conventions (dedicated DTOs, no domain models on the
-  wire, camelCase JSON, FK naming, tagged operations, mandatory pagination of
-  list endpoints, the OpenAPI document at `/openapi.json` rendered by Scalar
-  at `/docs`). Applies to any HTTP/RPC surface in any language or framework.
-  TRIGGER when: editing or creating request/response handlers, routes,
-  controllers, or DTO/schema types; adding or changing an HTTP/RPC endpoint;
-  returning a collection/list from an endpoint or a repository that backs one;
-  designing a JSON body, query/path params, or an OpenAPI spec; wiring a docs
-  UI; user asks about API contracts, serialisation, DTOs vs domain models,
-  field casing, pagination, endpoint grouping, or where the docs are served.
-  SKIP when: the work touches no request/response surface (pure CLI, library,
-  data layer with no wire boundary) and the user isn't asking about API design.
-  For the URL and method design itself — resource naming, REST verbs, status
-  codes — load `rest-conventions` alongside this one.
+  HTTP/RPC API payloads in any language: DTOs, JSON casing, pagination,
+  OpenAPI docs.
+  TRIGGER when: adding or changing an endpoint, handler, route, controller or
+  DTO/schema type; returning a list from an endpoint; designing a JSON body,
+  params or an OpenAPI spec; user asks about API contracts, serialisation,
+  casing or pagination.
+  SKIP when: no request/response surface is touched. Load `rest-conventions`
+  alongside for URLs and methods.
 ---
 
 # API conventions

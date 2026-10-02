@@ -1,17 +1,12 @@
 ---
 name: kubernetes-operator-conventions
 description: >-
-  Kubernetes operator / controller conventions (error handling,
-  always-requeue, events, idempotency, finalizers, ownerReferences). Applies to
-  kopf, controller-runtime, Operator SDK, or any custom controller reconcile
-  loop.
-  TRIGGER when: editing or creating reconcile handlers / controllers (e.g. files
-  importing `kopf`, `controller-runtime`, `operator-sdk`, or defining
-  `@kopf.on.*` / `Reconcile()` functions); handling errors, retries, events, or
-  finalizers in a controller; user asks about requeue, reconciliation, CRDs,
-  operator error handling, or status conditions in this repo.
-  SKIP when: the code is not a controller/operator reconcile path (plain CLI,
-  library, web handler) and the user isn't asking about operator behavior.
+  Kubernetes operator/controller reconcile loops, any framework.
+  TRIGGER when: editing reconcile handlers or controllers (`kopf`,
+  `controller-runtime`, `operator-sdk`, `Reconcile()`); handling errors,
+  retries, events or finalizers in a controller; user asks about requeue, CRDs
+  or status conditions.
+  SKIP when: the code is not a controller reconcile path.
 ---
 
 # Kubernetes operator conventions
