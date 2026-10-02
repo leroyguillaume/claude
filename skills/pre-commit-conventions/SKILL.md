@@ -17,6 +17,26 @@ description: >-
 
 # pre-commit conventions
 
+## Baseline hooks
+
+**Every repo gets these from `pre-commit/pre-commit-hooks`**, whatever its
+stack:
+
+```yaml
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: detect-private-key
+```
+
+On top of them: the `yamllint` and `commit-msg` hooks below, and the hooks the
+matching skill lists for every technology present in the repo.
+
 ## Never use Docker-backed hooks
 
 **No hook may use `language: docker` or `language: docker_image`.** Docker
@@ -56,7 +76,7 @@ the repo entirely and declare a local one:
 
 `shellcheck` then comes from the system package manager (`brew install
 shellcheck`, `pacman -S shellcheck`, `apt install shellcheck`). Document that
-prerequisite in the repo `README.md` and install it in CI before running
+prerequisite in `CONTRIBUTING.md` and install it in CI before running
 `pre-commit`.
 
 If a runner genuinely cannot have the binary preinstalled, use
@@ -105,12 +125,26 @@ rules:
   # Disable rather than tune: a digest-pinned image reference alone is ~150
   # characters, and a helm-docs annotation is one line per key by construction.
   line-length: disable
+  # A GitHub workflow's trigger key is a bare `on:`, which YAML 1.1 reads as a
+  # boolean: checking keys fails every workflow. Values are still checked.
+  truthy:
+    allowed-values:
+      - 'true'
+      - 'false'
+    check-keys: false
+  # The default of 2 rejects `uses: org/action@<sha> # v4.2.0`, the
+  # single-space pin comment most tools and hand edits produce.
+  comments:
+    min-spaces-from-content: 1
 ```
 
-Two traps worth knowing:
+Three traps worth knowing:
 
 - **Without `--strict`, yamllint exits 0 on warnings.** `document-start` is a
   warning by default, so the finding is printed and the hook goes green.
+- **`--strict` turns the default ruleset's warnings into failures**, so
+  `truthy` (keys checked) and `comments` (two spaces before an inline comment)
+  fail GitHub workflows unless they are tuned as above.
 - **A rule that fires on a file it cannot be satisfied on** (`document-start`
   on a multi-document manifest) needs a per-rule `ignore:`, not a global one —
   a top-level `ignore:` drops the file from *every* rule.
@@ -179,8 +213,7 @@ job. Not in `.pre-commit-config.yaml`.
 
 If a repo already has a test hook, **remove it and add the CI job in the same
 change** — dropping the hook without wiring the suite into CI is how a suite
-stops being run at all. Leave a comment in the config saying where the tests
-went, so the next person does not "helpfully" add the hook back.
+stops being run at all.
 
 Type checking is **not** a test: `tsc --noEmit`, `mypy` and `clippy` are static
 analysis, they stay in pre-commit.
