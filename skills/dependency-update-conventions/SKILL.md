@@ -51,17 +51,16 @@ configure, debug and explain.
 **Never point both bots at the same ecosystem or the same file.** Two PRs for
 one bump, two lockfile updates that conflict with each other, and reviewers
 who learn to skim. Make the split explicit rather than implicit: give Renovate
-an `enabledManagers` list covering only what Dependabot does not, and say in
-`ARCHITECTURE.md` where the line is drawn.
+an `enabledManagers` list covering only what Dependabot does not, and say
+where the line is drawn in the config's own `description` (and in
+`CONTRIBUTING.md` if contributors need to know which bot opens what).
 
 Two ways to draw it, and they are not equivalent:
 
-```json5
+```json
 {
-  // Allowlist. Dependabot owns cargo, docker and github-actions; Renovate is
-  // here only for the chart versions in the catalog, which no Dependabot
-  // ecosystem can see.
-  enabledManagers: ["custom.regex"],
+  "description": "Dependabot owns cargo, docker and github-actions; Renovate only handles the chart versions in the catalog, which no Dependabot ecosystem sees",
+  "enabledManagers": ["custom.regex"]
 }
 ```
 
@@ -188,11 +187,11 @@ Without it, **silence is ambiguous**: no PR for three months reads as "nothing
 to update" and means "the manager stopped matching after a refactor" just as
 often. The dashboard is what turns that into a visible list.
 
-```json5
+```json
 {
-  dependencyDashboard: true,
-  dependencyDashboardTitle: "Dependency dashboard",
-  dependencyDashboardLabels: ["dependencies"],
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency dashboard",
+  "dependencyDashboardLabels": ["dependencies"]
 }
 ```
 
@@ -226,15 +225,15 @@ body.
 
 Baseline:
 
-```json5
+```json
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  extends: ["config:recommended"],
-  timezone: "Europe/Paris",
-  dependencyDashboard: true,
-  labels: ["dependencies"],
-  prConcurrentLimit: 5,
-  minimumReleaseAge: "3 days",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/Paris",
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 5,
+  "minimumReleaseAge": "3 days"
 }
 ```
 
@@ -304,22 +303,21 @@ and say so in the `description`.
 
 ### Custom managers
 
-The reason Renovate is there at all, usually. Each one needs a comment saying
-which file it matches and what the line looks like — a regex over someone
-else's format is unreadable six months later:
+The reason Renovate is there at all, usually. Each one needs a `description`
+saying which file it matches and quoting a line it matches — a regex over
+someone else's format is unreadable six months later:
 
-```json5
+```json
 {
-  customManagers: [
+  "customManagers": [
     {
-      // Chart versions in the app catalog:
-      //     version: '1.2.3',  // renovate: datasource=docker depName=…
-      customType: "regex",
-      managerFilePatterns: ["/^apps/[^/]+/catalog\\.libsonnet$/"],
-      matchStrings: ["datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+version: '(?<currentValue>[^']+)'"],
-      versioningTemplate: "semver",
-    },
-  ],
+      "description": "Chart versions in the app catalog, e.g. `// renovate: datasource=docker depName=…` followed by `version: '1.2.3',`",
+      "customType": "regex",
+      "managerFilePatterns": ["/^apps/[^/]+/catalog\\.libsonnet$/"],
+      "matchStrings": ["datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+version: '(?<currentValue>[^']+)'"],
+      "versioningTemplate": "semver"
+    }
+  ]
 }
 ```
 
@@ -361,6 +359,9 @@ only, per `yaml-conventions`.
   (see `github-actions-conventions`).
 - Set `labels` to the same changelog-category label as Renovate's, and
   `open-pull-requests-limit` to something a human can actually work through.
+  **`labels` replaces Dependabot's defaults rather than adding to them**: the
+  `dependencies` label and the per-ecosystem one (`javascript` for npm,
+  `github_actions`, …) disappear unless listed, so list every label wanted.
 - **`groups`** for patch/minor per ecosystem; majors ungrouped — except
   lockstep families, grouped whatever the update type and listed first (see
   "Group what must move together").
@@ -376,8 +377,8 @@ only, per `yaml-conventions`.
   that merges bot PRs for you.
 - Never run both bots over the same ecosystem or the same file.
 - Never turn the dependency dashboard off.
-- Never add a custom manager without a comment showing the line it matches,
-  and never merge one without a dry run.
+- Never add a custom manager without a `description` quoting the line it
+  matches, and never merge one without a dry run.
 - Never write a Renovate config from memory about what Dependabot supports —
   read the current list.
 - Never take `platformAutomerge: false` for "automerge is off".

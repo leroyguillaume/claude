@@ -23,8 +23,10 @@ description: >-
   `alias_generator=to_camel` + `populate_by_name=True` on the base model, so
   `endpoint_url` becomes `endpointUrl` on the wire while Python stays
   idiomatic. Serialise with `by_alias=True` (and accept either spelling on the
-  way in). Leave ruff's `N815` (mixed-case class variable) **enabled** — it is
-  the guard that catches a stray `camelCase` field; never add it to `ignore`.
+  way in). Keep ruff's `N815` (mixed-case class variable) **enabled** — it is
+  the guard that catches a stray `camelCase` field. Ruff's default rule set
+  does not include `pep8-naming`, so `select` must list `"N"`, and `N815`
+  never goes in `ignore`.
 - Use `pyproject.toml` as the single source of truth for metadata,
   dependencies, and tool configuration (`ruff`, `pytest`, etc.).
 - Use `uv` for dependency and environment management: `uv init`, `uv add`,
@@ -60,13 +62,30 @@ description: >-
       port: Annotated[int, typer.Option(envvar="PORT", help="Listen port")] = 8080,
   ) -> None: ...
   ```
-- Apply the **Logging and observability** rules from `CLAUDE.md`. Python
-  mechanics: use the standard `logging` module (or `structlog` when the
-  project already does), configured once at process start; level
-  controlled by an env var (e.g. `LOG_LEVEL`) routed through the `typer` /
-  `pydantic-settings` config layer. Log structured key-values
-  (`logger.debug("fetched", extra={"url": url, "status": resp.status})`),
-  never f-string interpolation of values into the message.
+- Apply `logging-conventions`. Python mechanics: use the standard `logging`
+  module (or `structlog` when the project already does), configured once at
+  process start; level controlled by an env var (e.g. `LOG_LEVEL`) routed
+  through the `typer` / `pydantic-settings` config layer. Log structured
+  key-values (`logger.debug("fetched", extra={"url": url, "status": resp.status})`),
+  never f-string interpolation of values into the message. The default
+  `logging` formatter silently drops `extra=` fields, so install a structured
+  (JSON or key=value) formatter that renders them; and an `extra` key that
+  clashes with a `LogRecord` attribute (`name`, `message`, `module`, …)
+  raises `KeyError`.
+- Apply `signal-handling-conventions`. Python mechanics: Python's default
+  `SIGTERM` action kills the process with no cleanup, and `KeyboardInterrupt`
+  only covers `SIGINT`. In asyncio, register both on the running loop and
+  drive shutdown from one event:
+  ```python
+  stop = asyncio.Event()
+  loop = asyncio.get_running_loop()
+  for sig in (signal.SIGTERM, signal.SIGINT):
+      loop.add_signal_handler(sig, stop.set)
+  ```
+  A server or worker loop then exits once `stop` is set, after draining. A
+  synchronous loop installs `signal.signal` for both and checks a flag
+  between units of work. `add_signal_handler` is unix-only, which is the
+  right default for a Linux-container target.
 - Model structured data with an **explicit type**, never a bare `dict` /
   `tuple` threaded through the code as an ad-hoc record. As soon as a value
   has a known, fixed set of fields:

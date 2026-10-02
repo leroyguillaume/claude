@@ -16,8 +16,9 @@ description: >-
 # Signal handling and graceful shutdown
 
 Applies to every long-running process (servers, workers, daemons) in any
-language or runtime. The language skills restate the mechanics (which signal
-API, how to wire the shutdown future) where they need to be concrete.
+language or runtime. The language skills (`rust-conventions`,
+`python-conventions`) give the mechanics: which signal API, and how to wire
+shutdown to it.
 
 - **Handle both `SIGTERM` and `SIGINT`** and shut down gracefully on either.
   `SIGTERM` is what an orchestrator (Docker, Kubernetes, systemd, a process

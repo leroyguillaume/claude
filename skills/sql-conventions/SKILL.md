@@ -38,9 +38,9 @@ contains `.sql` files must have the sqlfluff pre-commit hook. Add it to
 
 - **Follow sqlfluff's style, don't fight it.** Reformat the SQL to satisfy the
   rules rather than disabling them. In practice that means: single spaces (no
-  column alignment in `CREATE TABLE` — sqlfluff removed the alignment rule on
-  purpose), one `SELECT` target per line when there is more than one, and
-  consistent keyword casing.
+  column alignment in `CREATE TABLE` — sqlfluff's layout defaults to single
+  spacing, and its opt-in `spacing_before = align` stays off), one `SELECT`
+  target per line when there is more than one, and consistent keyword casing.
 
 - **Only `exclude_rules` for deliberate, justified cases**, with a comment
   saying why. The common one: using reserved-ish words as identifiers — e.g. a
