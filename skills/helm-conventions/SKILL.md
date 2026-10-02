@@ -286,8 +286,9 @@ description: >-
   the same answer `argocd-conventions` gives for the Application.
   ```yaml
   # values.yaml
-  # -- Number of old revisions the workload keeps for rollback.
-  revisionHistoryLimit: 0
+  <component>:
+    # -- Number of old revisions the workload keeps for rollback.
+    revisionHistoryLimit: 0
   ```
   ```yaml
   # templates/<component>/deployment.yaml

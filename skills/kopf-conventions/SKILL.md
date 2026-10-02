@@ -25,8 +25,10 @@ by **two different settings**. Confusing them is the #1 cause of "I had errors
 but no events showed up on the resource".
 
 1. **Explicit calls** — `kopf.event(body, type=..., reason=..., message=...)`
-   (and `kopf.info` / `kopf.warn` / `kopf.exception`). These post **iff
-   `settings.posting.enabled` is True** (the default). Full control over
+   posts **iff `settings.posting.enabled` is True** (the default), whatever
+   `posting.level`. The shorthands also check the level: `kopf.info` needs
+   `level <= INFO`, `kopf.exception` `level <= ERROR`, and `kopf.warn`
+   `level <= WARNING` while ignoring `enabled`. Full control over
    `type` / `reason` / `message`.
 2. **Log-record posting** — kopf can mirror log lines made on the **object
    logger** (`logger` injected into a handler) as events. This is gated by
@@ -89,7 +91,9 @@ on the *object* logger, not a module-level `logging.getLogger(...)`).
   ```
 
   Without raising the level off its `logging.INFO` default, **every** info line
-  becomes an event and floods the object. Even then the posted events carry
+  becomes an event and floods the object. That level also silences
+  `kopf.info`, so post Normal events with `kopf.event(type="Normal")`, as the
+  wrapper above does. Even then the posted events carry
   `reason="Logging"` (less descriptive than an explicit one), and the framework
   may also post its own error log — expect duplicates.
 

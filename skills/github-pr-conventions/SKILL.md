@@ -73,6 +73,9 @@ review. Say in each stacked PR's description which PR it sits on.
 
 ## Title and body
 
+- **The title follows the repo's commit-subject style** (read
+  `git log --oneline`): a squash merge makes it the commit subject on the
+  default branch.
 - **Link the issue it resolves** with `Closes #123` in the body, so the merge
   closes it. Never close an issue by hand on the user's behalf.
 - **A follow-up spotted while opening the PR** goes in the body as

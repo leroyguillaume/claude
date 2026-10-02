@@ -216,7 +216,9 @@ gets, so it has to mean something. Reserved names, always at the root:
 ## Providers and versions
 
 - **Pin provider versions exactly** (`version = "7.16.0"`), and use the fully
-  qualified source (`registry.terraform.io/hashicorp/google`). The short form
+  qualified source, with the hostname of the binary the repo runs:
+  `registry.opentofu.org/hashicorp/google` under OpenTofu,
+  `registry.terraform.io/hashicorp/google` under Terraform. The short form
   resolves to different registries under Terraform and OpenTofu and the two
   fight over `.terraform/providers` and the lock file every time you switch.
 - `required_version` gets a floor (`>= 1.11`), justified in a comment when the
@@ -302,7 +304,7 @@ Baseline hooks plus, pinned to one binary so laptop and CI agree:
   hooks:
     - id: trivy-terraform
       name: trivy config (Terraform)
-      entry: trivy config --exit-code 1 --misconfig-scanners terraform .
+      entry: trivy config --exit-code 1 --misconfig-scanners terraform --tf-exclude-downloaded-modules .
       language: system
       pass_filenames: false
       files: \.tf$
