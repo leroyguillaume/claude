@@ -164,9 +164,8 @@ stop. Change nothing, and never prompt — there is nothing to push.
 **Never:**
 
 - Never bump a version outside this script — not in a normal commit, not "just
-  this once". The global rule that **Claude never bumps a version unasked**
-  still applies: the script exists for the user to run, and writing it is not
-  permission to run it.
+  this once". And **never bump a version unasked**, even through the script:
+  it exists for the user to run, and writing it is not permission to run it.
 - Never push, tag, or publish without the user having asked for a release.
 - Never hand-edit a lockfile to match a bumped manifest.
 - Never continue past a dirty tree, a stale branch, or an existing tag.

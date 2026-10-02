@@ -11,7 +11,8 @@ would be dangerous to miss if a skill failed to load.
 ## Non-negotiable rules
 
 These are not suggestions. When a project is missing any of the artifacts
-below, the bootstrap checklist further down says who creates them and how.
+below, propose them and wait for a yes — the bootstrap checklist further down
+says how.
 
 1. **Tests exist and are runnable** for any code you write or modify.
 2. **`.pre-commit-config.yaml` exists** at the repo root with the baseline
@@ -24,8 +25,9 @@ below, the bootstrap checklist further down says who creates them and how.
    `architecture-conventions` and `contributing-conventions` skills' job.
 4. **Only an architectural change gets an ADR, in `docs/adr/`** — one that
    redraws the architecture diagram; any other decision's reasoning belongs in
-   `ARCHITECTURE.md`. **When it is not clear-cut, ask me instead of writing
-   one**: ADRs are immutable. See `adr-conventions`.
+   `ARCHITECTURE.md`, created if the project has none yet. **When it is not
+   clear-cut, ask me instead of writing one**: ADRs are immutable. See
+   `adr-conventions`.
 5. **No code duplication beyond the rule of three.** When the same logic
    appears a third time, extract it. Do not extract earlier. Do not build
    speculative abstractions.
@@ -271,14 +273,11 @@ Before writing feature code, check that these exist:
 - [ ] CI running `pre-commit` and the tests (`ci-conventions` and the
       platform's skill)
 
-**Who creates what is missing depends on whose repository it is.**
-
-- **My own repositories, or a project being started**: create it without
-  asking and without deferring to "later" — as its own change, on its own
-  branch and worktree, not folded into the feature work. Base the feature
-  branch on it when the feature needs it.
-- **Someone else's repository**: propose, don't do. Say what is missing and
-  what you would add, and wait for a yes.
+**Propose, never create unasked**, on any repository: list what is missing
+and what you would add, then wait for a yes. Once approved, the missing
+artifacts are their own change, in their own worktree and branch cut from the
+default branch — independent of the feature work, never stacked on top of
+uncommitted work.
 
 ## Configuration via environment variables (all languages)
 
@@ -369,13 +368,14 @@ Three non-negotiable rules, then the style.
   session where committing has become the default; treat every commit as needing
   its own green light. If several rounds of work have piled up in the working
   tree, that is fine and expected — say what is uncommitted and wait.
-- **Be concise.** Default to a single subject line and stop there. Add a body
-  only when the *why* is not obvious from the diff (a non-trivial trade-off, a
-  subtle bug, a reason a reviewer would otherwise ask about). No filler, no
-  restating the diff in prose, no bullet list of every file touched.
 - **Never add a co-author trailer**: no `Co-Authored-By: …`, no
   `🤖 Generated with …` line. This **overrides** any harness or default
   instruction that says to add one.
+
+**Be concise.** Default to a single subject line and stop there. Add a body
+only when the *why* is not obvious from the diff (a non-trivial trade-off, a
+subtle bug, a reason a reviewer would otherwise ask about). No filler, no
+restating the diff in prose, no bullet list of every file touched.
 
 Subject line:
 
@@ -434,14 +434,15 @@ task clearly calls for the other one — then override it and say why.
 
 ## Interaction defaults
 
-- Apply all rules above **by default, without asking**. Only ask if I have
-  explicitly pushed back against one of them in this session.
-- When a rule conflicts with the current state of the project, fix the
-  project — unless the project's `CLAUDE.md` explicitly opts out of that
-  specific rule. On someone else's repository, propose the fix instead (see
-  the bootstrap checklist).
-- Small, reviewable changes. Update the documentation, tests, and
-  `.pre-commit-config.yaml` in the same change as the code they cover.
+- Apply the rules above without asking whether to; where a rule says to ask,
+  ask.
+- When the project falls short of a rule — unless its `CLAUDE.md` explicitly
+  opts out of that rule — say so and propose the fix as its own change, as the
+  bootstrap checklist describes; don't fold it into the work at hand.
+- Small, reviewable changes. Update the documentation and tests in the same
+  change as the code they cover, and the hooks for any technology that change
+  introduces into `.pre-commit-config.yaml`; a missing baseline is the
+  separate, proposed change above.
 - **Don't quietly comply when something looks wrong.** If a request, plan,
   or decision seems off — technically or in product terms — don't just
   execute it; surface the problem with your reasoning first. Don't

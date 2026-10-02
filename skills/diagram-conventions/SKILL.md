@@ -83,7 +83,7 @@ earn its place against the three reasons above.
   that both renders on GitHub and re-opens in Excalidraw for editing. Prefer
   that over a bare `.excalidraw` (which renders nowhere) or a bare export
   (which edits nowhere). For anything else, the source sits beside the export
-  and both move in the same commit.
+  and both move in the same change.
 - **Store it in the repository, next to the document that uses it**, and link
   it relatively (`diagrams/reconcile-flow.excalidraw.svg`) — never by a path
   climbing out of the project root.
@@ -143,7 +143,7 @@ A diagram is documentation, so every rule about documentation applies to it:
 
 - **It describes the present.** No "will be", no "planned", no greyed-out box
   for the component nobody has built. See `architecture-conventions`.
-- **It moves in the same commit as the code it describes.** A stale diagram is
+- **It moves in the same change as the code it describes.** A stale diagram is
   worse than none: it lies with authority and it lies in a form people trust
   more than prose. This is the cost an image carries and Mermaid does not —
   the update has to go through a tool, so it is the one that quietly rots.
@@ -152,7 +152,8 @@ A diagram is documentation, so every rule about documentation applies to it:
 ## Where diagrams belong
 
 - **`ARCHITECTURE.md`** — the component graph and the flow that matters. This
-  is the usual home; see `architecture-conventions`.
+  is the usual home — created if the project has none; see
+  `architecture-conventions`.
 - **An ADR** — only when the decision *is* a shape, and then usually two small
   diagrams: what it looks like under the option taken, and under the one
   rejected. Mermaid, always: an ADR is immutable, so a diagram nobody can edit

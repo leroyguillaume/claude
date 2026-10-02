@@ -16,19 +16,6 @@ description: >-
 Administer GitHub repo settings from the CLI. All commands use `gh`, so the repo
 is inferred from the current directory's `origin` remote unless `--repo` is given.
 
-## Auth gotcha
-
-A stale `GITHUB_TOKEN` in the environment shadows the keyring login and fails
-with `HTTP 401: Bad credentials`. Every `gh` command below therefore runs as
-
-```bash
-unset GITHUB_TOKEN; gh …
-```
-
-in one invocation, since shell state does not persist between tool calls, so
-`gh` falls back to the keyring token. Confirm with `gh auth status` if a 401
-appears.
-
 ## Sync labels to `.github/release.yaml`
 
 `.github/release.yaml` only governs **PR labels** — the changelog generator reads
@@ -93,10 +80,11 @@ Notes:
   `feature`/`fix` label (see `github-actions-conventions` for the baseline file).
 - Otherwise, only create the category labels the repo's `release.yaml` actually
   maps; the exclude label only makes sense alongside an `exclude.labels` entry.
-- **Leave the ecosystem labels to Dependabot.** It creates `rust`,
-  `github_actions`, `docker`, `python`, `javascript` (npm) itself, black and
-  described as "Pull requests that update … code". Creating your own variant
-  gives the repo two labels for one concept.
+- **Leave the ecosystem labels to Dependabot.** With its default labels it
+  creates `rust`, `github_actions`, `docker`, `python`, `javascript` (npm)
+  itself; creating your own variant gives the repo two labels for one concept.
+  **When `dependabot.yaml` sets `labels`**, Dependabot applies only those,
+  silently skipping any the repo lacks — create them yourself.
 - `gh label create --force` upserts, so it is safe to re-run.
 - Deleting a label removes it from every issue/PR it is on and **cannot be
   undone** — it is destructive. Absence from `release.yaml` is **not** a reason to
