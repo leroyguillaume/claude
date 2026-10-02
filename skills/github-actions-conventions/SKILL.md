@@ -14,9 +14,10 @@ description: >-
 # GitHub Actions conventions
 
 How the pipelines from `ci-conventions` are written on GitHub. One workflow
-file per canonical pipeline: `.github/workflows/quality.yaml`, `build.yaml`,
-`security.yaml`, `chart.yaml`, `release.yaml`, and `docs.yaml` for a
-documentation site.
+file per canonical pipeline the repo needs: `.github/workflows/quality.yaml`,
+`build.yaml`, `security.yaml`, `chart.yaml`, `release.yaml`, `docs.yaml`.
+`ci-conventions` says which ones a repo has; a repo with no lockfile and no
+published image has no `security.yaml`.
 
 ## YAML style
 
@@ -53,6 +54,12 @@ it: `packages: write` to push to GHCR, `security-events: write` for the SARIF
 upload, `contents: write` for `gh release create`, `packages: read` to pull a
 private image on the scheduled scan.
 
+A called workflow can only keep or narrow the `GITHUB_TOKEN` scope of the job
+that calls it, never widen it. The `release` job that runs `uses:
+./.github/workflows/build.yaml` therefore grants `packages: write` itself;
+without it the push is denied however `build.yaml` declares its own
+permissions.
+
 ## Triggers per workflow
 
 | Workflow | Triggers |
@@ -72,7 +79,8 @@ Path filters do not apply to tag, `schedule`, `workflow_dispatch` or
 
 **A `paths`-filtered workflow must never be a required status check.** When
 the filter skips it, the check never reports and the PR waits on it forever.
-Only `quality` and `security` (never filtered) go into branch protection.
+Only `quality` and, when it exists, `security` (never filtered) go into
+branch protection.
 
 ## `build` and `release`
 
@@ -96,12 +104,10 @@ Only `quality` and `security` (never filtered) go into branch protection.
 
 What the pipeline does is in `starlight-conventions`. On GitHub:
 
-- **Pages source is "GitHub Actions"**: check with `gh api
-  repos/<o>/<r>/pages --jq .build_type` (`workflow`). Switching it on is
-  `github-repo-settings`' job. A custom domain is set
-  in the repository's Pages settings (`.cname` in that answer), and the site's
-  `site`/`base` follow it. No `CNAME` file is needed with an Actions
-  deployment.
+- **Pages source is "GitHub Actions"**: checking and switching it on is
+  `github-repo-settings`' job. A custom domain is set in the repository's
+  Pages settings, and the site's `site`/`base` follow it. No `CNAME` file is
+  needed with an Actions deployment.
 - Two jobs. `build` checks out with `fetch-depth: 0` (the release tags), runs
   `actions/setup-node` with `node-version-file: docs/.nvmrc`, `npm ci`, and the
   versioned build, then `actions/upload-pages-artifact` with `path: docs/dist`
@@ -189,7 +195,14 @@ Every label listed here must exist on the repo (see `github-repo-settings`).
   `ignore-unfixed: true`.
 - The reporting step: `format: sarif`, **no** `exit-code`, then
   `github/codeql-action/upload-sarif` with `if: always()` so a failed gate
-  doesn't swallow the report.
+  doesn't swallow the report. A pull request from a fork gets a read-only
+  `GITHUB_TOKEN`, so the upload fails there; guard it to same-repository
+  runs:
+  ```yaml
+  if: >-
+    always() && (github.event_name != 'pull_request'
+    || github.event.pull_request.head.repo.full_name == github.repository)
+  ```
 - **Each SARIF upload has its own `category`** (`trivy-fs`, `trivy-image`).
   Code scanning keys alerts on it. Two uploads sharing one replace each other,
   and the first scan's alerts get closed as "fixed".

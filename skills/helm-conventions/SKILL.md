@@ -216,17 +216,25 @@ description: >-
   looks like (`KSV-0020`/`KSV-0021` UID/GID > 10000, `KSV-0003` drop
   capabilities, `KSV-0014` read-only root filesystem, `KSV-0030` seccomp,
   `KSV-0125` trusted registry, …). Treat them as errors and fix at the
-  source — **no self-authorised ignores** (`ci-conventions`). Wire it into CI:
-  ```bash
-  trivy config --exit-code 1 --helm-values charts/<chart>/values-lint.yaml charts/<chart>
+  source — **no self-authorised ignores** (`ci-conventions`). The scan is a
+  `pre-commit` hook, so it also gates CI through `quality`:
+  ```yaml
+  - repo: local
+    hooks:
+      - id: trivy-chart
+        name: trivy config (chart)
+        entry: trivy config --exit-code 1 --helm-values charts/<chart>/values-lint.yaml charts/<chart>
+        language: system
+        pass_filenames: false
+        files: ^charts/<chart>/
   ```
   Two traps worth knowing:
   - **A chart that fails to render is reported as "Not scanned", and trivy
     still exits 0.** Any `required` value or `fail` in a template silently
-    disables the whole scan — the CI job goes green having checked nothing.
-    That's why a dedicated `values-lint.yaml` supplying the required values is
-    part of the chart, and why CI should assert the report is non-empty rather
-    than trusting the exit code.
+    disables the whole scan. That's why a dedicated `values-lint.yaml`
+    supplying the required values is part of the chart, and why the
+    `helm lint` hook takes the same file: a chart that does not render fails
+    there instead of passing here having checked nothing.
   - Because it scans *rendered* output, findings depend on the values you
     feed it. Lint with the defaults a user actually gets, not a
     hardened-on-purpose set that hides the problem.
@@ -237,25 +245,18 @@ description: >-
   - **`KSV-0110` (`metadata.namespace` is `default`)** — a chart takes its
     namespace from `helm install --namespace`; hardcoding it in templates is
     the actual anti-pattern.
-  Both are documented, chart-wide exceptions agreed up front — not a licence
-  to silence the next finding that's inconvenient.
-  **When either shows up as an open GitHub code-scanning alert, dismiss it
-  as `won't fix` without asking** — that is the standing decision, not a
-  per-repo call. Never with a `.trivyignore` or a `--skip-check`: the scan
-  keeps reporting them, the alert is closed where people look. Dismissed
-  alerts stay dismissed for the same rule and location, so this is once per
-  chart:
-  ```bash
-  gh api 'repos/{owner}/{repo}/code-scanning/alerts?state=open&per_page=100' \
-    --jq '.[] | select(.rule.id == "KSV-0011" or .rule.id == "KSV-0110") | .number' |
-  while read -r n; do
-    gh api -X PATCH "repos/{owner}/{repo}/code-scanning/alerts/$n" \
-      -f state=dismissed -f dismissed_reason="won't fix" \
-      -f dismissed_comment="Chart convention: no CPU limit (throttling); namespace comes from helm install --namespace."
-  done
+  They are standing, pre-authorised exceptions, excluded from the gate by a
+  `.trivyignore` at the repository root, which `trivy` reads from the
+  working directory `pre-commit` runs in. Add it without asking, with exactly
+  these two IDs:
+  ```text
+  # No CPU limit: a limit throttles a compressible resource.
+  KSV-0011
+  # The namespace comes from `helm install --namespace`.
+  KSV-0110
   ```
-  Only these two. Any other `KSV-xxxx` alert gets fixed, or raised with the
-  user.
+  Only these two. Any other `KSV-xxxx` finding gets fixed, or raised with
+  the user.
 - Always set `resources.requests` for **CPU, memory, and ephemeral
   storage**, and `resources.limits` for **memory and ephemeral storage
   only**. Memory and ephemeral storage are non-compressible and must be
@@ -301,45 +302,19 @@ description: >-
 
 **Never:**
 
-- Never ship a chart with a permissive or missing security context.
-- Never add a key to `values.yaml` without a `helm-docs` `# --` comment
-  above it, and never ship a chart whose `README.md` is out of sync with
-  `values.yaml` — the `helm-docs` pre-commit hook must catch both.
-- Never write an undefined value as `null`, `""`, or a placeholder string
-  — use `~` for a scalar, `{}` for a dict, `[]` for a list. Whenever the
-  default is `~`, `{}`, or `[]`, never omit the `# -- (<type>) …` type
-  hint, otherwise the generated `README.md` shows no type at all.
-- Never leave a flat run of prefixed scalars (`databaseUrl`,
-  `databaseUrlSecret`, `dbMaxConns`, …) when two or more keys share a
-  domain — nest them under a domain object (`database.url`, …) and drop
-  the redundant prefix.
-- Never duplicate a value across two or more component blocks in
-  `values.yaml` — promote it to `global:` instead.
-- Never create a `templates/<component>/` directory for a component that
-  renders only one object — put it at `templates/<kind>.yaml` at the root.
-  Conversely, never leave two-or-more objects of the **same** Kind
-  ungrouped at a component's top level — nest them in a
-  `templates/<component>/<kind>/` subdirectory. Never mix two components'
-  objects under one `<component>/` directory.
-- Never hardcode env vars, volumes, or volume mounts that users cannot
-  extend via `extraEnv` / `extraVolumes` / `extraVolumeMounts`.
-- Never ship a chart whose workload makes outbound TLS calls without a
-  `caCerts` override, never restrict the existing CA source to `Secret` only
-  (a `ConfigMap` must be accepted for public CA certs), and never point at the
-  bundle with an invented env var when the app's runtime already honours a
-  standard one (`SSL_CERT_FILE`, `AWS_CA_BUNDLE`, `NODE_EXTRA_CA_CERTS`, …).
-- Never create a `Gateway` or `GatewayClass` from an application chart —
-  these are shared cluster infrastructure. Create only the route
-  (`MCPRoute` / `HTTPRoute` / …) and attach it to an existing, named
-  gateway.
-- Never ship a `Deployment` / `StatefulSet` / `DaemonSet` without
-  `revisionHistoryLimit` (default `0`), and never hardcode it in the
-  template instead of exposing it in `values.yaml` — the Kubernetes default
-  of `10` leaves a heap of dead revisions behind every rollout.
-- Never set `resources.limits.cpu`. Memory and ephemeral-storage limits
-  only.
-- Never omit any of `requests.cpu`, `requests.memory`,
-  `requests.ephemeral-storage`, `limits.memory`, or
-  `limits.ephemeral-storage` — workloads without requests are best-effort
-  QoS and will be evicted first under pressure, and an unbounded
-  ephemeral-storage write can fill the node disk.
+- Never ship a chart that weakens the restricted security context.
+- Never add a `values.yaml` key without a `# --` comment, or a `~`/`{}`/`[]`
+  default without its `(<type>)` hint.
+- Never write an unset value as `null`, `""` or a placeholder.
+- Never leave a flat run of prefixed scalars where a domain object fits.
+- Never duplicate a value across component blocks; promote it to `global:`.
+- Never put one component's templates under another's directory, or give a
+  single-object component a directory of its own.
+- Never hardcode env vars, volumes or mounts users cannot extend.
+- Never ship an outbound-TLS workload without a `caCerts` override.
+- Never create a `Gateway` or `GatewayClass` from an application chart.
+- Never ship a workload with a rollout history but no `revisionHistoryLimit`
+  from `values.yaml`.
+- Never set `resources.limits.cpu`, and never omit any of the five
+  requests and limits.
+- Never add a `.trivyignore` entry beyond `KSV-0011` and `KSV-0110`.

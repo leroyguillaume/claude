@@ -236,7 +236,7 @@ gets, so it has to mean something. Reserved names, always at the root:
 - Never hardcode a value an operator could want to change — variable, with its
   value in `terraform.tfvars` (see Variables).
 - Use `locals` for anything constructed more than once (a resource-name format
-  string, a principal, a label set), and comment the construction.
+  string, a principal, a label set).
 - **Use `moved` blocks** to rename or restructure, never `state mv` by hand and
   never a destroy/recreate you did not intend. `import` blocks over
   `terraform import`, so adoption is reviewable in the diff.
@@ -273,8 +273,9 @@ gets, so it has to mean something. Reserved names, always at the root:
 - `README.md` carries the operational content plus the `terraform-docs`
   injected block between `<!-- BEGIN_TF_DOCS -->` / `<!-- END_TF_DOCS -->`,
   generated from a committed `terraform-docs.yml`.
+- Bootstrap and recovery procedures go in `README.md`, or a runbook it links.
 - The *why* — why this provider, why this floor, why the VPC is adopted rather
-  than created, bootstrap and recovery procedures — goes in `ARCHITECTURE.md`.
+  than created — goes in `ARCHITECTURE.md`.
 
 ## pre-commit
 
@@ -297,19 +298,26 @@ Baseline hooks plus, pinned to one binary so laptop and CI agree:
       args:
         - --hook-config=--tf-path=tofu
         - --args=--config=terraform-docs.yml
+- repo: local
+  hooks:
+    - id: trivy-terraform
+      name: trivy config (Terraform)
+      entry: trivy config --exit-code 1 --misconfig-scanners terraform .
+      language: system
+      pass_filenames: false
+      files: \.tf$
 ```
 
+The sample runs OpenTofu; in a Terraform repo, `--tf-path=terraform`.
 `terraform_docs` must fail when the regenerated `README.md` differs from the
 committed one, so an undocumented variable blocks the commit.
 
 ## Scanning
 
-**Scan with `trivy config` and fix every `AVD-xxxx` finding at the source** —
-no self-authorised ignores (`ci-conventions`).
-
-```bash
-trivy config --exit-code 1 .
-```
+**The `trivy-terraform` hook above fails on every misconfiguration finding;
+fix each at the source.** Findings carry provider-prefixed IDs (`AWS-0086`,
+`GCP-0001`, `AZU-…`). No self-authorised ignores (`ci-conventions`). Being a
+`pre-commit` hook, it also gates CI through `quality`.
 
 ## Applying
 
