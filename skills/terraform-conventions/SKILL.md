@@ -66,8 +66,8 @@ gets, so it has to mean something. Reserved names, always at the root:
   Group `data.tf` with a blank line and a comment per logical cluster of
   lookups when it grows; do not split it into `data-network.tf` /
   `data-dns.tf`. One file, one answer.
-- **One `locals` block per file, and never a second one appended below the
-  first.** HCL merges them, so two blocks parse and plan exactly like one —
+- **One `locals` block, in `locals.tf`, and never a second one appended below
+  the first.** HCL merges them, so two blocks parse and plan exactly like one —
   which is the problem: nothing fails, and the file now has two places a local
   could live. A reader looking for `cluster_name` has to scan past the closing
   brace of a block that looked complete, and the next person to add a value
@@ -80,7 +80,8 @@ gets, so it has to mean something. Reserved names, always at the root:
   opening the existing block is several. **Add the value inside the block that
   is already there.** The same applies to a second `terraform {}` block, a
   second `variables`-style grouping, or any other container the layout above
-  says there is one of.
+  says there is one of — the one deliberate exception being the `terraform {}`
+  block in `backend.tf` that carries only the backend.
 
 - The same "all of a kind in one file" rule is what `variables.tf`,
   `outputs.tf` and `locals.tf` already encode — `data.tf` completes the set.
@@ -309,11 +310,8 @@ committed one, so an undocumented variable blocks the commit.
 
 ## Scanning
 
-**Scan with `trivy config` and fix every `AVD-xxxx` finding at the source.**
-Same rule as Helm and Docker: **never** add a `.trivyignore` or an inline
-`#trivy:ignore` on your own initiative. If a finding is genuinely wrong for
-this stack, say so and get it agreed, then document the exception where the
-next reader will find it.
+**Scan with `trivy config` and fix every `AVD-xxxx` finding at the source** —
+no self-authorised ignores (`ci-conventions`).
 
 ```bash
 trivy config --exit-code 1 .

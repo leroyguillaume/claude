@@ -26,8 +26,8 @@ graph LR
 **`CLAUDE.md`** — the always-loaded core. It carries only what would be
 dangerous to miss if a skill failed to load: the non-negotiable rules,
 the negative guardrails (never link outside the project, never leak a secret,
-never commit unasked), and an index naming every skill. It owns no detailed
-convention; each one is delegated to a skill and referenced by name. Its size
+never commit unasked). It owns no detailed convention; each one is delegated
+to a skill, which reaches the session through its own frontmatter. Its size
 is a direct tax on every single session, which is why it holds meta-rules
 rather than rules.
 
@@ -88,10 +88,6 @@ makes the same text valid for both.
 
 ## Invariants and constraints
 
-- **`CLAUDE.md` names every skill in `skills/`, and names nothing else.** The
-  index is how a skill is discoverable when its triggers do not fire; a skill
-  missing from it is invisible, and an entry pointing at a renamed skill is
-  worse than no entry.
 - **Every `SKILL.md` frontmatter parses as strict YAML**, and its `description`
   states both when to load and when to skip.
 - **Every tracked path is explicitly re-included in `.gitignore`.** A new file

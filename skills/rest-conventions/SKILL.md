@@ -131,14 +131,14 @@ the floor.
 All of it is **query parameters on the collection**, never a new path.
 
 ```
-GET /teams?status=active&gbu=DIS&sort=-createdAt&page=2&perPage=50
+GET /teams?status=active&region=eu&sort=-createdAt&page=2&perPage=50
 ```
 
 - Filters are named after the field they filter on.
 - Sorting is one `sort` parameter; prefix with `-` for descending.
 - **Pagination is mandatory on every collection** — the envelope and the
   `page`/`perPage` contract live in `api-conventions`; do not restate them,
-  and do not invent a second scheme.
+  and do not invent a second scheme beyond the cursor exception it allows.
 - A search that is genuinely more than filters (full-text, a query language)
   still lives on the collection: `GET /teams?q=…`.
 

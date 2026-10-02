@@ -126,11 +126,13 @@ How to run it:
 - **Keep the gate.** Nobody waits on a cron, so a red scheduled run *is* the
   notification that a new `HIGH`/`CRITICAL` CVE exists.
 
-**No self-authorised ignores.** Don't add a `.trivyignore` entry, a
-`--skip-dirs`, or a severity downgrade to get a green run. Fix at the source:
-bump the dependency, change the base image. If an entry is genuinely
-unavoidable, the user decides, and it carries a comment with the CVE, the
-reason, and the condition that lifts it.
+**No self-authorised ignores, for any scanner.** Don't add a `.trivyignore`
+entry, an inline ignore (`# hadolint ignore=…`, `#trivy:ignore:…`), a
+`--skip-dirs` / `--skip-check`, or a severity downgrade to get a green run —
+for a CVE and a misconfiguration finding alike. Fix at the source: bump the
+dependency, change the base image, harden the manifest. If an entry is
+genuinely unavoidable, the user decides, and it carries a comment with the
+finding's ID, the reason, and the condition that lifts it.
 
 ## Path filters: don't trigger for nothing
 

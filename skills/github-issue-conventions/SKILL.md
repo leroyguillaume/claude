@@ -70,8 +70,7 @@ If it already exists, add a comment to it rather than opening a twin.
 
 ## Title
 
-Same shape as a commit subject, for the same reason — it is read in a list of
-fifty:
+It is read in a list of fifty:
 
 - Imperative mood, lowercase, no trailing period, aim for ≤ ~70 chars.
 - An optional `area:` prefix when it sharpens the scope, matching the repo's
@@ -104,19 +103,17 @@ silently fails to apply:
 gh label list --limit 100
 ```
 
-Then apply one category label (`bug` / `feature` / `enhancement` / `chore` / …)
-plus the area or technology labels that fit, exactly as in
-`github-pr-conventions`. Never invent a label to fit the issue; creating one is
-deliberate `github-repo-settings` work. If the right label does not exist, use
-the closest one and say so.
+Then apply one issue-triage label (`bug` / `enhancement` / `question` / …) plus
+the area or technology labels that fit. The release-note category labels
+(`fix`, `feature`, …) belong on the pull request that ships the change (see
+`github-repo-settings` for the split). Never invent a label to fit the issue;
+creating one is deliberate `github-repo-settings` work. If the right label does
+not exist, use the closest one and say so.
 
 ## Closing the loop
 
-- **Reference, do not duplicate.** A follow-up spotted while opening a PR goes
-  in the PR body as `Follow-up: #123`, not as a comment in the code.
-- **Let the PR close it.** Put `Closes #123` in the pull request body when the
-  change actually resolves it. Never close an issue by hand on the user's
-  behalf.
+- **Let the PR close it**, and reference follow-ups from it — the body
+  conventions are in `github-pr-conventions`.
 - **Nothing stays behind in the code.** No `TODO`, no `FIXME`, no `XXX` — not
   even one carrying the issue number. The issue is the marker; a second copy
   in a comment only adds one more thing that goes stale and lies. Once the

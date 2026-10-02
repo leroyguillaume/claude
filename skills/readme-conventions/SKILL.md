@@ -23,8 +23,9 @@ somewhere else (`ARCHITECTURE.md` for the *why*, `CONTRIBUTING.md` for the
 
 ## Mandatory structure
 
-Every README has these blocks, in this order. Nothing else is required; add a
-section only when it earns its place.
+Every README has these blocks, in this order — the License section only when
+the project has a licence (see below). Nothing else is required; add a section
+only when it earns its place.
 
 ```markdown
 # <project-name>
@@ -184,14 +185,8 @@ Two short sections at the bottom, each a link, not a copy:
 
 ## Links
 
-**Every link in the README is either relative *inside* the repo, or an
-absolute `https://` URL.** `CONTRIBUTING.md`, `LICENSE`, `ARCHITECTURE.md`,
-`docs/deploy.md` — all fine. A path that climbs out of the project root is
-not: `../shared/CONTRIBUTING.md` or `../../other-project/README.md` describes
-the maintainer's laptop, not the project, and breaks for anyone who clones
-elsewhere, in the GitHub/GitLab file viewer, and inside every container build
-where the parent directory does not exist. To point at something outside the
-repo, use its `https://` URL.
+**Relative inside the repo, `https://` URLs for anything outside it** — never
+a path climbing out of the project root.
 
 Check the anchors too (`README.md#getting-started`): a heading that moved
 takes its anchor with it, and a dead anchor is the usual casualty of a split.
@@ -202,13 +197,13 @@ A dangling link is worse than a missing section. If the README links them, the
 files exist.
 
 - **`CONTRIBUTING.md` missing → create it** as part of the same change, per
-  `contributing-conventions`: dev environment setup, pre-commit, what the CI
-  runs, how to submit a change. English, like everything else.
+  `contributing-conventions`.
 - **`LICENSE` missing → ask which licence, then write it.** Picking a licence
   is the user's call and nobody else's: never choose one unilaterally, never
-  drop in an MIT file "as a sensible default". Ask, then write the full
-  official text with the correct copyright holder and year — holder derived
-  from `git config user.name` (see `project-metadata-conventions`). Until the
+  drop in an MIT file "as a sensible default". Ask for the copyright holder in
+  the same question — the committer is not necessarily the owner (see
+  `project-metadata-conventions`) — then write the full official text with
+  that holder and the year. Until the
   user answers, leave the README's licence section out rather than pointing at
   a file that doesn't exist.
 - **"No licence" is a legitimate answer, and the common one on an internal
@@ -237,8 +232,8 @@ and stay inside their marker comments; never hand-edit between the markers.
 
 - **Update the README in the same change as the code it describes.** A new
   environment variable, a renamed command, a changed default — same commit.
-- **Length is a smell.** Past ~150 lines, the *why* has usually crept in: move
-  it to `ARCHITECTURE.md` and link.
+- **Length is a smell.** Past the size `documentation-conventions` sets, the
+  *why* has usually crept in: move it to `ARCHITECTURE.md` and link.
 - **Never duplicate a section** across `README.md`, `ARCHITECTURE.md` and
   `CONTRIBUTING.md`. One home per fact, links from the others.
 - **Running the tests belongs in `CONTRIBUTING.md`**, not here — a user runs

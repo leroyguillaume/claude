@@ -171,20 +171,16 @@ question, how to label and group, and how to keep the thing renderable.
 
 ## Links
 
-**Relative inside the repo, `https://` URLs for anything outside it.** Linking
-straight at the code this file describes is what keeps it verifiable —
-`src/reconciler/`, `charts/app/values.yaml`, `README.md#configuration` are all
-good targets. A path that climbs out of the project root is not: it describes
-the author's directory layout rather than the project, and breaks for anyone
-who clones elsewhere, in the GitHub/GitLab file viewer, and inside container
-builds where the parent directory does not exist. An external system, a
-standard, an upstream issue → its `https://` URL.
+**Relative inside the repo, `https://` URLs for anything outside it** — never
+a path climbing out of the project root. Linking straight at the code this file
+describes is what keeps it verifiable: `src/reconciler/`,
+`charts/app/values.yaml`, `README.md#configuration` are all good targets.
 
 ## Keeping it honest
 
 - **Create it as soon as there is a second document's worth of content** — in
   practice, the first time a *why* paragraph appears in the README, or the
-  README passes ~150 lines.
+  README outgrows the size `documentation-conventions` sets.
 - **Cross-link both ways**: the README points here from the sections whose
   reasoning moved out; this file points at the README for commands. Check the
   anchors after a split — a moved heading takes its anchor with it.

@@ -20,6 +20,7 @@ description: >-
 
 - Create a `.dockerignore` file to exclude unnecessary files from the build
   context (`.git/`, `node_modules/`, `*.log`, `README.md`, etc.).
+- A Compose file is named per `docker-compose-conventions`.
 - **Pick the smallest runtime base image the app can actually run on.** Every
   package in the final image is a CVE waiting to be reported against you, and
   the fastest way to fix a vulnerability is to not ship the package. Walk down
@@ -46,7 +47,7 @@ description: >-
   The copied entry names `/usr/sbin/nologin`, a binary the final image does
   not contain — harmless, since an image with no shell and no `sshd` has no
   login path to refuse in the first place.
-- **Scan the built image in CI** (`trivy image` / `grype`) and fail the build
+- **Scan the built image in CI** (`trivy image`) and fail the build
   on `HIGH`/`CRITICAL`, then **re-scan the published image daily** — a CVE
   lands on an image nobody rebuilt (the scheduled re-scan is in
   `ci-conventions`). A skinny base is what makes that gate cheap
@@ -54,8 +55,8 @@ description: >-
 - **Scan the `Dockerfile` itself with `trivy config`, and fix every finding.**
   These are the `DS-xxxx` checks (`DS-0002` running as root, `DS-0026` missing
   `HEALTHCHECK`, `DS-0001` `:latest` tag, `DS-0009` relative `WORKDIR`, …).
-  Standing rule, same as everywhere else: **treat them as errors, fix at the
-  source, no self-authorised ignores.** Run it locally with
+  **Treat them as errors and fix at the source** — no self-authorised ignores
+  (`ci-conventions`). Run it locally with
   `trivy config --exit-code 1 Dockerfile`; in `.pre-commit-config.yaml` use a
   `repo: local`, `language: system` hook (never a Docker-backed one — see
   `pre-commit-conventions`).
@@ -93,11 +94,9 @@ description: >-
   `nobody`/`nogroup`, shared by every unmapped process and squashed-to by NFS.
   Example (app `myapp`):
   ```dockerfile
-  # builder stage
   WORKDIR /usr/local/src/myapp
   # ... build, producing /usr/local/src/myapp/target/release/myapp ...
 
-  # runtime stage
   RUN groupadd --system --gid 65532 myapp \
    && useradd  --system --uid 65532 --gid myapp \
         --home /nonexistent --no-create-home --shell /usr/sbin/nologin myapp
@@ -113,14 +112,14 @@ description: >-
   restart. Give the app user only its state and cache paths, and prefer
   `readOnlyRootFilesystem: true` at the orchestrator (see
   `helm-conventions`) so the question stops arising.
-- **`HOME` points at nothing, or at the state directory — never at
-  `/etc/<appname>/`.** Config is root-owned and the service must not be able
-  to write it; pointing `HOME` there is how it ends up chowned to the app
-  "because the cache wasn't writable". Use `--home /nonexistent
-  --no-create-home` when the app writes no dotfiles, or `--home
-  /var/lib/<appname>` when it does.
-- Lint every `Dockerfile` with `hadolint` and add the `hadolint/hadolint`
-  pre-commit hook.
+- **`HOME` is the state directory, or nothing — never `/etc/<appname>/`.**
+  Config is root-owned and the service must not be able to write it; pointing
+  `HOME` there is how it ends up chowned to the app "because the cache wasn't
+  writable". Use `--home /var/lib/<appname>` when the app has a state
+  directory, otherwise `--home /nonexistent --no-create-home` — the same rule
+  as `system-user-conventions`.
+- Lint every `Dockerfile` with `hadolint`: the `hadolint` hook from the
+  `hadolint/hadolint` repo, never the Docker-backed `hadolint-docker`.
 - **Fix every `hadolint` warning at the source.** A green run is the only
   acceptable end state.
 - **Pin `apk` package versions** (`apk add pkg=1.2.3-r4`) — this is DL3018, and
@@ -179,17 +178,11 @@ description: >-
   and a separate `-debug` tag are for.
 - **Never use a floating tag (`:latest`, `:3`, `:bookworm`) in a `FROM`.** Pin
   the specific version, and pin by digest where the registry supports it
-  (`image:1.2.3@sha256:…`) — Renovate keeps both current. A floating tag means
+  (`image:1.2.3@sha256:…`) — the dependency bot keeps both current. A floating tag means
   the image you scanned is not the image you shipped.
-- **Never silence a scanner finding** (`.trivyignore`, `--severity` downgrade)
-  on your own initiative. Same rule as `hadolint ignore`: bump the base image,
-  bump the package, or drop the dependency. If none of those work, say so and
-  let the user decide.
-- **Never add a `# hadolint ignore=DLxxxx` on your own initiative** — not
-  with a justification comment, not "just this once", not because pinning
-  looks brittle. Add one only when the user has expressly asked for that
-  specific ignore. If a rule looks genuinely wrong for the situation, say so
-  and let the user decide; do not pre-empt the decision by silencing it.
-  **The single standing exception is `DL3008`** (apt version pinning), which is
-  pre-authorised — see the apt rule above. Everything else, including
-  `DL3018`, still needs an explicit ask.
+- **Never silence a scanner or `hadolint` finding on your own initiative** —
+  the rule is in `ci-conventions`. A `# hadolint ignore=DLxxxx` goes in only
+  when the user expressly asked for that specific code. **The single standing
+  exception is `DL3008`** (apt version pinning), which is pre-authorised — see
+  the apt rule above. Everything else, including `DL3018`, still needs an
+  explicit ask.

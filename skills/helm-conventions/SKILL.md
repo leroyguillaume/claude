@@ -193,7 +193,7 @@ description: >-
   imageTag: ~
   # -- (object) Extra labels merged into every workload's pod template.
   extraPodLabels: {}
-  # -- Extra environment variables to inject into every workload.
+  # -- (list) Extra environment variables to inject into every workload.
   extraEnv: []
   # -- Pod-level security context applied to all workloads.
   podSecurityContext:
@@ -219,9 +219,8 @@ description: >-
   finding.** The KSV checks are the reference for what a hardened workload
   looks like (`KSV-0020`/`KSV-0021` UID/GID > 10000, `KSV-0003` drop
   capabilities, `KSV-0014` read-only root filesystem, `KSV-0030` seccomp,
-  `KSV-0125` trusted registry, …). Treat them as errors, fix at the source,
-  and — same rule as `hadolint` and image scanning — **never add a
-  `.trivyignore` or an inline ignore on your own initiative.** Wire it into CI:
+  `KSV-0125` trusted registry, …). Treat them as errors and fix at the
+  source — **no self-authorised ignores** (`ci-conventions`). Wire it into CI:
   ```bash
   trivy config --exit-code 1 --helm-values charts/<chart>/values-lint.yaml charts/<chart>
   ```
@@ -280,17 +279,18 @@ description: >-
       ephemeral-storage: 256Mi
   ```
 - **Always set `revisionHistoryLimit` on every workload that keeps a
-  rollout history** — `Deployment`, `StatefulSet`, `DaemonSet`,
-  `ReplicaSet`. Expose it as a documented key in the component's
-  `values.yaml` block (default `3`) and reference it from the template;
-  never hardcode it and never leave it out. Kubernetes defaults to `10`,
-  so an unset field silently piles up ten stale ReplicaSets per workload
-  — noise in `kubectl get rs`, and etcd objects nobody will ever roll back
-  to. Three is enough history for a realistic rollback.
+  rollout history** — `Deployment`, `StatefulSet`, `DaemonSet`. Expose it
+  as a documented key in the component's `values.yaml` block (default `0`)
+  and reference it from the template; never hardcode it and never leave it
+  out. Kubernetes defaults to `10`, so an unset field silently piles up ten
+  stale ReplicaSets or ControllerRevisions per workload — noise in
+  `kubectl get rs`, and etcd objects nobody will ever roll back to. Git is
+  the record of what was deployed: a rollback is a revert and a redeploy,
+  the same answer `argocd-conventions` gives for the Application.
   ```yaml
   # values.yaml
-  # -- Number of old ReplicaSets the Deployment keeps for rollback.
-  revisionHistoryLimit: 3
+  # -- Number of old revisions the workload keeps for rollback.
+  revisionHistoryLimit: 0
   ```
   ```yaml
   # templates/<component>/deployment.yaml
@@ -315,8 +315,8 @@ description: >-
   hint, otherwise the generated `README.md` shows no type at all.
 - Never leave a flat run of prefixed scalars (`databaseUrl`,
   `databaseUrlSecret`, `dbMaxConns`, …) when two or more keys share a
-  domain — nest them under a domain object (`database: { url, … }`) and
-  drop the redundant prefix.
+  domain — nest them under a domain object (`database.url`, …) and drop
+  the redundant prefix.
 - Never duplicate a value across two or more component blocks in
   `values.yaml` — promote it to `global:` instead.
 - Never create a `templates/<component>/` directory for a component that
@@ -336,10 +336,10 @@ description: >-
   these are shared cluster infrastructure. Create only the route
   (`MCPRoute` / `HTTPRoute` / …) and attach it to an existing, named
   gateway.
-- Never ship a `Deployment` / `StatefulSet` / `DaemonSet` / `ReplicaSet`
-  without `revisionHistoryLimit`, and never hardcode it in the template
-  instead of exposing it in `values.yaml` — the Kubernetes default of `10`
-  leaves a heap of dead ReplicaSets behind every rollout.
+- Never ship a `Deployment` / `StatefulSet` / `DaemonSet` without
+  `revisionHistoryLimit` (default `0`), and never hardcode it in the
+  template instead of exposing it in `values.yaml` — the Kubernetes default
+  of `10` leaves a heap of dead revisions behind every rollout.
 - Never set `resources.limits.cpu`. Memory and ephemeral-storage limits
   only.
 - Never omit any of `requests.cpu`, `requests.memory`,

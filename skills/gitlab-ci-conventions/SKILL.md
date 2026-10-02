@@ -39,7 +39,7 @@ vary, so read them from the repo or ask. Never guess a runner tag.
   sequencing jobs.
 - Shared rules go through `!reference [.rules-build, rules]` rather than YAML
   anchors, because anchors don't cross `include:` boundaries. pre-commit's
-  `check-yaml` rejects custom tags, so give it `args: [--unsafe]` in a repo
+  `check-yaml` rejects custom tags, so give it the `--unsafe` arg in a repo
   that uses `!reference`.
 - Block style, no leading `---`, per `yaml-conventions`.
 
@@ -127,8 +127,17 @@ using the GitLab registry, otherwise the organisation's registry). Tags and
 OCI labels derive from `$CI_COMMIT_TAG`, `$CI_COMMIT_SHA` and
 `$CI_PROJECT_URL`, and are computed in one place.
 
-- One job with `parallel: matrix: [{ARCH: [amd64, arm64]}]` and a per-arch
-  runner in `tags:`. Ask the user which runner tags exist.
+- One job with a `parallel: matrix` over `ARCH` and a per-arch runner in
+  `tags:`. Ask the user which runner tags exist.
+
+  ```yaml
+  parallel:
+    matrix:
+      - ARCH:
+          - amd64
+          - arm64
+  ```
+
 - In the same job: `docker buildx build --load --platform linux/$ARCH`, then
   the two Trivy scans (below) on the loaded image, then, only when pushing,
   the same build again with
@@ -207,7 +216,8 @@ release:
 ## `chart`
 
 On `$CI_COMMIT_TAG =~ /^chart-\d+\.\d+\.\d+$/` and manual runs: `helm
-package --version <v>` then `helm push` to `oci://<registry>/charts`.
+package --version <v>` then `helm push` to `oci://<registry>/charts`, after the
+same version drift guard as `release` (`release-script-conventions`).
 
 ## `docs` and GitLab Pages
 
@@ -222,7 +232,7 @@ What the pipeline does is in `starlight-conventions`. On GitLab:
   ```yaml
   pages:
     stage: deploy
-    image: node:24-bookworm-slim  # the major in docs/.nvmrc
+    image: node:24.11.1-bookworm-slim  # the version in docs/.nvmrc
     variables:
       GIT_DEPTH: 0
     rules:

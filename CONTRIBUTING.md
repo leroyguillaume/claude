@@ -152,7 +152,5 @@ automerged.
 
 - Commit subjects are imperative, lowercase, with an optional `area:` prefix —
   read `git log --oneline` and follow what is there.
-- Update `CLAUDE.md`'s skill index in the same change that adds or renames a
-  skill.
 - A pull request needs green CI and no `TODO` left behind in a committed file:
   work that remains goes in an issue.
