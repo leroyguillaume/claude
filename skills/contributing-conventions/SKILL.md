@@ -34,7 +34,12 @@ counterpart to the README's *user* view, and it is linked from the README (see
 ## Continuous integration
 
 ## Submitting a change
+
+## Releasing
 ```
+
+`Releasing` only when the project cuts releases; every other section is
+mandatory.
 
 ### 1. Development setup — what to install
 
@@ -58,15 +63,8 @@ running the project; this covers building on it.
   ```
 
   One command per fenced block, no `$` prompt, no interleaved output.
-- **Every install command covers macOS *and* Linux.** Never a bare
-  `brew install` line: a macOS-only instruction leaves every Linux contributor
-  translating package names, and CI, containers and dev boxes are Linux
-  essentially always. Give both, each in its own fenced block under a bold
-  platform label — or, better, a single distro-neutral command when the tool
-  ships one (`uv tool install`, `cargo install`, `pipx install`, upstream's own
-  installer or a release tarball), which works on both *and* pins a version.
-  Never invent a package name: verify it, or link upstream's install page.
-  `readme-conventions` carries the full rule and the example.
+- **Every install command covers macOS *and* Linux** — `readme-conventions`
+  carries the rule and the example.
 - **Say what "it works" looks like** — the one command that proves the setup
   is good, and point at the test section below for the rest.
 - **Do not restate the README.** How to *run* the project, its environment
@@ -112,8 +110,9 @@ reverse-engineer a failing test to discover it needed a service.
 
 ### 3. Pre-commit — the gate
 
-`.pre-commit-config.yaml` exists in every repo (non-negotiable rule); this
-section is how a contributor lives with it.
+Every repo has a `.pre-commit-config.yaml` with the baseline hooks and those
+for each technology in use (`pre-commit-conventions`); this section is how a
+contributor lives with it.
 
 - **`pre-commit install` is part of the setup**, and say plainly that hooks
   must pass before a commit is pushed.
@@ -184,12 +183,18 @@ Short and concrete:
   expectation is stated once, in the test section; don't repeat it here.
 - How reviews happen and who to ping, when there is an actual answer.
 
+### 6. Releasing — only when the project cuts releases
+
+How a maintainer cuts one, commands only: the release script to run and what
+it asks before pushing, and which CI workflow publishes from the tag. The
+script is the only supported way to release — say so here
+(`release-script-conventions`).
+
 ## Links
 
-**Relative inside the repo, `https://` URLs for anything outside it** — never
-a path climbing out of the project root. Link the workflow and config files you
-describe — a contributor reading about a hook should be one click from its
-definition.
+Relative inside the repo, `https://` URLs outside it, never a path climbing
+out of the project root — and link the workflow and config files described, so
+a hook is one click from its definition.
 
 ## Keeping it honest
 
@@ -198,7 +203,7 @@ definition.
   contributor the same twenty minutes.
 - **Never duplicate the README or `ARCHITECTURE.md`.** One home per fact; link
   across. Setup and gates here, usage in the README, design reasoning in
-  `ARCHITECTURE.md` when the project has one.
+  `ARCHITECTURE.md` — created if it does not exist yet.
 - **Every command must work from a fresh clone**, in the order written. Run
   them if you can.
 - Skip the boilerplate. A code of conduct is a separate file

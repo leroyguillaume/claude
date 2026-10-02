@@ -48,7 +48,7 @@ cost. Prose duplicating the log is prose that rots.
 What git does *not* store is why a decision was taken over the alternatives on
 the table that day — and that is what `docs/adr/` is for. The two files are
 complementary: history is banned here precisely because the ADRs hold it. A
-decision that **changes the architecture** lands in both, in one commit — a new
+decision that **changes the architecture** lands in both, in one change — a new
 ADR, and this file rewritten to describe the new state. Linking an ADR from
 here is fine; narrating the change is not. See `adr-conventions`.
 
@@ -145,34 +145,23 @@ rather than filling it with boilerplate.
 
 ## Diagrams
 
-**Mermaid, inline in the file** — in a fenced ```mermaid block. It renders on
-GitHub/GitLab, it diffs alongside the code it describes, and the next person to
-touch it can actually edit it. Never ASCII art in the file, and never an image
-hosted outside the repo. A component graph, a sequence, a state machine and an
-ER model all have a Mermaid type that fits; the escape hatch to a drawing or an
-image is for what Mermaid genuinely cannot draw, and `diagram-conventions` says
-when that is.
-
-A component graph plus one sequence diagram for the interesting flow covers
-most projects; one diagram showing the real mechanism beats five decorative
-ones. Label every edge with the protocol and direction — an unlabelled arrow
-says "these two things know about each other", which the reader had guessed.
-
-**Load `diagram-conventions` before drawing one**: which type answers which
-question, how to label and group, and how to keep the thing renderable.
+Inline Mermaid, usually a component graph plus one sequence for the flow that
+matters — load `diagram-conventions` before drawing one.
 
 ## Links
 
-**Relative inside the repo, `https://` URLs for anything outside it** — never
-a path climbing out of the project root. Linking straight at the code this file
-describes is what keeps it verifiable: `src/reconciler/`,
-`charts/app/values.yaml`, `README.md#configuration` are all good targets.
+Relative inside the repo, `https://` URLs outside it, never a path climbing
+out of the project root — and link straight at the code described
+(`src/reconciler/`), which is what keeps this file verifiable.
 
 ## Keeping it honest
 
 - **Create it as soon as there is a second document's worth of content** — in
   practice, the first time a *why* paragraph appears in the README, or the
-  README outgrows the size `documentation-conventions` sets.
+  README outgrows the size `documentation-conventions` sets — and whenever a
+  convention sends content here (a design decision's rationale, an ADR's new
+  state) and the file does not exist yet: create it rather than drop the
+  content.
 - **Cross-link both ways**: the README points here from the sections whose
   reasoning moved out; this file points at the README for commands. Check the
   anchors after a split — a moved heading takes its anchor with it.

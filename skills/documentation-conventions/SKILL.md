@@ -66,15 +66,21 @@ currently does differently, which is what changes.
 page says ("Specifics", "Notes", "Status") is a second copy of that page. Link
 the page; let it speak for itself.
 
+The one exception is the ADR index (`docs/adr/README.md`, see
+`adr-conventions`): its status column is part of the record — superseding an
+ADR means following its status to the next one — and the index is updated in
+the same change as every ADR it lists, so it cannot drift.
+
 **Do not restate configuration.** Versions, chart names, namespaces, feature
 flags, enabled/disabled switches, image tags, ports — if a config file holds it,
 the doc links the file and says *why* the value is what it is, never *what* it
 is. The one exception: a value a reader needs to type (a hostname, a command
 argument) in a procedure.
 
-**No state.** "Deployed", "not applied yet", "live", "pending", "done" — see the
-global rule on present-tense docs. State is the extreme case of a fact nobody
-will remember to update.
+**No state.** "Deployed", "not applied yet", "live", "pending", "done": a
+document describes what the project *is*, in the present tense, never where
+the work had got to. State is the extreme case of a fact nobody will remember
+to update.
 
 **No inventories of files.** A README does not list the files beside it, nor
 what each one holds: the person adding or changing a file edits that file, not

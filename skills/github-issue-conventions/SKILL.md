@@ -14,8 +14,8 @@ description: >-
 **Remaining work lives in an issue, never scattered through the repo's files.**
 A committed `TODO.md`, a "roadmap" heading in the README, a `## Status`
 checklist — they all rot within a month, conflict on every branch, and become a
-second, worse tracker sitting next to the real one. See the documentation rule
-in `~/.claude/CLAUDE.md`: a document describes the present.
+second, worse tracker sitting next to the real one. A document describes the
+project as it is, in the present tense; what remains to do is not part of it.
 
 **The one exception is a root `ROADMAP.md`**, when the project keeps one. It
 holds the shape of what is coming; the tracker still holds the actionable

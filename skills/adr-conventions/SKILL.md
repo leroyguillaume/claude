@@ -3,11 +3,11 @@ name: adr-conventions
 description: >-
   Architecture Decision Records in `docs/adr/`.
   TRIGGER when: adding or removing a component, datastore or external
-  dependency, changing how parts communicate, accepting an outside constraint;
-  editing anything under `docs/adr/`; user asks whether something warrants an
-  ADR.
+  service (no library), changing how parts communicate, accepting an
+  outside constraint; editing anything under `docs/adr/`; user asks whether
+  something warrants an ADR.
   SKIP when: describing the system as it stands (`architecture-conventions`),
-  or the decision leaves the architecture diagram unchanged (that reasoning
+  or the decision leaves the architecture diagram unchanged (its reasoning
   goes in ARCHITECTURE.md).
 ---
 
@@ -34,11 +34,11 @@ These two are complementary and must not drift into each other:
 it. Without them, the pressure to narrate the past leaks into the design doc
 and rots it (see `architecture-conventions`).
 
-**A decision that changes the design updates both, in the same commit**, when
-the project has an `ARCHITECTURE.md`: the ADR records what was decided, and
-`ARCHITECTURE.md` is rewritten to describe the new state as though it had
-always been that way. `ARCHITECTURE.md` may
-link an ADR as the record; it must never narrate the change.
+**A decision that changes the design updates both, in the same change**: the
+ADR records what was decided, and `ARCHITECTURE.md` — created if the project
+has none yet — is rewritten to describe the new state as though it had always
+been that way. `ARCHITECTURE.md` may link an ADR as the record; it must never
+narrate the change.
 
 ## When to write one
 
@@ -56,7 +56,8 @@ however credible the alternative, it is not an ADR.
 
 Write one when, and only when, the diagram changes because:
 
-- a component, datastore or external dependency is added or removed;
+- a component, a datastore, or an external service or system the project
+  depends on is added or removed — a library is not one;
 - how the parts talk changes — protocol, sync to async, who owns what data;
 - a constraint from outside — org policy, a platform limit, a quota, a
   compliance rule — forces the design to bend around it.
@@ -73,7 +74,8 @@ naming or ergonomics choice, a default value, a config or file format, a CLI
 flag, an error-handling policy, a library picked over a near-identical one, or
 a deliberate deviation from one of these conventions. Those are real decisions
 and their reasoning is worth keeping — it goes in **`ARCHITECTURE.md` as
-standing rationale, in the present tense** (see `architecture-conventions`), in
+standing rationale, in the present tense** (see `architecture-conventions`;
+create the file if the project has none yet), in
 a code comment where it is genuinely farfelu, or nowhere.
 
 **When it is not clear-cut, ask — and do not write it meanwhile.** How

@@ -43,8 +43,8 @@ and an `index.yaml` that gets regenerated under you.
 - The repository credential in Argo CD is `type: helm` with `enableOCI: true`.
 - **An HTTP chart repository is a documented exception**, not a fallback:
   when upstream publishes no OCI chart at all. That reason goes beside the
-  line or in `ARCHITECTURE.md`; switching it to OCI once upstream publishes one
-  is tracked in an issue.
+  line or in `ARCHITECTURE.md` (created if the repo has none); switching it
+  to OCI once upstream publishes one is tracked in an issue.
 - **Mirrored registries**: keep the *registry* in the cluster's values and the
   *path* beside the chart, then build the reference from the two. The path is
   a fact about the chart, the registry a fact about where the cluster can
@@ -158,7 +158,7 @@ State the cost rather than hiding it:
 - A sync that exhausts its retries is re-run by hand.
 
 Turning it back on is one block, in the ApplicationSet template — say so in
-`ARCHITECTURE.md` so nobody has to find it:
+`ARCHITECTURE.md`, creating it if the repo has none, so nobody has to find it:
 
 ```yaml
 automated:

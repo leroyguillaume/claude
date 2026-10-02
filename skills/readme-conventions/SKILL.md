@@ -62,8 +62,8 @@ whether the project is what they're looking for.
 - Key features as a short bullet list, only if it genuinely clarifies scope.
 
 Not here: architecture diagrams, design trade-offs, tech-stack justification,
-benchmarks. Those go in `ARCHITECTURE.md` — link to it from the end of the
-description if there is one. (And when one is drawn there, it is Mermaid — see
+benchmarks. Those go in `ARCHITECTURE.md` — created if the project has none
+yet — linked from the end of the description. (And when one is drawn there, it is Mermaid — see
 `diagram-conventions`.)
 
 ```markdown
@@ -78,8 +78,8 @@ not at all. A wall of badges is decoration, not documentation.
 **The core of the file.** A newcomer must be able to copy-paste their way from
 zero to a running project without leaving this section.
 
-- **Every command in a fenced block, tagged with its language**, one runnable
-  command per line, no `$` prompt, no interleaved output.
+- **One command per fenced block, tagged with its language**, so each is
+  copy-pasteable on its own — no `$` prompt, no interleaved output.
 - **Prerequisites first**, with versions when they matter: `Python ≥ 3.13`,
   `uv`, `Docker ≥ 25`, `kubectl` + a cluster. State only what's actually
   required to follow the steps below.
@@ -182,19 +182,18 @@ Two short sections at the bottom, each a link, not a copy:
 
 ## Links
 
-**Relative inside the repo, `https://` URLs for anything outside it** — never
-a path climbing out of the project root.
-
-Check the anchors too (`README.md#getting-started`): a heading that moved
-takes its anchor with it, and a dead anchor is the usual casualty of a split.
+Relative inside the repo, `https://` URLs outside it, never a path climbing
+out of the project root — and check anchors (`README.md#getting-started`) still
+resolve after a heading moves.
 
 ## `CONTRIBUTING.md` and `LICENSE` must exist
 
 A dangling link is worse than a missing section. If the README links them, the
 files exist.
 
-- **`CONTRIBUTING.md` missing → create it** as part of the same change, per
-  `contributing-conventions`.
+- **`CONTRIBUTING.md` missing → propose it** and wait for a yes; once
+  approved it is its own change, per `contributing-conventions`. Until it
+  exists, leave the README's Contributing section out.
 - **`LICENSE` missing → ask which licence, then write it.** Picking a licence
   is the user's call and nobody else's: never choose one unilaterally, never
   drop in an MIT file "as a sensible default". Ask for the copyright holder in
@@ -222,15 +221,18 @@ files exist.
 A `README.md` in a subdirectory (a chart, a module, a sub-package) follows the
 same shape, scoped to that component: what it is, how to use *it*, and a link
 back to the root README. No contributing/licence sections — those live once, at
-the root. Generated blocks (`terraform-docs`, `helm-docs`) belong in these files
-and stay inside their marker comments; never hand-edit between the markers.
+the root. Generated content belongs in these files, and is never hand-edited
+where the generator writes: `terraform-docs` fills the block between its marker
+comments, while `helm-docs` regenerates the whole `README.md` from
+`README.md.gotmpl` — edit the template, never the output.
 
 ## Keeping it honest
 
 - **Update the README in the same change as the code it describes.** A new
-  environment variable, a renamed command, a changed default — same commit.
+  environment variable, a renamed command, a changed default — same change.
 - **Length is a smell.** Past the size `documentation-conventions` sets, the
-  *why* has usually crept in: move it to `ARCHITECTURE.md` and link.
+  *why* has usually crept in: move it to `ARCHITECTURE.md` (created if
+  missing) and link.
 - **Never duplicate a section** across `README.md`, `ARCHITECTURE.md` and
   `CONTRIBUTING.md`. One home per fact, links from the others.
 - **Running the tests belongs in `CONTRIBUTING.md`**, not here — a user runs
