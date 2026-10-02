@@ -21,7 +21,8 @@ vary, so read them from the repo or ask. Never guess a runner tag.
 
 - One `.gitlab-ci.yml`. Once it passes a couple of hundred lines, split it
   into `.gitlab/ci/<pipeline>.yml` (`quality`, `build`, `security`, `chart`,
-  `release`, `docs`), pulled in with `include: local:`.
+  `release`, `docs`, each only when `ci-conventions` calls for it), pulled
+  in with `include: local:`.
 - Each canonical pipeline is a **set of jobs**, not a file. Name jobs in
   lowercase kebab-case after what they do (`pre-commit`, `test`,
   `build-image`, `trivy-fs`), and keep them static. A `parallel: matrix`
@@ -141,7 +142,7 @@ OCI labels derive from `$CI_COMMIT_TAG`, `$CI_COMMIT_SHA` and
   the tags with `docker buildx imagetools create`.
 - Layer cache: `--cache-from type=registry,ref=$IMAGE:buildcache-$ARCH` always,
   `--cache-to` only on pipelines that hold push credentials.
-- Push is enabled on tag pipelines and on manual (`web`) runs with a
+- Push is enabled on `v*` tag pipelines and on manual (`web`) runs with a
   `PUSH: "true"` variable. MR pipelines never push.
 
 ## Trivy on GitLab
@@ -199,7 +200,8 @@ release:
   tag>`), called with a protected project access token with `read_api`.
   `CI_JOB_TOKEN` only reaches a short allowlist of endpoints.
 - The API groups commits by their **`Changelog:` git trailer** (`added`,
-  `fixed`, `security`, `deprecated`, `performance`, `removed`, `other`),
+  `changed`, `fixed`, `security`, `deprecated`, `performance`, `removed`,
+  `other`),
   titled by `.gitlab/changelog_config.yml`. The trailer must be on the commit
   that lands on the default branch. With squash merges, that is the squash
   commit message, set in the MR.

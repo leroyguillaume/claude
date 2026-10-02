@@ -3,9 +3,9 @@ name: docker-conventions
 description: >-
   Dockerfiles: base images, multi-stage builds, non-root USER, hadolint and
   Trivy.
-  TRIGGER when: editing or creating a `Dockerfile`, `Containerfile`,
-  `.dockerignore` or `compose.yaml`; user asks about base images, image size,
-  container CVEs, non-root users or hadolint.
+  TRIGGER when: editing or creating a `Dockerfile`, `Containerfile` or
+  `.dockerignore`; user asks about base images, image size, container CVEs,
+  non-root users or hadolint.
   SKIP when: no Dockerfile is touched and the user isn't asking about
   container builds.
 ---
@@ -52,10 +52,21 @@ description: >-
   These are the `DS-xxxx` checks (`DS-0002` running as root, `DS-0026` missing
   `HEALTHCHECK`, `DS-0001` `:latest` tag, `DS-0009` relative `WORKDIR`, …).
   **Treat them as errors and fix at the source** — no self-authorised ignores
-  (`ci-conventions`). Run it locally with
-  `trivy config --exit-code 1 Dockerfile`; in `.pre-commit-config.yaml` use a
-  `repo: local`, `language: system` hook (never a Docker-backed one — see
-  `pre-commit-conventions`).
+  (`ci-conventions`). It is a `pre-commit` hook, so it also gates CI through
+  `quality`; a `repo: local`, `language: system` hook, never a Docker-backed
+  one (`pre-commit-conventions`):
+  ```yaml
+  - repo: local
+    hooks:
+      - id: trivy-dockerfile
+        name: trivy config (Dockerfile)
+        entry: trivy config --exit-code 1 Dockerfile
+        language: system
+        pass_filenames: false
+        files: ^Dockerfile$
+  ```
+  `trivy config` takes one target, so a repo with several `Dockerfile`s gets
+  one hook per file rather than passed filenames.
 - **`trivy` does not replace `hadolint`. Run both.** They overlap on the
   obvious stuff (absolute `WORKDIR`, `cd` in `RUN`, `--no-install-recommends`),
   but each catches things the other is blind to:
@@ -108,12 +119,8 @@ description: >-
   restart. Give the app user only its state and cache paths, and prefer
   `readOnlyRootFilesystem: true` at the orchestrator (see
   `helm-conventions`) so the question stops arising.
-- **`HOME` is the state directory, or nothing — never `/etc/<appname>/`.**
-  Config is root-owned and the service must not be able to write it; pointing
-  `HOME` there is how it ends up chowned to the app "because the cache wasn't
-  writable". Use `--home /var/lib/<appname>` when the app has a state
-  directory, otherwise `--home /nonexistent --no-create-home` — the same rule
-  as `system-user-conventions`.
+- `--home` follows `system-user-conventions`: the state directory, or
+  `/nonexistent` with `--no-create-home`.
 - Lint every `Dockerfile` with `hadolint`: the `hadolint` hook from the
   `hadolint/hadolint` repo, never the Docker-backed `hadolint-docker`.
 - **Fix every `hadolint` warning at the source.** A green run is the only
@@ -149,16 +156,21 @@ description: >-
   - **The pin rots into a build failure.** `deb.debian.org` serves exactly one
     version of each package per suite: the current one. The moment a security
     update or point release lands, `curl=8.14.1-2+deb13u4` stops existing and
-    every build breaks — including builds of tags that used to work. `apk` does
-    not get this exemption for free either, but Alpine users typically pair it
-    with Renovate; on Debian the `deb` datasource is far more fiddly, and most
-    repos have no bot wired up at all. Check before assuming one exists.
+    every build breaks — including builds of tags that used to work.
   - **A frozen pin means frozen CVEs.** A stable suite only moves for security
     updates, so an unpinned `apt-get install` on a rebuild picks up precisely
     the patches you want — while a pin freezes the vulnerability until a human
     notices. That is backwards for an image you are also scanning with Trivy.
   Reproducibility is recovered at the layer where it actually works: pin the
   base image by digest and rebuild on a schedule. Not with apt pins.
+  The ignore sits on the `RUN` it covers, so a third-party apt install
+  elsewhere in the file is still checked:
+  ```dockerfile
+  # hadolint ignore=DL3008
+  RUN apt-get update \
+   && apt-get install --yes --no-install-recommends ca-certificates \
+   && rm -rf /var/lib/apt/lists/*
+  ```
   What still gets pinned, because those pools keep old versions:
   third-party apt repos (`download.docker.com`, PostgreSQL, NodeSource), PyPI,
   npm, and GitHub release assets. Hoist third-party apt versions into `ARG`s at

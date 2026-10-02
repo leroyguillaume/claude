@@ -24,17 +24,19 @@ skill says how each one maps onto files and triggers.
   suite, on every change proposal (PR/MR) and on every push to the default
   branch. The `language: system` hooks shell out to real binaries, so the job
   installs **every** tool the hooks need (toolchain + `helm`, `helm-docs`,
-  `hadolint`, …) before running `pre-commit`. This is the single quality
-  gate. Don't scatter fmt/lint/test across ad-hoc pipelines.
+  `hadolint`, `trivy`, …) before running `pre-commit`. This is the single
+  quality gate. Don't scatter fmt/lint/test across ad-hoc pipelines.
 - **`build`**: when a `Dockerfile` exists. It builds the image, scans it, and
   **pushes only when asked**, meaning a manual run with a `push` input or the
   `release` pipeline. A plain push or change proposal builds and scans
   without pushing (validation only). Tags and labels come from the
   platform's metadata (a metadata action, predefined variables). Never
   hand-roll tag strings in several places.
-- **`security`**: always. The Trivy vulnerability scans (below), on every
-  change proposal, on push to the default branch, **daily on a schedule**,
-  and on manual trigger.
+- **`security`**: only when the repo holds something `pre-commit` does not
+  scan: a dependency lockfile, or an image it publishes. It runs the
+  Trivy vulnerability scans (below) on every change proposal, on push to the
+  default branch, **daily on a schedule**, and on manual trigger. A repo of
+  docs, configuration or skills has no `security` pipeline.
 - **`chart`**: when a Helm chart exists. It publishes the chart as an **OCI
   artefact**. The chart has its **own release lifecycle**, decoupled from the
   app. It triggers on the `chart-X.Y.Z` tag namespace (plus manual runs) and
@@ -68,15 +70,20 @@ For a stable release, the notes start from the **previous stable tag** (the
 greatest `vX.Y.Z` without a hyphen below the current one, `sort -V`), never
 from an rc. With no previous stable tag, let the platform pick.
 
-## Trivy: always, and not only as a gate
+## Trivy: misconfigurations in pre-commit, vulnerabilities in `security`
 
-**Every repo runs Trivy in CI.** `trivy config` already runs in `pre-commit`
-(the `DS-`/`KSV-`/`AVD-` misconfiguration checks, see `docker-conventions`,
-`helm-conventions`, `terraform-conventions`). CI is where the *vulnerability*
-side lives, because it needs a database that changes every day and a network
-to fetch it. A misconfiguration is deterministic and belongs at commit time.
-A CVE appears against code nobody touched. **A repo that only scans on change
-proposals is scanning the day it merged, not today.**
+**`trivy config` is a `pre-commit` hook**, so it gates every commit and, through
+`quality`, every pipeline. It covers the misconfiguration checks: `DS-` for a
+`Dockerfile`, `KSV-` for a rendered chart, provider-prefixed IDs (`AWS-0086`,
+`GCP-0001`, …) for Terraform. The hooks are in `docker-conventions`,
+`helm-conventions` and `terraform-conventions`. A misconfiguration is
+deterministic, so it belongs at commit time, and it fails on **every**
+finding, whatever its severity.
+
+The *vulnerability* side lives in the `security` pipeline, because it needs a
+database that changes every day and a network to fetch it. A CVE appears
+against code nobody touched. **A repo that only scans on change proposals is
+scanning the day it merged, not today.**
 
 What to run:
 
@@ -89,10 +96,11 @@ What to run:
   `package-lock.json`) and secrets. This is what catches a vulnerable
   transitive dependency the manifest never mentions.
 
-How to run it:
+How to run the vulnerability scans:
 
 - **Fail on `HIGH` and `CRITICAL`**, and use `ignore-unfixed` on that
-  blocking gate only. A CVE with no upstream fix can't be actioned by the
+  blocking gate only. This applies to CVEs alone: a misconfiguration has no
+  upstream fix to wait for. A CVE with no upstream fix can't be actioned by the
   contributor in front of it. Blocking on it teaches everyone that red is
   normal, which is how a real finding gets waved through.
 - **Report everything else where people look**: the platform's code-scanning
@@ -120,11 +128,16 @@ How to run it:
 
 **No self-authorised ignores, for any scanner.** Don't add a `.trivyignore`
 entry, an inline ignore (`# hadolint ignore=…`, `#trivy:ignore:…`), a
-`--skip-dirs` / `--skip-check`, or a severity downgrade to get a green run —
+`--skip-dirs` / `--skip-files`, or a severity downgrade to get a green run,
 for a CVE and a misconfiguration finding alike. Fix at the source: bump the
 dependency, change the base image, harden the manifest. If an entry is
 genuinely unavoidable, the user decides, and it carries a comment with the
 finding's ID, the reason, and the condition that lifts it.
+
+The only pre-authorised exceptions are `DL3008` (apt version pinning), an
+inline `# hadolint ignore=DL3008` per `docker-conventions`, and `KSV-0011` /
+`KSV-0110` (CPU limit, hardcoded namespace), listed in the root
+`.trivyignore` per `helm-conventions`. Nothing else is.
 
 ## Path filters: don't trigger for nothing
 
@@ -192,10 +205,13 @@ clean fetch, and a stale cache is worse than none.
 - Never push an image or publish a chart from a change-proposal pipeline.
 - Never push an image, under any tag, before it has been Trivy-scanned in the
   same job.
-- Never gate on anything but fixable `HIGH`/`CRITICAL`, and never silence a
-  finding to get a green run.
+- Never gate a vulnerability scan on anything but fixable `HIGH`/`CRITICAL`,
+  never let a misconfiguration finding through, and never silence either to
+  get a green run.
 - Never rely on the change-proposal scan alone. Without the daily re-scan of
-  the published image, the repo only knows the CVEs that existed on merge day.
+  what is published, the repo only knows the CVEs that existed on merge day.
+- Never create a `security` pipeline in a repo with no lockfile and no
+  published image: `pre-commit` already scans everything it holds.
 - Never split the quality gate, and never path-filter `quality` or
   `security`.
 - Never let two runs of one pipeline overlap on a ref, and never exempt a
