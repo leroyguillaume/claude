@@ -94,7 +94,7 @@ the ADR, PR or upstream issue when one exists instead of restating it.
 ## Labels
 
 Read the repo's real labels and use them verbatim — a name that does not exist
-silently fails to apply:
+makes `gh` fail the whole command:
 
 ```bash
 gh label list --limit 100

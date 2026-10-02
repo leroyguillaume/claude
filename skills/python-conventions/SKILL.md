@@ -54,18 +54,22 @@ description: >-
   default value in the standard Python position and is the form `typer`
   recommends. Example:
   ```python
+  from pathlib import Path
   from typing import Annotated
   import typer
 
-  def serve(
-      port: Annotated[int, typer.Option(envvar="MYTOOL_PORT", help="Listen port")] = 8080,
+  def sync(
+      config_file: Annotated[
+          Path, typer.Option(envvar="MYTOOL_CONFIG_FILE", help="Config file")
+      ] = Path("mytool.toml"),
   ) -> None: ...
   ```
 - Apply `logging-conventions`. Python mechanics: use the standard `logging`
   module (or `structlog` when the project already does), configured once at
   process start; level controlled by an env var (e.g. `LOG_LEVEL`,
   `MYTOOL_LOG_LEVEL` for a CLI) routed through the `typer` /
-  `pydantic-settings` config layer, and a `LOG_FORMAT` option beside it
+  `pydantic-settings` config layer, and a `LOG_FORMAT` (`MYTOOL_LOG_FORMAT`
+  for a CLI) option beside it
   (`text` by default, `json` opt-in) choosing the formatter. Log structured
   key-values (`logger.debug("fetched", extra={"url": url, "status": resp.status})`),
   never f-string interpolation of values into the message. The default

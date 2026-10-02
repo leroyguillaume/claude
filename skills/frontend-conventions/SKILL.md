@@ -56,11 +56,11 @@ description: >-
   TypeScript type from the schema, so the runtime shape and the static type
   cannot drift.
 - Apply `logging-conventions`. Frontend mechanics: use one structured logger
-  module configured at app startup, log key-values
-  (`logger.debug("fetch.done", { url, status })`), and gate verbosity by a
-  log level read from the environment (`import.meta.env` / `process.env`),
-  never by interpolating values into the
-  message string.
+  module configured at app startup, and log key-values
+  (`logger.debug("fetch.done", { url, status })`), never by interpolating
+  values into the message string. Gate verbosity by a log level the app's
+  config module reads once (fed from `import.meta.env`), never read inline at
+  the call site.
 - Provide **tests** for components and logic with Vitest + React Testing
   Library (or the framework's first-party test runner). Test behaviour
   through the rendered output and user interactions, not implementation

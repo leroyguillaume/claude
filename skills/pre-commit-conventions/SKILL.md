@@ -23,6 +23,9 @@ stack:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        args:
+          - --allow-multiple-documents
+        exclude: ^charts/[^/]+/templates/
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: detect-private-key

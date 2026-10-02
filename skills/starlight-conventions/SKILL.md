@@ -181,7 +181,7 @@ site. Link `/llms.txt` from the README next to the documentation link.
 
 ## Tests and checks
 
-- `npm test` runs `node --test 'src/**/*.test.ts'`: the version planning, the
+- `npm test` runs `node --test '{src,scripts}/**/*.test.ts'`: the version planning, the
   version-list parsing, the page-switching function and the base-prefixing
   plugin (through `markdownToHtml` from `satteri`, not a hand-built tree). It
   runs in the `quality` pipeline, never in a hook (`pre-commit-conventions`).

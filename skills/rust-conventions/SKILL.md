@@ -61,9 +61,11 @@ description: >-
   takes a real value of the field's type (compile-time checked, rendered via
   `Display`), so the default cannot drift out of sync with the type and a typo
   is a build error rather than a runtime parse failure. (A plain `String` flag
-  may keep `default_value = "info"`.) A custom enum used as a default therefore
-  needs a `Display` impl mirroring its `FromStr`, e.g.
-  `#[arg(long, env = "...", default_value_t = Mode::Auto)]`.
+  may keep `default_value = "info"`.) An enum deriving `clap::ValueEnum` and
+  marked `value_enum` needs nothing more:
+  `#[arg(long, env = "...", value_enum, default_value_t = Mode::Auto)]`. Any
+  other custom type used as a default needs a `Display` impl mirroring its
+  `FromStr`.
 - **Give the development defaults a `.cargo/config.toml` with an `[env]`
   table**, committed at the repository root, as soon as a binary needs an
   environment variable to start. `cargo run` and `cargo test` then work from a
@@ -135,6 +137,8 @@ description: >-
   default**, which mixes logs into the program's result, so always point it
   at stderr. Example:
   ```rust
+  use clap::Parser;
+
   #[derive(Clone, Copy, clap::ValueEnum)]
   enum LogFormat { Text, Json }
 
@@ -150,15 +154,17 @@ description: >-
       log_format: LogFormat,
   }
 
-  fn main() {
+  fn main() -> Result<(), Box<dyn std::error::Error>> {
       let cli = Cli::parse();
+      // `EnvFilter::new` silently drops a directive it cannot parse.
       let fmt = tracing_subscriber::fmt()
-          .with_env_filter(tracing_subscriber::EnvFilter::new(&cli.log_filter))
+          .with_env_filter(tracing_subscriber::EnvFilter::try_new(&cli.log_filter)?)
           .with_writer(std::io::stderr);
       match cli.log_format {
           LogFormat::Text => fmt.init(),
           LogFormat::Json => fmt.json().init(), // needs the `json` feature
       }
+      Ok(())
   }
   ```
 - Apply `logging-conventions`. Rust mechanics: `debug!` (and `trace!` for

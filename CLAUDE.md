@@ -30,7 +30,8 @@ says how.
    `adr-conventions`.
 5. **No code duplication beyond the rule of three.** When the same logic
    appears a third time, extract it. Do not extract earlier. Do not build
-   speculative abstractions.
+   speculative abstractions. A language skill may set a different threshold
+   when it states why.
 
 ## Never link outside the project with a relative path
 

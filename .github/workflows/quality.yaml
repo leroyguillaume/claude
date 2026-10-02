@@ -29,16 +29,6 @@ jobs:
         with:
           python-version: "3.13"
 
-      # actionlint and skill-validator are `language: golang` hooks: pre-commit
-      # builds them from source, so the toolchain has to be there first.
-      - name: set up Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
-        with:
-          go-version: stable
-          # The default cache keys on go.sum, which this repository has none of:
-          # every run warns and restores nothing.
-          cache: false
-
       - name: install pre-commit
         run: python -m pip install --requirement .github/requirements.txt
 

@@ -10,31 +10,33 @@ See [README.md](README.md#getting-started) for installing and using the skills.
 
 ## Development setup
 
-Three tools are needed beyond `git`:
+Two tools are needed beyond `git`:
 
 - [pre-commit](https://pre-commit.com) 4.x — runs the gate.
-- A [Go](https://go.dev) toolchain on `PATH` — pre-commit builds two of its
-  hooks (`actionlint`, `skill-validator`) from source.
 - [skill-validator](https://github.com/agent-ecosystem/skill-validator) —
   validates `skills/*/SKILL.md` structure, links, content and cross-language
   contamination. The hook runs it too, but running it directly gives faster
   feedback and is the only way to check external links (see
-  [Running the tests](#running-the-tests)). Use the version the hook's `rev`
-  pins in [.pre-commit-config.yaml](.pre-commit-config.yaml).
+  [Running the tests](#running-the-tests)). Install the version the hook's
+  `rev` pins in [.pre-commit-config.yaml](.pre-commit-config.yaml), which needs
+  a [Go](https://go.dev/doc/install) toolchain.
+
+pre-commit builds two hooks (`actionlint`, `skill-validator`) from source with
+the Go on `PATH`, and downloads a toolchain of its own when there is none.
 
 **macOS**
 
 ```bash
-brew install pre-commit go agent-ecosystem/tap/skill-validator
+brew install pre-commit
 ```
 
 **Linux**
 
-Install Go from <https://go.dev/doc/install>, then:
-
 ```bash
 pipx install pre-commit
 ```
+
+**Both**
 
 ```bash
 go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@<rev>
@@ -79,10 +81,8 @@ pre-commit run --all-files
    The actual conventions go here.
    ```
 
-   The `description` is a folded block scalar (`>-`) because it embeds
-   `TRIGGER when:` and `SKIP when:`: a `:` inside a multi-line plain scalar is
-   not valid YAML. Claude Code's own frontmatter reader tolerates it, strict
-   parsers — `skill-validator` among them — do not.
+   The `description` is a folded block scalar (`>-`), or `skill-validator`
+   rejects it; [ARCHITECTURE.md](ARCHITECTURE.md#design-decisions) says why.
 3. Do not list the skill in [CLAUDE.md](CLAUDE.md): clients list the available
    skills themselves, and a copy there only goes stale.
 

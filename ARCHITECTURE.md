@@ -86,6 +86,11 @@ multi-line plain scalar is not parseable YAML — Claude Code's own frontmatter
 reader is lenient about it, strict parsers are not. The block scalar is what
 makes the same text valid for both.
 
+**Skill descriptions are short `TRIGGER`/`SKIP` prose.** Claude Code caps the
+combined skill listing at about 1% of the context window and, past that, drops
+the descriptions of the least-used skills first. A description spends that
+shared budget on routing only; everything else waits in the body.
+
 ## Invariants and constraints
 
 - **Every `SKILL.md` frontmatter parses as strict YAML**, and its `description`
@@ -104,11 +109,10 @@ only if its `TRIGGER` prose matches the work well enough for the skill to be
 selected. Sharpening a description is the only lever; there is no mechanism to
 force a skill to load for a given file pattern.
 
-**The configuration is single-user.** Paths, the git remote and the install
-instructions assume one person's `~/.claude` on their own machines. Sharing a
-subset of these skills with a team would mean extracting `skills/` into its own
-distributable repository, since a consumer cannot take the skills without also
-taking `CLAUDE.md`'s rules.
+**`CLAUDE.md` is single-user.** Its paths, the git remote and the `~/.claude`
+install assume one person's machines, and it addresses that person directly.
+The skills are self-contained and install on their own; the global rules do
+not transfer without being rewritten for whoever adopts them.
 
 **Nothing verifies that a convention is followed.** The checks in this
 repository assert that a skill is well-formed, well-sized and internally

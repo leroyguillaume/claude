@@ -227,7 +227,7 @@ What the pipeline does is in `starlight-conventions`. On GitLab:
   ```yaml
   pages:
     stage: deploy
-    image: node:24.11.1-bookworm-slim  # the version in docs/.nvmrc
+    image: node:24.11.1-bookworm  # docs/.nvmrc's version; -slim has no git
     variables:
       GIT_DEPTH: 0
     rules:

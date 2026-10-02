@@ -159,8 +159,8 @@ one:
 # accounts that can actually log in
 awk -F: '$7 !~ /(nologin|false)$/ {print $1, $3, $7}' /etc/passwd
 
-# unlocked passwords (anything not marked L)
-passwd -Sa 2>/dev/null | awk '$2 != "L" {print $1, $2}'
+# unlocked passwords: hash not starting with ! or * (run as root)
+awk -F: '$2 !~ /^[!*]/ {print $1}' /etc/shadow
 
 # empty password field — passwordless login on a permissive PAM stack
 awk -F: '$2 == "" {print $1}' /etc/shadow

@@ -61,9 +61,9 @@ is a member of it.
   two, make the deep thing a top-level collection and filter it:
   `/keys?teamId=…`.
 - **Meta endpoints are exempt** from the no-extension rule and from path
-  versioning (below): the OpenAPI document (`/openapi.json`), the docs UI
-  (`/docs`) and the health/readiness probes keep the fixed, unversioned paths
-  that `api-conventions` and the platform expect.
+  versioning (below): the OpenAPI document (`/openapi.json`) and the docs UI
+  (`/docs`) keep the fixed paths `api-conventions` gives them, and the
+  health/readiness probes keep fixed, unversioned paths of their own.
 - **Identifiers are opaque.** A client must never have to parse one, and the
   server must never make the format part of the contract.
 
@@ -71,7 +71,7 @@ is a member of it.
 
 | Method | Means | Safe | Idempotent | Typical success |
 | --- | --- | --- | --- | --- |
-| `GET` | Read. Never changes state — not "usually", never. | yes | yes | `200`, `404` |
+| `GET` | Read. Never changes state — not "usually", never. | yes | yes | `200` |
 | `POST` | Create in a collection, or a non-idempotent operation | no | no | `201` + `Location`, `202` |
 | `PUT` | Replace the member with the body, wholesale | no | yes | `200` / `204`, `201` if it created |
 | `PATCH` | Partial modification | no | no¹ | `200` / `204` |
