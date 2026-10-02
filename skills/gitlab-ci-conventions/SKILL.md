@@ -1,21 +1,14 @@
 ---
 name: gitlab-ci-conventions
 description: >-
-  GitLab CI mechanics, for a self-managed instance of any tier —
-  `workflow:rules` against duplicate branch/MR pipelines, `interruptible` +
-  `auto_cancel`, the `rules:changes` traps, SHA-pinned `include`/components,
-  protected tags and variables for publishing, scan-before-push image builds
-  on per-arch runners, Trivy reports (`junit` on every tier,
-  `container_scanning` on Ultimate), pipeline schedules, GitLab Releases with
-  changelog-API notes, Pages, `check-gitlab-ci` linting. The
-  platform-agnostic rules are in `ci-conventions`; load it alongside this one.
-  TRIGGER when: creating or editing `.gitlab-ci.yml`, anything under
-  `.gitlab/ci/`, `.gitlab/changelog_config.yml`, or a CI/CD component
-  `templates/*.yml`; setting up CI for a repo hosted on GitLab; user asks
-  about GitLab CI rules, pipelines, runners, schedules, the vulnerability
-  report, GitLab Releases or Pages.
-  SKIP when: the repo is on GitHub (see `github-actions-conventions`), or no
-  GitLab CI file is touched and the user isn't asking about GitLab CI.
+  GitLab CI mechanics, any instance or tier: rules, includes, scans, releases,
+  Pages.
+  TRIGGER when: editing `.gitlab-ci.yml`, `.gitlab/ci/`,
+  `.gitlab/changelog_config.yml` or a CI/CD component `templates/*.yml`;
+  setting up CI on GitLab; user asks about GitLab CI rules, runners,
+  schedules, the vulnerability report, Releases or Pages.
+  SKIP when: the repo is on GitHub (`github-actions-conventions`). Load
+  `ci-conventions` alongside.
 ---
 
 # GitLab CI conventions

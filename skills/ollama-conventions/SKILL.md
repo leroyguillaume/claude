@@ -1,17 +1,12 @@
 ---
 name: ollama-conventions
 description: >-
-  Ollama model-selection conventions (never recommend a model from
-  memory — research current benchmarks on the web first, then justify the pick).
-  TRIGGER when: setting up or configuring Ollama; writing code, compose files,
-  or scripts that pull/run an Ollama model (`ollama pull`, `ollama run`, the
-  `/api/generate`, `/api/chat`, or `/api/embeddings` endpoints, an `OLLAMA_*`
-  env var, a `Modelfile`); choosing or hard-coding a model tag for local
-  inference; user asks "which model should I use" / "what's the best model
-  for X" with Ollama (or local/self-hosted LLMs) in scope.
-  SKIP when: the work targets a hosted provider (Anthropic/OpenAI/Gemini/
-  Mistral/Cohere) with no local model involved, or you are only wiring plumbing
-  around an already-chosen, user-specified model and no recommendation is asked.
+  Picking a model for Ollama or local inference.
+  TRIGGER when: setting up Ollama; code or compose files that pull or run an
+  Ollama model (`ollama pull`/`run`, `/api/chat`, `/api/generate`, `OLLAMA_*`,
+  a `Modelfile`); choosing a local model tag; user asks which model to use
+  with Ollama or self-hosted LLMs.
+  SKIP when: a hosted provider only, or the user already chose the model.
 ---
 
 # Ollama conventions

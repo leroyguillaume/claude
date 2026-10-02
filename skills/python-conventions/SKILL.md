@@ -1,14 +1,13 @@
 ---
 name: python-conventions
 description: >-
-  Python project conventions (uv, ruff, typer, pydantic, Pylance).
-  TRIGGER when: editing or creating `.py` files; touching `pyproject.toml`, `uv.lock`,
-  or `.python-version`; adding/removing a Python dependency; setting up a Python
-  CLI, config layer, or data model; user asks about Python tooling, deps, types,
-  CLI args, env vars, or logging in this repo.
-  SKIP when: pure Rust/Helm/Docker/CI work with no Python file touched and the
-  user isn't asking about Python. For asyncio loops, fan-out and concurrency,
-  load `python-async-conventions` alongside this one.
+  Python projects: uv, ruff, typer, pydantic, Pylance.
+  TRIGGER when: editing or creating `.py` files; touching `pyproject.toml`,
+  `uv.lock` or `.python-version`; adding a Python dependency; setting up a
+  Python CLI, config layer or data model; user asks about Python tooling,
+  types or env vars.
+  SKIP when: no Python is involved. Load `python-async-conventions` alongside
+  for asyncio loops.
 ---
 
 # Python conventions

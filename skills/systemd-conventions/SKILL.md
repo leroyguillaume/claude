@@ -1,22 +1,13 @@
 ---
 name: systemd-conventions
 description: >-
-  systemd unit and cloud-init conventions, centred on the privileges a
-  service runs with: never `User=root`, a dedicated system account or
-  `DynamicUser=`, the sandboxing block every unit carries, writable paths
-  via `StateDirectory=` rather than `chmod`, secrets through
-  `LoadCredential=` and never `Environment=`, and `systemd-analyze security`
-  as the gate. Plus cloud-init: `runcmd` runs as root, `write_files` needs
-  explicit `owner:`/`permissions:`, and user-data is readable forever from
-  the metadata endpoint.
-  TRIGGER when: creating or editing a `.service`, `.socket`, `.timer` or a
-  drop-in `override.conf`; writing a `#cloud-config` / user-data file
-  (Terraform `user_data`, a Packer/Ignition script); installing an app on a
-  VM so it starts at boot; user asks about systemd, systemctl, service
-  hardening, running as root, or cloud-init.
-  SKIP when: the workload runs in a container orchestrated by Kubernetes or
-  Compose (`docker-conventions` / `helm-conventions`) and no host unit or
-  cloud-init file is involved.
+  systemd units and cloud-init, centred on service privileges.
+  TRIGGER when: editing a `.service`, `.socket`, `.timer` or drop-in
+  `override.conf`; writing `#cloud-config`/user-data (Terraform `user_data`,
+  Packer, Ignition); making an app start at boot on a VM; user asks about
+  systemd, service hardening, running as root or cloud-init.
+  SKIP when: the workload runs in Kubernetes or Compose (`docker-conventions`,
+  `helm-conventions`).
 ---
 
 # systemd and cloud-init conventions

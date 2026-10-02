@@ -1,16 +1,12 @@
 ---
 name: signal-handling-conventions
 description: >-
-  Signal handling and graceful shutdown conventions for long-running
-  processes (SIGTERM/SIGINT, drain in-flight work, idempotent units of work).
-  Applies to servers, workers, and daemons in any language or runtime.
-  TRIGGER when: writing or editing a process entrypoint / `main`, an HTTP or
-  RPC server, a background worker, a queue consumer, or any daemon loop;
-  wiring shutdown, signal handlers, or drain logic; user asks about SIGTERM,
-  SIGINT, graceful shutdown, drain, or interruption safety in this repo.
-  SKIP when: the code is a short-lived one-shot (a CLI that runs and exits, a
-  library, a script) with no long-running loop, and the user isn't asking
-  about shutdown.
+  Signals and graceful shutdown for long-running processes.
+  TRIGGER when: writing or editing a `main`/entrypoint, an HTTP or RPC server,
+  a worker, a queue consumer or a daemon loop; wiring shutdown, signal
+  handlers or drain logic; user asks about SIGTERM, SIGINT or graceful
+  shutdown.
+  SKIP when: a short-lived one-shot (CLI, library, script).
 ---
 
 # Signal handling and graceful shutdown

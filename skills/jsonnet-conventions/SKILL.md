@@ -1,13 +1,11 @@
 ---
 name: jsonnet-conventions
 description: >-
-  Jsonnet conventions — stay simple (no library for a handful of lines, extract only what is big and
-  genuinely shared), document every exported function and constant, fail loudly
-  at render time, `jsonnetfmt` in pre-commit.
-  TRIGGER when: creating or editing any `.jsonnet` / `.libsonnet` file;
-  factoring shared jsonnet into a library; user asks about jsonnet structure,
-  extVars, libsonnet layout, or whether to extract a helper.
-  SKIP when: no jsonnet is being written and the user isn't asking about it.
+  Jsonnet: structure, documented exports, failures, `jsonnetfmt`.
+  TRIGGER when: creating or editing a `.jsonnet`/`.libsonnet` file; factoring
+  shared jsonnet into a library; user asks about jsonnet layout, extVars or
+  extracting a helper.
+  SKIP when: no jsonnet is involved.
 ---
 
 # Jsonnet conventions

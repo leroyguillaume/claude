@@ -1,20 +1,13 @@
 ---
 name: rest-conventions
 description: >-
-  REST resource design for any HTTP API — the path names a resource, the
-  method is the verb. No `/list`, `/update`, `/getUser` or any other RPC verb
-  in a URL. Covers collection and member URLs, method semantics, status codes,
-  PUT vs PATCH, filters as query parameters, the escape hatch for operations
-  that are not CRUD, error shape, idempotency and versioning.
+  REST resource design for HTTP APIs: URLs, methods, status codes, errors.
   TRIGGER when: adding, renaming or reviewing an HTTP endpoint, route or
-  controller; designing a URL, choosing a method or a status code; a path
-  contains a verb, a `?action=`, or reads like a function call; modelling an
-  operation that is not obviously create/read/update/delete; writing an
-  OpenAPI document; the user asks about REST, endpoint naming or resource
-  design.
-  SKIP when: the surface is deliberately not REST (gRPC, GraphQL, JSON-RPC, a
-  webhook receiver, a standard-mandated endpoint), or no HTTP interface is
-  being designed. Load `api-conventions` alongside for the payload contract.
+  controller; designing a URL, method or status code; a path contains a verb
+  or `?action=`; writing an OpenAPI document; user asks about REST or endpoint
+  naming.
+  SKIP when: the surface is deliberately not REST (gRPC, GraphQL, JSON-RPC,
+  webhooks). Load `api-conventions` alongside.
 ---
 
 # REST conventions

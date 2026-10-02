@@ -1,18 +1,12 @@
 ---
 name: terraform-conventions
 description: >-
-  Terraform / OpenTofu conventions (file layout with a mandatory
-  `data.tf` and one file per component, naming, typed and documented
-  variables, pinned providers, secrets out of the state, `terraform test`,
-  pre-commit hooks, trivy `AVD-xxxx`).
-  TRIGGER when: creating or editing any `.tf`, `.tfvars`, `.tftest.hcl`, or
-  `.terraform.lock.hcl` file; adding a resource, data source, variable, output,
-  local, module or provider; setting up pre-commit or CI for a stack that
-  contains Terraform; user asks about Terraform/OpenTofu layout, state,
-  providers, modules, plan/apply, tflint, terraform-docs or tfsec/trivy
-  findings in this repo.
-  SKIP when: no HCL is being written or edited and the user isn't asking about
-  Terraform/OpenTofu tooling.
+  Terraform / OpenTofu: layout, naming, variables, providers, state, tests.
+  TRIGGER when: editing a `.tf`, `.tfvars`, `.tftest.hcl` or
+  `.terraform.lock.hcl` file; adding a resource, variable, output, module or
+  provider; pre-commit or CI for Terraform; user asks about Terraform/OpenTofu
+  state, providers, tflint, terraform-docs or trivy findings.
+  SKIP when: no HCL is involved.
 ---
 
 # Terraform / OpenTofu conventions

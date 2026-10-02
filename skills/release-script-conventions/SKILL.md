@@ -1,17 +1,13 @@
 ---
 name: release-script-conventions
 description: >-
-  Release conventions — every publishable project ships a
-  `scripts/release.sh` that bumps the version stored in the repo, regenerates
-  what derives from it, commits, tags, and asks before pushing; the git tag is
-  what CI publishes from, and CI refuses to publish when the tag and the
-  committed version disagree.
+  Release flow: a `scripts/release.sh` that bumps and tags; CI publishes from
+  the tag.
   TRIGGER when: creating or editing a release/bump script; wiring release
-  automation for a repo; adding a `version`/`appVersion` field or changing how
-  one is set; a release workflow triggered by a `v*` / `chart-*` tag; user asks
-  how to cut, tag, publish or version a release, or asks to bump a version.
-  SKIP when: routine work that merely reads a version, and the user isn't
-  asking about releasing.
+  automation; adding or changing a `version`/`appVersion` field; a workflow
+  triggered by a `v*`/`chart-*` tag; user asks how to cut, tag or publish a
+  release, or to bump a version.
+  SKIP when: work merely reads a version.
 ---
 
 # Release script conventions

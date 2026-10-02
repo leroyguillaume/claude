@@ -1,15 +1,12 @@
 ---
 name: github-issue-conventions
 description: >-
-  Where work that remains goes on a GitHub-hosted repo — an issue
-  opened with the `gh` CLI, proposed and never opened unasked, never a
-  `TODO.md` or a status section in a committed file (the root `ROADMAP.md`,
-  when the project keeps one, being the single exception).
-  TRIGGER when: you spot work that is out of the current scope (a bug, a
-  follow-up, a cleanup, a missing test), when the user asks to file/track
-  something, or when you are about to write remaining work into any file.
-  SKIP when: the repo has no GitHub `origin` remote (say the work out loud in
-  chat instead and stop), or when the work is small enough to just do now.
+  Where remaining work goes on a GitHub repo: an issue via `gh`.
+  TRIGGER when: you spot out-of-scope work (bug, follow-up, cleanup, missing
+  test); the user asks to file or track something; you are about to write
+  remaining work into a file.
+  SKIP when: the repo has no GitHub `origin` remote (say it in chat instead),
+  or the work is small enough to just do now.
 ---
 
 # GitHub issue conventions (`gh` CLI)

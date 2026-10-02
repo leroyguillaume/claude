@@ -1,17 +1,13 @@
 ---
 name: docker-conventions
 description: >-
-  Dockerfile conventions (minimal CVE-free base images —
-  scratch/distroless first, multi-stage, pinned tags — FHS paths, non-root
-  USER, hadolint and Trivy `DS-xxxx` compliance with no self-authorised
-  ignores, pinned apk packages but deliberately unpinned apt packages,
-  .dockerignore).
+  Dockerfiles: base images, multi-stage builds, non-root USER, hadolint and
+  Trivy.
   TRIGGER when: editing or creating a `Dockerfile`, `Containerfile`,
-  `.dockerignore`, or `docker-compose.yaml`/`compose.yaml`; user asks about
-  container build paths, base image choice, image size, container CVEs /
-  image scanning, non-root users, or hadolint in this repo.
-  SKIP when: pure Python/Rust/Helm/CI work with no Dockerfile touched and the
-  user isn't asking about container builds.
+  `.dockerignore` or `compose.yaml`; user asks about base images, image size,
+  container CVEs, non-root users or hadolint.
+  SKIP when: no Dockerfile is touched and the user isn't asking about
+  container builds.
 ---
 
 # Docker conventions

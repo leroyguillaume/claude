@@ -1,20 +1,14 @@
 ---
 name: adr-conventions
 description: >-
-  Architecture Decision Record conventions — one immutable file per
-  decision in `docs/adr/NNNN-kebab-title.md`, written when the decision is
-  taken, superseded by a new ADR rather than edited. The one place in the repo
-  where history belongs; `ARCHITECTURE.md` stays present-tense.
-  Written only for decisions that change the architecture itself; when it is
-  not clear-cut, ask the user rather than writing one.
-  TRIGGER when: taking or recording an architectural decision — adding or
-  removing a component, datastore or external dependency, changing how parts
-  communicate, accepting an outside constraint; creating or editing anything
-  under `docs/adr/`; user asks whether something warrants an ADR, or where a
-  decision should be written down.
-  SKIP when: describing the system as it stands (that is
-  `architecture-conventions`), or the decision is reversible in an afternoon
-  and touches one module.
+  Architecture Decision Records in `docs/adr/`.
+  TRIGGER when: adding or removing a component, datastore or external
+  dependency, changing how parts communicate, accepting an outside constraint;
+  editing anything under `docs/adr/`; user asks whether something warrants an
+  ADR.
+  SKIP when: describing the system as it stands (`architecture-conventions`),
+  or the decision leaves the architecture diagram unchanged (that reasoning
+  goes in ARCHITECTURE.md).
 ---
 
 # ADR conventions

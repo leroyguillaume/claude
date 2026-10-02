@@ -1,20 +1,13 @@
 ---
 name: rust-http-conventions
 description: >-
-  Rust HTTP/API stack conventions — `axum` + `aide` with no exceptions,
-  `schemars` DTOs, and `validator` for input at the edge. Includes the `aide`
-  wiring traps that surface as cryptic `OperationHandler` bound failures or
-  endpoints that silently document nothing.
-  TRIGGER when: editing or creating a Rust HTTP handler, router, extractor, or
-  request/response DTO; adding or changing an endpoint in a Rust service;
-  wiring `axum`, `aide`, `schemars`, Scalar, or `validator`; choosing `aide`
-  feature flags; serving or generating an OpenAPI document from Rust; user asks
-  about Rust web frameworks, OpenAPI generation, API docs, multipart uploads,
-  body limits, or input validation in this repo.
-  SKIP when: the Rust work has no HTTP surface (CLI, library, worker, data
-  layer) — use `rust-conventions`; or the question is language-agnostic API
-  design (DTO shape, JSON casing, pagination, where the OpenAPI document and
-  its Scalar reference are served) — use `api-conventions`.
+  Rust HTTP stack: `axum` + `aide`, `schemars`, `validator`.
+  TRIGGER when: editing a Rust HTTP handler, router, extractor or DTO; adding
+  an endpoint to a Rust service; wiring `axum`, `aide`, `schemars`, Scalar or
+  `validator`; OpenAPI from Rust; user asks about multipart, body limits or
+  input validation in Rust.
+  SKIP when: no HTTP surface (`rust-conventions`), or language-agnostic API
+  design (`api-conventions`).
 ---
 
 # Rust HTTP/API conventions

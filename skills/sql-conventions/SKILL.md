@@ -1,12 +1,11 @@
 ---
 name: sql-conventions
 description: >-
-  SQL linting/formatting conventions (always sqlfluff).
-  TRIGGER when: creating or editing a `.sql` file (queries, migrations, seeds);
-  adding SQL to a repo; setting up pre-commit for a project that contains SQL;
-  user asks about SQL linting/formatting or sqlfluff.
-  SKIP when: no SQL is present or being added and the user isn't asking about
-  SQL tooling.
+  SQL linting and formatting with sqlfluff.
+  TRIGGER when: creating or editing a `.sql` file (queries, migrations,
+  seeds); adding SQL to a repo; setting up pre-commit for a project with SQL;
+  user asks about SQL linting or sqlfluff.
+  SKIP when: no SQL is involved.
 ---
 
 # SQL conventions

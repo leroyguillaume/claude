@@ -1,15 +1,12 @@
 ---
 name: project-metadata-conventions
 description: >-
-  Project metadata conventions (derive author/maintainer and
-  repository/URL fields from `git config`, never invent them).
-  TRIGGER when: setting or updating author/maintainer or repository/URL fields
-  in any manifest (`Cargo.toml`, `pyproject.toml`, `package.json`,
-  `Chart.yaml`, …) or in `README.md` clone instructions; scaffolding a new
-  project's metadata; user asks where author/repo values should come from in
-  this repo.
-  SKIP when: no metadata/manifest field is being set and the user isn't asking
-  about author/repository values.
+  Author/maintainer and repository/URL fields in manifests.
+  TRIGGER when: setting author or repository fields in any manifest
+  (`Cargo.toml`, `pyproject.toml`, `package.json`, `Chart.yaml`, …) or README
+  clone instructions; scaffolding a project's metadata; user asks where those
+  values come from.
+  SKIP when: no such field is being set.
 ---
 
 # Project metadata (author / repository)

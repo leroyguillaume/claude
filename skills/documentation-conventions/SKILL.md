@@ -1,17 +1,12 @@
 ---
 name: documentation-conventions
 description: >-
-  Documentation must stay maintainable by a human without an LLM: one home per
-  fact, links instead of copies, no fan-out lists that every new component has to
-  be added to, no summaries of other docs, nothing a config file already says.
-  The test for every sentence: which change makes it false, and will the person
-  making that change find it? TRIGGER when: creating, splitting or restructuring
-  documentation — READMEs, ARCHITECTURE.md, docs/, runbooks; adding a README per
-  directory, component, app or environment; writing an index, a table or a list
-  that enumerates components, files, clusters, versions or settings; user says
-  the docs are too long, too hard to maintain, or drift; editing, moving or
-  deleting a claim other pages may repeat. SKIP when: the change is a wording or
-  typo fix that alters no claim and adds no list, table or copy.
+  Docs a human can maintain: one home per fact, links not copies.
+  TRIGGER when: creating, splitting or restructuring docs (READMEs,
+  ARCHITECTURE.md, docs/, runbooks); a README per directory or component; an
+  index, table or list enumerating components, files or versions; user says
+  docs are too long or drift; moving or deleting a repeated claim.
+  SKIP when: a wording or typo fix that changes no claim and adds no list.
 ---
 
 # Documentation conventions

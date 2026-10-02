@@ -1,17 +1,13 @@
 ---
 name: logging-conventions
 description: >-
-  Logging and observability conventions (liberal debug logs,
-  structured key-value fields, level-controlled verbosity, standard logging
-  library). Applies to every language and runtime.
-  TRIGGER when: writing or editing code that does I/O or external calls, has
-  non-trivial decision branches, or runs long/multi-step operations; setting up
-  or configuring a logging library / subscriber; adding diagnostics or replacing
-  `print`/`println`/`echo`/`console.log`; user asks about logging, log levels,
-  structured logging, verbosity, or observability in this repo.
-  SKIP when: the change is trivial and adds no behaviour worth logging (pure
-  formatting, comments, config-only edits) and the user isn't asking about
-  logging.
+  Logging in any language: debug logs, structured fields, levels.
+  TRIGGER when: writing code that does I/O or external calls, branches
+  non-trivially or runs long; configuring a logging library or subscriber;
+  replacing `print`/`println`/`echo`/`console.log`; user asks about logging or
+  observability.
+  SKIP when: the change adds no behaviour worth logging (formatting, comments,
+  config).
 ---
 
 # Logging and observability

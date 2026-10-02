@@ -1,21 +1,14 @@
 ---
 name: github-actions-conventions
 description: >-
-  GitHub Actions mechanics — workflow file layout, SHA-pinned actions kept
-  fresh by Dependabot, `concurrency` groups (and the `workflow_call` trap),
-  Trivy SARIF upload to code scanning, `.github/release.yaml` release-note
-  categories, GitHub Releases via `gh`, native `ubuntu-24.04-arm` runners,
-  `type=gha` build cache, required checks vs `paths` filters, the `docs`
-  workflow deploying to GitHub Pages. The
-  platform-agnostic rules (which pipelines exist, scanning policy, path
-  filters, caching) are in `ci-conventions`; load it alongside this one.
-  TRIGGER when: editing or creating any file under `.github/workflows/`,
-  `.github/actions/`, `.github/release.yaml`, or a composite-action
-  `action.yaml`/`action.yml`; setting up CI for a repo hosted on GitHub; user
-  asks about GitHub Actions, runners, SARIF, GitHub Releases, release notes
-  or GitHub Pages.
-  SKIP when: the repo is not on GitHub (see `gitlab-ci-conventions`), or no
-  workflow file is touched and the user isn't asking about GitHub Actions.
+  GitHub Actions mechanics: workflows, pinned actions, SARIF, release notes,
+  Releases, Pages.
+  TRIGGER when: editing anything under `.github/workflows/` or
+  `.github/actions/`, `.github/release.yaml`, or an `action.yaml`/`.yml`;
+  setting up CI on GitHub; user asks about Actions, runners, SARIF, GitHub
+  Releases or Pages.
+  SKIP when: the repo is not on GitHub (`gitlab-ci-conventions`). Load
+  `ci-conventions` alongside.
 ---
 
 # GitHub Actions conventions

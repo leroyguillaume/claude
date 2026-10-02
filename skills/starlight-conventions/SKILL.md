@@ -1,21 +1,14 @@
 ---
 name: starlight-conventions
 description: >-
-  Documentation sites built with Astro Starlight — a `docs/` Astro project, the
-  public URL asked before `site`/`base` are set, the theme derived from the
-  repo's logo, root-absolute links checked by `starlight-links-validator`,
-  versions built from release tags (latest release at `/`, the default branch
-  under `/next/`, older minors under `/vX.Y/`, a version picker and banner),
-  and `llms.txt` per version with `starlight-llms-txt`. Load the platform CI
-  skill alongside for the Pages deployment.
-  TRIGGER when: creating or editing a Starlight site (`astro.config.*` using
-  `@astrojs/starlight`, `src/content/docs/`, `src/content.config.ts`);
-  moving a README or `docs/` Markdown into a documentation site; setting up
-  GitHub or GitLab Pages for documentation; user asks about a docs site,
-  documentation versions, a version picker, `llms.txt`, or theming docs with
-  the project's colours.
-  SKIP when: the docs are plain Markdown in the repository with no site
-  generator, or the site uses another generator (MkDocs, Docusaurus, …).
+  Astro Starlight documentation sites: setup, theme, links, versions,
+  `llms.txt`.
+  TRIGGER when: editing a Starlight site (`astro.config.*` with
+  `@astrojs/starlight`, `src/content/docs/`); moving Markdown docs into a
+  site; setting up GitHub or GitLab Pages for docs; user asks about a docs
+  site, doc versions or `llms.txt`.
+  SKIP when: plain Markdown with no site generator, or another generator
+  (MkDocs, Docusaurus, …).
 ---
 
 # Starlight conventions

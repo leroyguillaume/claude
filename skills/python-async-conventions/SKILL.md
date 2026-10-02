@@ -1,20 +1,12 @@
 ---
 name: python-async-conventions
 description: >-
-  Python asyncio conventions for loops and fan-out — an `await` inside a `for`
-  loop is sequential and usually a latency bug, but `asyncio.gather` is not a
-  free swap: it drops short-circuiting, changes failure handling, and unbinds
-  results from the items that produced them. Covers picking the axis to
-  parallelise on, `gather` vs `TaskGroup`, bounding concurrency, and the tests
-  that catch an over-eager fan-out.
-  TRIGGER when: writing or editing an `async def` that loops; `await` appears
-  inside a `for`/`while` body; calling the same coroutine once per item (per
-  host, per file, per worker); introducing or reviewing `asyncio.gather`,
-  `TaskGroup`, `as_completed`, `create_task` or a `Semaphore`; a fan-out or a
-  batch; the user reports something slow, hanging, firing more requests than
-  expected, or logging "Task exception was never retrieved".
-  SKIP when: the code is synchronous, or the async code has no loop and no
-  concurrency.
+  Python asyncio loops and fan-out.
+  TRIGGER when: an `async def` loops or has `await` inside a `for`/`while`;
+  the same coroutine runs once per item; adding or reviewing `asyncio.gather`,
+  `TaskGroup`, `as_completed`, `create_task` or a `Semaphore`; async code is
+  slow, hangs, over-requests, or logs "Task exception was never retrieved".
+  SKIP when: synchronous code, or async with no loop and no concurrency.
 ---
 
 # Python async: loops and fan-out
