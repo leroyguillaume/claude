@@ -3,9 +3,9 @@ name: ollama-conventions
 description: >-
   Picking a model for Ollama or local inference.
   TRIGGER when: setting up Ollama; code or compose files that pull or run an
-  Ollama model (`ollama pull`/`run`, `/api/chat`, `/api/generate`, `OLLAMA_*`,
-  a `Modelfile`); choosing a local model tag; user asks which model to use
-  with Ollama or self-hosted LLMs.
+  Ollama model (`ollama pull`/`run`, `/api/chat`, `/api/generate`,
+  `/api/embed`, `OLLAMA_*`, a `Modelfile`); choosing a local model tag; user
+  asks which model to use with Ollama or self-hosted LLMs.
   SKIP when: a hosted provider only, or the user already chose the model.
 ---
 
@@ -52,12 +52,12 @@ possibly-stale memory — don't present a remembered model as a current best.
 
 ## Plumbing conventions
 
-- **Configuration via env vars named per the global rules** (see
-  "Configuration via environment variables" in `CLAUDE.md`): always honour
-  `OLLAMA_HOST` and the standard `OLLAMA_*` names as they are — they are
-  upstream's, not yours to rename or prefix. Name your own surrounding config
-  by process shape: bare (`DATABASE_URL`, `LOG_LEVEL`) for a service that owns
-  its environment, prefixed with the tool's name for a CLI.
+- **Configuration via env vars.** Always honour `OLLAMA_HOST` and the
+  standard `OLLAMA_*` names as they are — they are upstream's, not yours to
+  rename or prefix. Name your own surrounding config by who owns the
+  environment: bare (`DATABASE_URL`, `LOG_LEVEL`) for a service that owns it,
+  prefixed with the tool's name (`MYTOOL_LOG_LEVEL`) for a CLI that shares a
+  shell with everything else — and read only that one name.
 - **Don't pin `:latest`.** Always use an explicit, reproducible model tag in
   code, compose files, Modelfiles, and docs.
 - **Document the choice.** When you commit a model tag, leave a one-line note

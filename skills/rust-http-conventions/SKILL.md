@@ -67,6 +67,8 @@ endpoint that compiles and documents nothing.
 - Document path/query parameters with **named structs** (`Path<GamePath>`,
   not `Path<Uuid>` / `Path<(Uuid, Uuid)>`); `aide` derives parameter names
   from the struct fields, so bare/tuple extractors document no parameters.
+  Give those structs `#[serde(rename_all = "camelCase")]` so `job_id` binds
+  and documents as the `{jobId}` the route declares.
 - The `(StatusCode, Json<T>)` tuple documents **no** response; declare the
   success status of creates explicitly with
   `post_with(handler, |op| op.response::<201, Json<XxxResponse>>())`.

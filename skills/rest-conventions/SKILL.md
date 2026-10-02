@@ -60,6 +60,10 @@ is a member of it.
   `/orgs/{id}/teams/{id}/members/{id}/keys` is a URL nobody can build. Past
   two, make the deep thing a top-level collection and filter it:
   `/keys?teamId=…`.
+- **Meta endpoints are exempt** from the no-extension rule and from path
+  versioning (below): the OpenAPI document (`/openapi.json`), the docs UI
+  (`/docs`) and the health/readiness probes keep the fixed, unversioned paths
+  that `api-conventions` and the platform expect.
 - **Identifiers are opaque.** A client must never have to parse one, and the
   server must never make the format part of the contract.
 
@@ -71,7 +75,7 @@ is a member of it.
 | `POST` | Create in a collection, or a non-idempotent operation | no | no | `201` + `Location`, `202` |
 | `PUT` | Replace the member with the body, wholesale | no | yes | `200` / `204`, `201` if it created |
 | `PATCH` | Partial modification | no | no¹ | `200` / `204` |
-| `DELETE` | Remove the member | no | yes | `204`, `404` |
+| `DELETE` | Remove the member | no | yes | `204`, also when already gone |
 
 ¹ A PATCH can be made idempotent, but nothing guarantees it — do not rely on
 it.
@@ -180,8 +184,9 @@ code, a human `title`/`detail`, and the field paths when it is a validation
 failure. A client must be able to write one error handler.
 
 **`PUT` and `DELETE` are idempotent by construction — keep them that way.**
-`DELETE` on something already gone is a success (`204`) or a `404`, never a
-`409`. For a `POST` that a client must be able to retry safely, accept an
+`DELETE` on something already gone answers `204`, like the first call — never
+a `404` or a `409`, so a retry after a lost response is indistinguishable from
+success. For a `POST` that a client must be able to retry safely, accept an
 `Idempotency-Key` header and honour it.
 
 **Version in the path from the first endpoint**: `/v1/teams`. It costs four
