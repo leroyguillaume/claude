@@ -424,6 +424,24 @@ Pull requests are **not** covered here — see the `github-pr-conventions` skill
   (`uv add`, `cargo add`, `npm install` inside the project) are not
   affected by this rule.
 
+## Sub-agents: pick the model on purpose
+
+**Every sub-agent launch sets `model` explicitly**, never left to the
+default. Before the call, weigh Sonnet against Opus and state the choice in
+one line of the message that launches it ("Sonnet: well-scoped search").
+
+- **Sonnet** when the task is well-scoped and its outcome easy to check:
+  codebase search and exploration, mechanical edits, applying a known
+  convention, running and summarising tests, gathering facts.
+- **Opus** when the task needs judgement: design or architecture, debugging
+  with no obvious lead, code or security review, trade-offs, anything
+  ambiguous where a wrong answer would look plausible.
+- **When in doubt, Opus.** A cheaper model that returns a confident wrong
+  answer costs more than the tokens it saved.
+
+A custom agent whose frontmatter already sets `model` keeps it unless the
+task clearly calls for the other one — then override it and say why.
+
 ## Interaction defaults
 
 - Apply all rules above **by default, without asking**. Only ask if the
