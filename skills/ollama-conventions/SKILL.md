@@ -29,15 +29,13 @@ the user already told you exactly which model to use.
 
 ### The study (do this before recommending)
 
-1. **Search the web** for current benchmarks and the latest releases. Use
-   `WebSearch` / `WebFetch` (or the `deep-research` skill for a thorough,
-   multi-source, fact-checked report when the choice is high-stakes). Cover at
-   least:
+1. **Search the web** for current benchmarks and the latest releases, and
+   cross-check several sources when the choice is high-stakes. Cover at least:
    - The **task** the user actually has — code, chat, reasoning, RAG/retrieval,
      embeddings, vision, tool/function calling, long context, non-English.
      A model that tops a chat leaderboard can be mediocre at code.
-   - **Recent leaderboards and evals**: LMArena / Chatbot Arena, the Open LLM
-     Leaderboard, task-specific evals (HumanEval / MBPP / LiveCodeBench / SWE-bench
+   - **Recent leaderboards and evals**: LMArena, Artificial Analysis,
+     LiveBench, task-specific evals (HumanEval / MBPP / LiveCodeBench / SWE-bench
      for code, MMLU / GPQA / MATH for reasoning, MTEB for embeddings, etc.).
    - **What's new on Ollama**: check the Ollama model library
      (`https://ollama.com/library`) and recent model announcements — the tag
@@ -49,7 +47,8 @@ the user already told you exactly which model to use.
 3. **Cite what you found.** When you give the recommendation, briefly say
    *which benchmarks* and *how recent* they are, and name a runner-up. The user
    should see the evidence, not just the verdict. Note the benchmark date —
-   "as of <month/year>" — so it's clear the data has a shelf life.
+   "as of <month/year>" — in the reply, so it's clear the data has a shelf
+   life.
 4. **Pin an exact tag.** Recommend and hard-code a concrete, reproducible tag
    (e.g. `qwen2.5-coder:7b-instruct-q4_K_M`), never a floating `:latest`.
 
@@ -67,5 +66,8 @@ possibly-stale memory — don't present a remembered model as a current best.
 - **Don't pin `:latest`.** Always use an explicit, reproducible model tag in
   code, compose files, Modelfiles, and docs.
 - **Document the choice.** When you commit a model tag, leave a one-line note
-  (in `README.md` or a comment) of *why* — the task and the benchmark snapshot
-  it was chosen from — so the next person knows when to revisit it.
+  (in `README.md` or a comment) of *why* in terms of the task it serves. The
+  benchmark snapshot and its date go in the commit message or PR description,
+  never in the file — a dated ranking in a doc is stale the week it lands.
+- **Embeddings go through `/api/embed`**, which takes a batch `input`;
+  `/api/embeddings` is superseded upstream.

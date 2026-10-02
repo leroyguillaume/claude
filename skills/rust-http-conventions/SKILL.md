@@ -53,7 +53,7 @@ tagged operations, the OpenAPI document at `/openapi.json` rendered by Scalar at
 
 - Never expose an HTTP API without `aide`: no bare `axum::Router` for an API,
   no hand-written OpenAPI. Every endpoint is documented.
-- Never use a different web framework when `axum` fits the need.
+- Never use a web framework other than `axum`.
 - Never hand-roll input validation (bespoke `validate()` methods returning
   `Result<(), String>`, ad-hoc field checks scattered through handlers)
   when the `validator` derive can express it, and never pull in another
@@ -101,8 +101,20 @@ endpoint that compiles and documents nothing.
   `api_route(...)`. The documented surface is the product API, not the ops
   plumbing.
 - If the API has authentication, **document it in OpenAPI**: register the
-  scheme once via `finish_api_with(&mut api, |t| t.security_scheme("BearerAuth",
-  SecurityScheme::Http { scheme: "bearer", bearer_format: Some("JWT"), .. }))`
+  scheme once
+  ```rust
+  router.finish_api_with(&mut api, |t| {
+      t.security_scheme(
+          "BearerAuth",
+          aide::openapi::SecurityScheme::Http {
+              scheme: "bearer".into(),
+              bearer_format: Some("JWT".into()),
+              description: None,
+              extensions: Default::default(),
+          },
+      )
+  })
+  ```
   and require it per protected operation with
   `op.security_requirement("BearerAuth")`. Leave public operations (login,
   public reads) without a requirement. This makes Scalar show the lock icon

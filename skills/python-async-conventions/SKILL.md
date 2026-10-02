@@ -49,7 +49,7 @@ dependency: the second only makes sense if the first succeeded.
 
 ```python
 catalog = await fetch_catalog(host)        # fails -> the host is out
-rails = await fetch_guardrails(host)       # never reached, deliberately
+settings = await fetch_settings(host)      # never reached, deliberately
 ```
 
 Gather those two and the second call fires at a host already known to be
@@ -59,8 +59,9 @@ erases it.**
 
 **It changes failure handling.** Without `return_exceptions=True`, the first
 exception propagates immediately while the sibling coroutines keep running,
-unawaited. Their results are dropped and their exceptions surface later as
-`Task exception was never retrieved`, out of context. With
+unawaited. Their results are dropped, and so are their exceptions: `gather`
+marks them retrieved once it has raised, so a second failure is lost without a
+trace. With
 `return_exceptions=True` nothing is raised at all, so every result must be
 `isinstance(..., BaseException)`-checked before use — forget one and an
 exception object gets treated as data.
@@ -84,10 +85,10 @@ error instead of silently truncating.
 chain.** Almost every fan-out has both axes, and the fix is to name them:
 
 ```python
-async def for_one_host(host: str) -> tuple[Catalog, Guardrails]:
+async def for_one_host(host: str) -> tuple[Catalog, Settings]:
     # Sequential on purpose: a host whose catalog is unreachable is not asked
     # for anything else -- the pass is over for it either way.
-    return await fetch_catalog(host), await fetch_guardrails(host)
+    return await fetch_catalog(host), await fetch_settings(host)
 
 # Concurrent across hosts: this is where the N is.
 results = await asyncio.gather(

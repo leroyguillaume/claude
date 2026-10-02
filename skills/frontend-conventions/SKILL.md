@@ -30,12 +30,13 @@ description: >-
   `biome.jsonc`). Enable the recommended rules and set
   `suspicious/noExplicitAny` to `error`.
 - Add a **Biome pre-commit hook** (`biomejs/pre-commit`) running
-  `biome check`, alongside the baseline hooks from `CLAUDE.md`.
+  `biome check`, alongside the baseline hooks from `pre-commit-conventions`.
 - **Exclude the frontend lockfile from the `check-added-large-files`
   baseline hook.** A committed `package-lock.json` (or `pnpm-lock.yaml` /
-  `yarn.lock` / `bun.lockb`) is legitimately large and must stay versioned,
-  so it should never trip the large-file check. Add an `exclude` to that hook
-  rather than raising `--maxkb` for everything:
+  `yarn.lock` / `bun.lock`, or the binary `bun.lockb` of Bun < 1.2) is
+  legitimately large and must stay versioned, so it should never trip the
+  large-file check. Add an `exclude` to that hook rather than raising
+  `--maxkb` for everything:
   ```yaml
   - id: check-added-large-files
     exclude: ^package-lock\.json$
@@ -55,8 +56,7 @@ description: >-
   params, `localStorage`) with a schema validator (e.g. `zod`) and infer the
   TypeScript type from the schema, so the runtime shape and the static type
   cannot drift.
-- Apply the **Logging and observability** rules from `CLAUDE.md`. Frontend
-  mechanics: use one structured logger module configured at app startup, log
+- Apply `logging-conventions`. Frontend mechanics: use one structured logger module configured at app startup, log
   key-values (`logger.debug("fetch.done", { url, status })`), and gate
   verbosity by a log level read from the environment
   (`import.meta.env` / `process.env`), never by interpolating values into the

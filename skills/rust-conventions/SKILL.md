@@ -38,17 +38,16 @@ description: >-
   `<module>/mod.rs`. A module that has children lives in `foo.rs` alongside a
   `foo/` directory holding its submodules (`foo/bar.rs`), never in
   `foo/mod.rs`. The `mod.rs` style is discouraged: it scatters many identically
-  named files across the tree and makes editor tabs ambiguous. The only place
-  `mod.rs` is unavoidable is the crate root (`lib.rs` / `main.rs`), which are
-  not `mod.rs` anyway. When you find an existing `mod.rs`, migrate it to the
-  `<module>.rs` form as you touch it.
+  named files across the tree and makes editor tabs ambiguous. An existing
+  `mod.rs` layout is migrated only on request or as a change of its own, never
+  as a drive-by inside unrelated work.
 - In a Cargo **workspace**, put each member crate in its own directory **at the
   repository root** (`<repo>/<crate-name>/`), not nested under a `crates/` (or
   `packages/`, `libs/`, …) subdirectory. List members explicitly in the root
   `[workspace] members = [...]` rather than globbing a wrapper dir. The root
   `Cargo.toml` is a virtual manifest (`[workspace]` only, no `[package]`).
-  When you find a `crates/`-style layout, flatten it to root-level crates as
-  you touch it.
+  An existing `crates/`-style layout is flattened only on request or as a
+  change of its own.
 - Build CLIs with `clap` (derive API). Configuration must resolve in this
   order: CLI flags → environment variables → defaults. **Every** option
   must be settable via an environment variable: always give each `clap`
@@ -81,6 +80,8 @@ description: >-
   from the README instead of being copy-pasted wrong.
   ```toml
   # .cargo/config.toml
+  # Cargo sets these only for what it spawns (`cargo run`, `cargo test`), not
+  # for ./target/debug/app run by hand or in a container.
   [env]
   DATABASE_URL = "postgres://app:app@localhost:5432/app"
   # Resolved against this file's parent directory, not the shell's cwd.
@@ -104,10 +105,9 @@ description: >-
   - **Keep it the one home for those values.** The README says the file exists
     and that the environment takes precedence; it does not restate the values.
 - Use `tokio` as the async runtime.
-- Apply the **Signal handling and graceful shutdown** rules from `CLAUDE.md`.
-  Rust mechanics: enable tokio's `signal` feature and write one
-  `shutdown_signal()` future that completes on `SIGTERM` **or** `SIGINT`, then
-  drive shutdown from it:
+- Apply `signal-handling-conventions`. Rust mechanics: enable tokio's
+  `signal` feature and write one `shutdown_signal()` future that completes on
+  `SIGTERM` **or** `SIGINT`, then drive shutdown from it:
   ```rust
   async fn shutdown_signal() {
       use tokio::signal::unix::{signal, SignalKind};
@@ -120,15 +120,13 @@ description: >-
   two consistent). The above is unix-only, which is the right default for a
   Linux-container target; only if the binary must also run on Windows, guard it
   with `#[cfg(unix)]` and fall back to `tokio::signal::ctrl_c()` under
-  `#[cfg(not(unix))]`. For an `axum` server, pass it to
-  `axum::serve(..).with_graceful_shutdown(shutdown_signal())`. For a worker loop,
-  race it against the loop with `tokio::select!`. `tokio::signal::ctrl_c` alone is
-  **not** enough — it only covers `SIGINT`, so a container stopped with `SIGTERM`
+  `#[cfg(not(unix))]`. A server hands it to its graceful-shutdown hook (see
+  `rust-http-conventions`); a worker loop races it with `tokio::select!`.
+  `tokio::signal::ctrl_c` alone is **not** enough — it only covers `SIGINT`, so a container stopped with `SIGTERM`
   would never drain.
-- Build every HTTP server / API with **`axum` + `aide` + Scalar**, never a
-  bare `axum::Router` and never another framework. The stack, the OpenAPI
-  wiring and its traps live in `rust-http-conventions` — load it before
-  touching a handler, a router or a request/response DTO.
+- Any HTTP surface — framework, OpenAPI, input validation with `validator` —
+  follows `rust-http-conventions`; load it before touching a handler, a router
+  or a request/response DTO.
 - Always set up structured logging/tracing with `tracing` and
   `tracing-subscriber`. Initialise the subscriber once at the start of
   `main`, configured with an `EnvFilter`. The filter directive must come
@@ -155,12 +153,12 @@ description: >-
       let cli = Cli::parse();
       tracing_subscriber::fmt()
           .with_env_filter(tracing_subscriber::EnvFilter::new(&cli.log_filter))
+          .with_writer(std::io::stderr)
           .init();
   }
   ```
-- Apply the **Logging and observability** rules from `CLAUDE.md`. Rust
-  mechanics: `debug!` (and `trace!` for very high-volume detail) via
-  `tracing`, level controlled by `LOG_FILTER` through the `clap`-parsed
+- Apply `logging-conventions`. Rust mechanics: `debug!` (and `trace!` for
+  very high-volume detail) via `tracing`, level controlled by `LOG_FILTER` through the `clap`-parsed
   filter, structured fields (`debug!(%name, count, "…")`) — never string
   interpolation.
 - **Only the program's result goes to stdout; everything else goes to
@@ -233,9 +231,6 @@ description: >-
   consumers must have and should stay as low as the code allows; the toolchain
   file is what contributors and CI build with and should stay current. Never
   collapse the two.
-- Validate deserialised input (request DTOs, config payloads, …) with the
-  **`validator`** crate (derive API), never hand-rolled checks — see
-  `rust-http-conventions` for the derive details and where the check belongs.
 - For database integration tests, run against a **real Postgres** (the
   project's `docker-compose` service) and isolate with **`#[sqlx::test]`** —
   it creates a fresh database per test, applies the migrations, and injects a
@@ -250,8 +245,8 @@ description: >-
   ```rust
   // build.rs
   fn main() {
-      // Recompile (re-expanding sqlx::migrate!) whenever a migration changes.
-      println!("cargo:rerun-if-changed=migrations");
+      println!("cargo::rerun-if-changed=build.rs");
+      println!("cargo::rerun-if-changed=migrations");
   }
   ```
   Create this `build.rs` as soon as the crate calls `sqlx::migrate!`, not after
@@ -264,7 +259,6 @@ description: >-
   ```rust
   // build.rs
   fn main() {
-      // Rebuild (re-expanding include_str!) whenever the template changes.
       println!("cargo::rerun-if-changed=build.rs");
       println!("cargo::rerun-if-changed=templates/report.md.liquid");
   }
@@ -272,6 +266,8 @@ description: >-
   Always emit `rerun-if-changed` for `build.rs` itself and for every embedded
   path: a build script that emits **no** `rerun-if-changed` at all is re-run on
   *any* file change in the package, which is strictly worse than no build script.
+  The `cargo::` form needs Rust ≥ 1.77; a crate whose `rust-version` is lower
+  keeps the single-colon `cargo:` form.
 - Use `mockall` for test doubles. Define collaborators as traits, annotate
   them with `#[cfg_attr(test, mockall::automock)]` (or `mock!` when you
   cannot own the trait), and inject the mock in unit tests. Keep production
@@ -302,11 +298,7 @@ description: >-
 
 - Never default to `Box<dyn Trait>` / `&dyn Trait` when generics or
   `impl Trait` express the same thing with static dispatch.
-- Never use a different async runtime (`async-std`, `smol`, …) or a
-  different web framework when `tokio` + `axum` fit the need.
-- Never build an HTTP surface without loading `rust-http-conventions` first —
-  a bare `axum::Router`, a hand-written OpenAPI document or an alternative
-  docs UI are all out.
+- Never use an async runtime other than `tokio` (`async-std`, `smol`, …).
 - Never set `force = true` in a `.cargo/config.toml` `[env]` table, and never
   put a credential there that reaches anything beyond the project's own
   development stack. Development defaults must lose to a real environment.
@@ -326,8 +318,6 @@ description: >-
 - Never hand-roll mock structs, fakes, or stubs for a trait when
   `mockall` can generate them, and never pull in another mocking crate
   (`mockers`, `faux`, …) when `mockall` fits.
-- Never hand-roll input validation, and never pull in another validation
-  crate when the `validator` derive fits.
 - Never reach for the `async-trait` crate. Use native `async fn` /
   `-> impl Future<Output = …> (+ Send)` in traits and generic injection
   instead. The only exception is an external trait you do not own that is
