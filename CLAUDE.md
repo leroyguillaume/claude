@@ -345,8 +345,16 @@ impossible to untangle cleanly.
   The rule kicks in at the first edit.
 - **A branch is not a commit.** Creating the worktree changes nothing in the
   commit rules below: the work still sits uncommitted until I ask.
-- **Don't clean up behind my back.** Leave the worktree and its branch in place
-  when the work is done and tell me where they are; removing them is my call.
+- **Clean up once the change has merged, not before.** Until then, leave the
+  worktree and its branch in place and tell me where they are. Once the PR is
+  merged, remove both without asking: `git worktree remove <path>` (never
+  `--force`), then `git branch -D <branch>` — `-D` because a squash merge
+  leaves the branch looking unmerged to git.
+  "Merged" means `gh pr view <branch> --json state` says `MERGED`, not that
+  the branch looks done. Keep both, and say why, when the worktree holds
+  anything uncommitted or the local branch tip differs from the PR's
+  `headRefOid` — that is work the merge did not carry. Only the worktree and
+  local branch go: the remote branch is the repo settings' job.
 
 ## Git commits
 
@@ -357,10 +365,10 @@ Three non-negotiable rules, then the style.
   "open a PR" are explicit asks — the last one implies whatever commits the PR
   needs. Nothing else is: not "that's done", not "looks good", not a green test
   run, not the end of a task. Committing is also not a way to checkpoint your
-  own work. The same goes for `git push`, `git merge` and branch deletion:
-  asking for a commit is not asking for a push. When in doubt, do not commit —
-  the cost of asking is one sentence, the cost of an unwanted commit is my
-  history.
+  own work. The same goes for `git push`, `git merge` and branch deletion
+  (bar the post-merge cleanup above): asking for a commit is not asking for a
+  push. When in doubt, do not commit — the cost of asking is one sentence, the
+  cost of an unwanted commit is my history.
 - **The permission never carries forward.** An ask covers the work sitting in
   front of it and nothing after it. The next task needs a new ask, even two
   minutes later in the same session, even when the last thing I said was
