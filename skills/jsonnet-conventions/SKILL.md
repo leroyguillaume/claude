@@ -34,7 +34,8 @@ Extraction has **two axes, and repetition alone is not enough**:
 | **repeated twice** | leave it | extract |
 | **repeated three times or more** | leave it | extract |
 
-This departs from CLAUDE.md's rule of three in both directions, deliberately:
+The general rule elsewhere is the rule of three: extract on the third copy,
+never earlier. Jsonnet departs from it in both directions, deliberately:
 
 - **Small stays duplicated, even past three copies.** Three copies of a
   four-line `ConfigMap` stay three copies: in jsonnet a helper costs more to

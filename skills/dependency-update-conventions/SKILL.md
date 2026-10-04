@@ -359,6 +359,9 @@ only, per `yaml-conventions`.
   lockstep families, grouped whatever the update type and listed first (see
   "Group what must move together").
 - **`cooldown`** for the same reason as Renovate's `minimumReleaseAge`.
+- **`commit-message.prefix`** set to the repo's subject prefix (read
+  `git log --oneline`), so a squash-merged bot PR matches the commit style;
+  add `include: scope` only when that style carries a scope.
 - **OCI registries: use a `docker-registry` entry, not `helm-registry`.** The
   Helm registry type does HTTP Basic auth against a classic chart repository
   and does not speak OCI — which is the form charts should be referenced in
