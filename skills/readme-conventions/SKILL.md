@@ -2,7 +2,8 @@
 name: readme-conventions
 description: >-
   README.md: what goes in it and how it is structured.
-  TRIGGER when: creating or editing any `README.md`; adding a `LICENSE`;
+  TRIGGER when: creating or editing any `README.md`; adding a `LICENSE` or a
+  logo;
   scaffolding a project; a change alters install, config, run or deploy steps;
   user asks what belongs in the README.
   SKIP when: editing `CONTRIBUTING.md` (`contributing-conventions`),
@@ -72,6 +73,21 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and the reasoning behind i
 
 Badges (CI status, licence, version) go on a single line under the title, or
 not at all. A wall of badges is decoration, not documentation.
+
+**A project with a logo shows it in the README**, at the very top, above the
+`# <project-name>` heading. Point at the file in the repo with a relative path,
+give it alt text, and bound its width — Markdown image syntax cannot, so use an
+`<img>` tag:
+
+```markdown
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="<project-name> logo" width="200">
+</p>
+```
+
+The logo sits above the title, never in place of it: the `#` heading stays, so
+the page keeps a text title and its anchor. Prefer SVG when one exists. No logo
+in the repo → no image; never invent or hotlink one.
 
 ### 2. Getting started
 
