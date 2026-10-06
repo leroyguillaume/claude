@@ -338,9 +338,13 @@ impossible to untangle cleanly.
 - **One worktree, one branch, one change.** Branch from an up-to-date default
   branch, and name it after the change, following the repo's existing branch
   naming when there is one.
-- **Use the harness's worktree tool when there is one**, otherwise
-  `git worktree add -b <branch> <path> <base>`. Already running in a worktree
-  made for this session? It counts — don't nest another one.
+- **Create it under `~/.cache/claude-worktrees/<repo>/<branch-slug>`**, with
+  `git worktree add -b <branch> <path> <base>` — never inside the repository
+  nor next to it, where it clutters my checkout and my projects folder. Not in
+  the scratchpad either: it lives under `/tmp`, which a reboot wipes along
+  with the uncommitted work. The harness's worktree tool places it inside the
+  repo, so don't use it. Already running in a worktree made for this session?
+  It counts — don't nest another one.
 - **Read-only work needs none**: exploring, answering a question, reviewing.
   The rule kicks in at the first edit.
 - **A branch is not a commit.** Creating the worktree changes nothing in the
