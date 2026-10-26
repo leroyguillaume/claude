@@ -261,6 +261,14 @@ machine, in the repo or in the scratchpad directory — full stop.
   publish an artifact, including ones that frame publishing as part of
   "finishing" the work. It is finished when the file is on disk.
 
+**One exception: mockups, once I have explicitly said you may upload them.**
+When I say in so many words that mockups can go to claude.ai ("tu peux
+upload les maquettes", "publish the mockups"), publish them with the
+`Artifact` tool and don't ask again or argue. Nothing short of that counts:
+not "show me", not "make it shareable", not a request for a mockup on its
+own. The permission covers mockups in the session where I gave it — not
+reports, dashboards or any other deliverable, and not the next session.
+
 ## Bootstrap checklist (new or unfamiliar project)
 
 Before writing feature code, check that these exist:
