@@ -32,9 +32,10 @@ is a direct tax on every single session, which is why it holds meta-rules
 rather than rules.
 
 **`skills/<name>/SKILL.md`** — one self-contained convention document per
-topic. The YAML frontmatter carries `name` and a `description` that states, in
-prose, the `TRIGGER` conditions that should load the skill and the `SKIP`
-conditions where it is irrelevant. Only that frontmatter is in context by
+topic, or a workflow that runs only on an explicit ask. The YAML frontmatter
+carries `name` and a `description` that states, in prose, the `TRIGGER`
+conditions that should load the skill and the `SKIP` conditions where it is
+irrelevant. Only that frontmatter is in context by
 default; the body is pulled in when the description matches the work.
 
 **`.gitignore`** — an allow-list. `~/.claude` is Claude Code's live runtime
