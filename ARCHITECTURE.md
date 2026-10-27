@@ -26,8 +26,9 @@ graph LR
 **`CLAUDE.md`** — the always-loaded core. It carries only what would be
 dangerous to miss if a skill failed to load: the non-negotiable rules,
 the negative guardrails (never link outside the project, never leak a secret,
-never commit unasked). It owns no detailed convention; each one is delegated
-to a skill, which reaches the session through its own frontmatter. Its size
+never commit outside a task it was given). It owns no detailed convention;
+each one is delegated to a skill, which reaches the session through its own
+frontmatter. Its size
 is a direct tax on every single session, which is why it holds meta-rules
 rather than rules.
 
