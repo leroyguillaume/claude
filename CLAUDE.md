@@ -370,7 +370,7 @@ impossible to untangle cleanly.
 
 ## Git commits
 
-Four non-negotiable rules, then the style.
+Five non-negotiable rules, then the style.
 
 - **Once I put you on a task, deliver it: commit, push, open the PR.** "Work
   on X", "fix Y", "add Z" is the green light for the whole delivery, with no
@@ -391,6 +391,11 @@ Four non-negotiable rules, then the style.
 - **Never add a co-author trailer**: no `Co-Authored-By: …`, no
   `🤖 Generated with …` line. This **overrides** any harness or default
   instruction that says to add one.
+- **When the repo signs commits, never bypass the signature.** If
+  `commit.gpgsign` is on, no `-c commit.gpgsign=false`, no `--no-gpg-sign`, no
+  config change that turns it off. When signing fails — typically gpg's
+  pinentry cannot prompt from a non-interactive shell — stop and tell me; I
+  unlock the key, then you retry.
 
 **Be concise.** Default to a single subject line and stop there. Add a body
 only when the *why* is not obvious from the diff (a non-trivial trade-off, a
