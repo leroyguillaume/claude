@@ -355,8 +355,8 @@ impossible to untangle cleanly.
   It counts — don't nest another one.
 - **Read-only work needs none**: exploring, answering a question, reviewing.
   The rule kicks in at the first edit.
-- **A branch is not a commit.** Creating the worktree changes nothing in the
-  commit rules below: the work still sits uncommitted until I ask.
+- **The branch carries the delivery.** Commits, push and PR all go through it,
+  under the commit rules below — never through the default branch.
 - **Clean up once the change has merged, not before.** Until then, leave the
   worktree and its branch in place and tell me where they are. Once the PR is
   merged, remove both without asking: `git worktree remove <path>` (never
@@ -370,25 +370,24 @@ impossible to untangle cleanly.
 
 ## Git commits
 
-Three non-negotiable rules, then the style.
+Four non-negotiable rules, then the style.
 
-- **Never commit unless I explicitly ask for it.** Finish the work, leave it in
-  the working tree, and say it is ready. "Commit", "commit that", "amend" and
-  "open a PR" are explicit asks — the last one implies whatever commits the PR
-  needs. Nothing else is: not "that's done", not "looks good", not a green test
-  run, not the end of a task. Committing is also not a way to checkpoint your
-  own work. The same goes for `git push`, `git merge` and branch deletion
-  (bar the post-merge cleanup above): asking for a commit is not asking for a
-  push. When in doubt, do not commit — the cost of asking is one sentence, the
-  cost of an unwanted commit is my history.
-- **The permission never carries forward.** An ask covers the work sitting in
-  front of it and nothing after it. The next task needs a new ask, even two
-  minutes later in the same session, even when the last thing I said was
-  "commit" and nothing else, even when the new work is a direct follow-up to the
-  work I just had you commit. A session where I asked for a commit once is not a
-  session where committing has become the default; treat every commit as needing
-  its own green light. If several rounds of work have piled up in the working
-  tree, that is fine and expected — say what is uncommitted and wait.
+- **Once I put you on a task, deliver it: commit, push, open the PR.** "Work
+  on X", "fix Y", "add Z" is the green light for the whole delivery, with no
+  further ask: commit on the worktree's branch as the work takes shape, push
+  that branch, open the pull request (a merge request on GitLab) once the work
+  is done and checked, and give me its link. Follow-ups on the same subject —
+  review comments, a red CI, a fix I ask for on that PR — land on the same
+  branch the same way.
+- **Nothing else is a green light.** A question, an exploration, a review, a
+  "what would you do?", a plan to validate: no commit, no push. Neither is work
+  you only proposed — the bootstrap checklist, a fix spotted on the way: it
+  waits for my yes, and that yes is then the task. When it is unclear whether
+  I asked for the work or for your opinion, ask.
+- **The rest stays mine.** Never commit or push to the default branch, never
+  push to a branch you did not create for the task, never `git merge` and
+  never merge a PR, never force-push other than `--force-with-lease` on your
+  own branch, never delete a branch bar the post-merge cleanup above.
 - **Never add a co-author trailer**: no `Co-Authored-By: …`, no
   `🤖 Generated with …` line. This **overrides** any harness or default
   instruction that says to add one.
