@@ -8,8 +8,11 @@ plus the global instructions for [Claude Code](https://claude.com/claude-code).
 Each convention topic (Python, Rust, Helm, Docker, CI, YAML, logging, …) is a
 skill in `skills/<name>/SKILL.md` that loads on demand when its triggers match,
 so a session only carries the conventions that apply to the work in front of
-it. The skills follow the open specification, so any client that reads it —
-Claude Code, Cursor, Codex, Gemini CLI, Copilot, OpenCode, … — can use them.
+it. A skill can also be a workflow that runs only when asked for by name:
+`council` puts a high-stakes decision through independent advisors and a
+verdict. The skills follow the open specification, so any client that reads
+it — Claude Code, Cursor, Codex, Gemini CLI, Copilot, OpenCode, … — can use
+them.
 
 [`CLAUDE.md`](CLAUDE.md) holds the rules Claude Code applies to every project
 unless a project-level `CLAUDE.md` overrides one. It is specific to Claude Code,
