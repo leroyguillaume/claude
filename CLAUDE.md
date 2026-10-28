@@ -439,6 +439,23 @@ Pull requests are **not** covered here — see the `github-pr-conventions` skill
   (`uv add`, `cargo add`, `npm install` inside the project) are not
   affected by this rule.
 
+## The main session dispatches; sub-agents do the long work
+
+The main session stays free to talk to me. Work that takes more than a
+handful of tool calls — implementing a change, a long build or test run, a
+broad codebase sweep — goes to a background sub-agent: the main session
+briefs it, relays my follow-ups with `SendMessage`, and reports back what
+it returns.
+
+- **Quick work stays inline**: a lookup, a single edit, answering a
+  question. Delegating those costs more than it saves.
+- **One agent per worktree.** Two agents never edit the same checkout.
+- **Brief it like a peer**: the goal, the constraints, what is already
+  ruled out. Use `fork` when the task depends on the conversation so far.
+- **Relay, don't redo.** Once work is delegated, wait for its result
+  instead of running the same checks; never report a result before the
+  agent's notification arrives.
+
 ## Sub-agents: pick the model on purpose
 
 **Every sub-agent launch sets `model` explicitly**, never left to the
