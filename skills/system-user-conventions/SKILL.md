@@ -131,8 +131,9 @@ modes around it.
 - **`chmod 777` is never the answer**, in any script, ever. If two accounts
   must share a directory, that is a group plus `2770` (setgid so new files
   inherit the group), not world-writable.
-- **`UMask=0077`** in the unit, so whatever the app creates at runtime is not
-  readable by the rest of the box by default.
+- **`UMask=0077`** in the unit's hardening block (`systemd-conventions`), so
+  whatever the app creates at runtime is not readable by the rest of the box
+  by default.
 
 ## Humans are the mirror image
 

@@ -149,8 +149,9 @@ to run when the committed file disagrees:
 ```
 
 This is what makes hand-tagging fail fast instead of publishing a mislabelled
-artefact. For a stable chart tag, the guard checks both `version` in
-`Chart.yaml` and the `--version` in the README's `helm install` command.
+artefact. For every chart tag, rc included, the guard checks `version` in
+`Chart.yaml`; for a stable one, also the `--version` in the README's
+`helm install` command.
 
 ## `--dry-run`
 

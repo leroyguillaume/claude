@@ -77,10 +77,16 @@ error instead of silently truncating.
 chain.** Almost every fan-out has both axes, and the fix is to name them:
 
 ```python
-async def for_one_host(host: str) -> tuple[Catalog, Settings]:
+@dataclass(frozen=True)
+class HostState:
+    catalog: Catalog
+    settings: Settings
+
+async def for_one_host(host: str) -> HostState:
     # Sequential on purpose: a host whose catalog is unreachable is not asked
     # for anything else -- the pass is over for it either way.
-    return await fetch_catalog(host), await fetch_settings(host)
+    catalog = await fetch_catalog(host)
+    return HostState(catalog=catalog, settings=await fetch_settings(host))
 
 # Concurrent across hosts: this is where the N is.
 results = await asyncio.gather(

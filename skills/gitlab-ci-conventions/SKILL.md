@@ -210,9 +210,10 @@ release:
 
 ## `chart`
 
-On `$CI_COMMIT_TAG =~ /^chart-\d+\.\d+\.\d+$/` and manual runs: `helm
-package --version <v>` then `helm push` to `oci://<registry>/charts`, after the
-same version drift guard as `release` (`release-script-conventions`).
+On `$CI_COMMIT_TAG =~ /^chart-\d+\.\d+\.\d+/` (no `$`: an rc chart tag
+publishes too) and manual runs: `helm package --version <v>` then `helm push`
+to `oci://<registry>/charts`, after the same version drift guard as `release`
+(`release-script-conventions`).
 
 ## `docs` and GitLab Pages
 

@@ -63,7 +63,7 @@ description: >-
   environment variable to start. `cargo run` and `cargo test` then work from a
   fresh clone with nothing exported, and the
   `DATABASE_URL=… JWT_SECRET=… S3_BUCKET=… cargo run` incantation disappears
-  from the README instead of being copy-pasted wrong.
+  from `CONTRIBUTING.md` instead of being copy-pasted wrong.
   ```toml
   # .cargo/config.toml
   # Cargo sets these only for what it spawns (`cargo run`, `cargo test`), not
@@ -88,8 +88,9 @@ description: >-
     `./target/debug/app` by hand, or the binary in a container, gets nothing.
     That is the first surprise, and it is cheaper to answer in the file than in
     a bug report.
-  - **Keep it the one home for those values.** The README says the file exists
-    and that the environment takes precedence; it does not restate the values.
+  - **Keep it the one home for those values.** `CONTRIBUTING.md` says the file
+    exists and that the environment takes precedence; it does not restate the
+    values.
 - Use `tokio` as the async runtime.
 - Apply `signal-handling-conventions`. Rust mechanics: enable tokio's
   `signal` feature and write one `shutdown_signal()` future that completes on
@@ -142,7 +143,7 @@ description: >-
       log_format: LogFormat,
   }
 
-  fn main() -> Result<(), Box<dyn std::error::Error>> {
+  fn main() -> Result<(), tracing_subscriber::filter::ParseError> {
       let cli = Cli::parse();
       // `EnvFilter::new` silently drops a directive it cannot parse.
       let fmt = tracing_subscriber::fmt()
