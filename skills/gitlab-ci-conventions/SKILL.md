@@ -205,8 +205,8 @@ release:
   titled by `.gitlab/changelog_config.yml`. The trailer must be on the commit
   that lands on the default branch. With squash merges, that is the squash
   commit message, set in the MR.
-- The job image must carry the release tool the instance expects (`glab` or
-  the older `release-cli`).
+- The job image must carry the release tool the instance expects (`glab`, or
+  `release-cli`, deprecated since GitLab 18.0).
 
 ## `chart`
 
@@ -227,7 +227,7 @@ What the pipeline does is in `starlight-conventions`. On GitLab:
   ```yaml
   pages:
     stage: deploy
-    image: node:24.11.1-bookworm  # docs/.nvmrc's version; -slim has no git
+    image: node:<docs/.nvmrc version>-bookworm  # -slim has no git
     variables:
       GIT_DEPTH: 0
     rules:
@@ -249,8 +249,8 @@ What the pipeline does is in `starlight-conventions`. On GitLab:
       publish: public
   ```
   `docs-build` is the same script without `pages:`, with the MR rule instead.
-  On an instance older than the `pages:` keyword, the job must be named
-  `pages` and publish `public` through `artifacts: paths:`.
+  Before GitLab 17.9, `publish` is not a `pages:` property: the job must be
+  named `pages` and publish `public` through `artifacts: paths:`.
 - `GIT_DEPTH: 0` plus an explicit `git fetch --tags`: the runner's fetch
   refspecs do not bring the release tags, and a shallow clone sees no version.
 - **After a stable release, deploy from the default branch, not the tag.** The
@@ -267,8 +267,9 @@ What the pipeline does is in `starlight-conventions`. On GitLab:
       project: $CI_PROJECT_PATH
       branch: $CI_DEFAULT_BRANCH
   ```
-- **The URL depends on the instance and the project**: new projects get a
-  unique domain served at `/`, others `<group>.<pages-domain>/<project>`, and
+- **The URL depends on the instance and the project**: a project with Pages unique
+  domains on (the default for a new project) gets a unique domain served at
+  `/`, others `<group>.<pages-domain>/<project>`, and
   a custom domain overrides both. Read it from the project's Pages settings
   before setting `site`/`base`.
 - Parallel deployments (`pages: path_prefix:`) are not how versions are

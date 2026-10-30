@@ -33,7 +33,7 @@ symptom is an unstyled "Skip to content" page with a broken image.
 | GitLab Pages, unique domain | the unique domain URL | `/` |
 | GitLab Pages, `<group>.<pages-domain>/<project>` | `https://<group>.<pages-domain>` | `/<project>/` |
 
-Check what the Pages settings actually hold (`gh api repos/<o>/<r>/pages
+Check what the Pages settings actually hold (`gh api repos/{owner}/{repo}/pages
 --jq .cname`, or the GitLab project's Pages page) rather than assuming. A
 custom domain added later means changing `site` and dropping `base`.
 
@@ -187,11 +187,10 @@ site. Link `/llms.txt` from the README next to the documentation link.
   runs in the `quality` pipeline, never in a hook (`pre-commit-conventions`).
 - Pre-commit hooks, as local `language: system` hooks on `files: ^docs/`,
   `pass_filenames: false`: `npm --prefix docs run lint` (`biome check .`) and
-  `npm --prefix docs run check` (`astro check`). They run Biome from the site's
-  lockfile rather than `biomejs/pre-commit`, whose `additional_dependencies`
-  would be a second Biome version to keep in step. The `quality` job therefore
-  runs `npm ci --prefix docs` before `pre-commit`.
-- Exclude `^docs/package-lock\.json$` from `check-added-large-files`.
+  `npm --prefix docs run check` (`astro check`). The `quality` job therefore runs
+  `npm ci --prefix docs` before `pre-commit`.
+- Exclude `^docs/package-lock\.json$` from `check-added-large-files`
+  (`pre-commit-conventions`).
 - The dependency bot tracks `npm` in `/docs`. Pin `typescript` within the
   peer range of `@astrojs/check`; a major it does not accept fails the install.
 - The build logs structured `key=value` lines on stderr, never `console.*`.

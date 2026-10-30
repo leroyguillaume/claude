@@ -12,11 +12,11 @@ description: >-
 
 **Always lint SQL with [`sqlfluff`](https://sqlfluff.com/).** Any repo that
 contains `.sql` files must have the sqlfluff pre-commit hook. Add it to
-`.pre-commit-config.yaml`, pinned to an explicit rev:
+`.pre-commit-config.yaml`, pinned to an explicit `rev`:
 
 ```yaml
 - repo: https://github.com/sqlfluff/sqlfluff
-  rev: 4.2.2
+  rev: <latest tag SHA>  # <latest tag>
   hooks:
     - id: sqlfluff-lint
 ```
