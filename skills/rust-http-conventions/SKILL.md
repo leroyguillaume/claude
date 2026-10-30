@@ -72,7 +72,7 @@ endpoint that compiles and documents nothing.
 - The `(StatusCode, Json<T>)` tuple documents **no** response; declare the
   success status of creates explicitly with
   `post_with(handler, |op| op.response::<201, Json<XxxResponse>>())`.
-- Pin the `schemars` version `aide` re-exports (0.9 for `aide` 0.15) and add
+- Pin the `schemars` version `aide` re-exports (the version `aide` depends on: `cargo tree -i schemars`) and add
   its `chrono04` / `uuid1` features for `DateTime`/`Uuid` fields.
 - `OperationInput` for `Query<T>` is behind `aide`'s **`axum-query`** feature.
   A handler taking `Query<_>` fails the `OperationHandler` bound (cryptically)
