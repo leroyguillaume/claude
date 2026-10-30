@@ -81,13 +81,22 @@ review. Say in each stacked PR's description which PR it sits on.
 - **A follow-up spotted while opening the PR** goes in the body as
   `Follow-up: #123`, after the issue is opened (see
   `github-issue-conventions`) — never as a comment in the code.
+- **A breaking change says what breaks, and how to migrate**, in the body — a
+  removed or renamed API, CLI flag, env var, config key or chart value; a
+  changed default, wire format or schema that needs a migration; a dropped
+  platform or version. Anything that forces a user to change something to
+  upgrade.
 
 ## Labels
 
-**Every PR you open must carry the right labels, applied at creation time.** An
-unlabelled PR lands in the "Other Changes" bucket of the generated release notes
-and is invisible to anyone scanning the changelog by category. Labelling is part
-of opening the PR, not an afterthought.
+**PR labels feed the generated release notes, so they follow
+`.github/release.yaml`.** In a repo that has one, every PR carries its labels
+from creation: an unlabelled PR lands in the "Other Changes" bucket and is
+invisible to anyone scanning the changelog by category. **No `release.yaml`, no
+label**: nothing reads them, so a category label there is noise on every PR.
+That holds for `breaking` (the body already says what breaks) and for area
+labels (the title's `area:` prefix already names the area). Bot PRs keep what
+their config applies (see [Bot pull requests](#bot-pull-requests)).
 
 ## How GitHub actually sorts a PR
 
@@ -102,7 +111,7 @@ section. Two consequences that drive every choice below:
 - **A PR that is genuinely two changes is two PRs.** If you cannot name one
   category without lying, split it rather than picking the bigger half.
 
-## Always
+## When the repo has `.github/release.yaml`
 
 - **Pass `--label` on `gh pr create`** — do not open the PR first and label it
   later (you usually forget). Repeat the flag per label:
@@ -130,34 +139,15 @@ section. Two consequences that drive every choice below:
   below.
 - **Apply exactly one changelog-category label**, taken from
   `.github/release.yaml` — that file is the source of truth, and it differs
-  from repo to repo. The table below is only the fallback for a repo that has
-  no `release.yaml`:
-
-  | Change | Category label |
-  | --- | --- |
-  | Security fix | `security` |
-  | Deprecation of something still working, removed later | `deprecation` |
-  | New capability | `feature` |
-  | Performance improvement, no behaviour change | `performance` |
-  | Bug fix | `fix` |
-  | Documentation only | `documentation` |
-  | Dependency bump | `dependencies` |
-  | Refactor, CI, build, housekeeping | `chore` |
-
-  Read the repo's categories rather than applying this table blind: a repo
-  without a `Documentation` category wants `chore` on a docs PR, and a repo
-  without a `Maintenance` category sends `chore` straight to "Other". Match the
-  labels that repo actually maps.
-
+  from repo to repo: a repo without a `Documentation` category wants `chore`
+  on a docs PR, and a repo without a `Maintenance` category sends `chore`
+  straight to "Other". Match the labels that repo actually maps.
 - **Add `breaking` on top of the category label when the PR breaks
-  something** — a removed or renamed API, CLI flag, env var, config key or
-  chart value; a changed default, wire format or schema that needs a migration;
-  a dropped platform or version. Anything that forces a user to change
-  something to upgrade. It is the one label that stacks with the category
-  label: `breaking` + `feature` lands under *Breaking changes* because that
-  category comes first in `release.yaml`. Say what breaks, and how to migrate,
-  in the PR description. If the repo has no `breaking` label or no *Breaking
-  changes* category, don't drop the flag — say so (see below).
+  something** (see [Title and body](#title-and-body)). It is the one label
+  that stacks with the category label: `breaking` + `feature` lands under
+  *Breaking changes* because that category comes first in `release.yaml`. If
+  the repo has no `breaking` label or no *Breaking changes* category, don't
+  drop the flag — say so (see below).
 - **Add the area / technology labels that apply** on top of the category label.
   Area labels never select a category on their own, so they are safe to stack:
   a Rust PR gets `rust` as well as `feature`/`fix`/…. A PR typically ends up

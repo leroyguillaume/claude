@@ -3,12 +3,11 @@ name: github-repo-settings
 description: >-
   GitHub repo settings via `gh`: labels, merge methods, branch deletion,
   Pages.
-  TRIGGER when: user asks to sync labels with `.github/release.yaml`, change
-  merge methods, toggle head-branch deletion, or enable GitHub Pages; a repo
-  gains an `actions/deploy-pages` workflow; a Pages deploy fails because Pages
-  is off.
-  SKIP when: editing workflows or release-note categories
-  (`github-actions-conventions`).
+  TRIGGER when: `.github/release.yaml` is created or its labels change; user
+  asks to sync labels, change merge methods, toggle head-branch deletion, or
+  enable GitHub Pages; a repo gains an `actions/deploy-pages` workflow; a
+  Pages deploy fails because Pages is off.
+  SKIP when: editing workflow files (`github-actions-conventions`).
 ---
 
 # GitHub repository settings (`gh` CLI)
@@ -23,11 +22,14 @@ the labels on merged PRs, nothing else. So it is **not** the full set of labels 
 repo should have. Two distinct purposes coexist:
 
 - **Issue-triage labels** (`bug`, `enhancement`, `question`, `help wanted`, …):
-  classify *reported* problems/requests. They legitimately exist even when absent
-  from `release.yaml`. **Do not delete them just because the changelog config
-  doesn't reference them.**
+  classify *reported* problems/requests, whether or not the repo cuts releases.
+  They legitimately exist even when absent from `release.yaml`. **Do not delete
+  them just because the changelog config doesn't reference them.**
 - **PR / changelog labels** (`feature`, `fix`, `chore`, `dependencies`, `rust`, …):
   classify the *change shipped*. These are what `release.yaml` maps to categories.
+  **Without `release.yaml`, none are created**: nothing reads them (see
+  `github-pr-conventions`), so the sync below does not apply. The labels
+  Dependabot creates for its own PRs are its config's business (see the notes).
 
 The same concept often has both: `bug` (issue) ↔ `fix` (PR), `enhancement` (issue)
 ↔ `feature` (PR). Inside one changelog category, listing both members of such a
@@ -74,8 +76,8 @@ gh label list --limit 100   # verify
 
 Notes:
 
-- **`breaking` is always created**, on every repo. If `release.yaml` has no
-  *Breaking changes* category, add one — as the **first** category, since
+- **`breaking` is always created alongside `release.yaml`.** If the file has
+  no *Breaking changes* category, add one — as the **first** category, since
   GitHub files a PR under the first match and a breaking PR also carries its
   `feature`/`fix` label (see `github-actions-conventions` for the baseline file).
 - Otherwise, only create the category labels the repo's `release.yaml` actually
