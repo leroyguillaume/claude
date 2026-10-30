@@ -44,17 +44,9 @@ description: >-
   `Cargo.toml` is a virtual manifest (`[workspace]` only, no `[package]`).
   An existing `crates/`-style layout is flattened only on request or as a
   change of its own.
-- Build CLIs with `clap` (derive API). Configuration must resolve in this
-  order: CLI flags → environment variables → defaults. **Every** option
-  must be settable via an environment variable: always give each `clap`
-  argument an `env = "..."` attribute — there is no config knob that can
-  only be passed on the command line.
-- **Name the variable after who owns the environment.** A service in a
-  container owns it and takes the bare name (`env = "BIND_ADDR"`); a CLI or
-  tooling binary shares a shell with everything else, so it prefixes its own
-  variables with its name (`env = "MYTOOL_FORCE"`). Read one name only, never
-  a bare-name fallback, and keep cross-tool standards (`NO_COLOR`,
-  `HTTP_PROXY`, `SSL_CERT_FILE`) as they are.
+- Build CLIs with `clap` (derive API), giving **every** argument an
+  `env = "..."` attribute. Precedence and variable names follow
+  `config-conventions`.
 - Prefer `default_value_t = <typed value>` over a stringly-typed
   `default_value = "..."` whenever the field's type is anything other than a
   `String`/`&str` — enums, integers, paths, durations, etc. `default_value_t`
@@ -123,17 +115,13 @@ description: >-
   or a request/response DTO.
 - Always set up structured logging/tracing with `tracing` and
   `tracing-subscriber`. Initialise the subscriber once at the start of
-  `main`, configured with an `EnvFilter`. The filter directive must come
-  from `clap` — a dedicated option (e.g. `--log-level` / `--log-filter`)
-  carrying an `env = "LOG_FILTER"` attribute, or `<TOOL>_LOG_FILTER` when the
-  binary is a CLI — not read directly from the environment. **Never
-  `RUST_LOG`**: the variable name should describe the knob, not the language
-  the binary happens to be written in, and `RUST_LOG` is also read by other
-  crates' own `from_default_env()` machinery, which is exactly the
-  direct-environment read this rule forbids. Document the directive syntax in
-  the option's help so `--help` is self-sufficient. The log format is a
-  `clap` option too (`LOG_FORMAT` / `<TOOL>_LOG_FORMAT`, `text` by default,
-  `json` opt-in). **`tracing_subscriber::fmt()` writes to stdout by
+  `main`, configured with an `EnvFilter`. The filter directive comes from a
+  `clap` option (`--log-filter`, its variable named per `config-conventions`),
+  never read directly from the environment — which also rules out `RUST_LOG`,
+  read by other crates' own `from_default_env()` machinery. Document the
+  directive syntax in the option's help so `--help` is self-sufficient. The
+  log format is a `clap` option too (`logging-conventions`).
+  **`tracing_subscriber::fmt()` writes to stdout by
   default**, which mixes logs into the program's result, so always point it
   at stderr. Example:
   ```rust
@@ -147,9 +135,9 @@ description: >-
       /// `tracing` filter directive (e.g. `info`, `myapp=debug,axum=warn`)
       ///
       /// Syntax: <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#directives>
-      #[arg(long = "log-filter", env = "LOG_FILTER", default_value = "info")]
+      #[arg(long = "log-filter", env = "MYTOOL_LOG_FILTER", default_value = "info")]
       log_filter: String,
-      #[arg(long, env = "LOG_FORMAT", value_enum,
+      #[arg(long, env = "MYTOOL_LOG_FORMAT", value_enum,
             default_value_t = LogFormat::Text)]
       log_format: LogFormat,
   }
@@ -254,10 +242,10 @@ description: >-
   `VAR=value` assignments when `.cargo/config.toml` can carry them.
 - Never use `println!` / `eprintln!` (or ad-hoc `log` setup) for
   application diagnostics; route everything through `tracing`.
-- Never add a `clap` option without an `env = "..."` attribute, never give a
-  CLI's own option a bare unprefixed variable name, and never build the
-  `EnvFilter` from `EnvFilter::from_env` / `from_default_env` or a direct
-  `std::env` read — the directive must flow through the `clap`-parsed value.
+- Never add a `clap` option without an `env = "..."` attribute, and never
+  build the `EnvFilter` from `EnvFilter::from_env` / `from_default_env` or a
+  direct `std::env` read — the directive must flow through the `clap`-parsed
+  value.
 - Never leave `clippy` warnings unaddressed. If a lint must be allowed,
   add a scoped `#[allow(...)]` with a justification comment.
 - Never hand-roll mock structs, fakes, or stubs for a trait when

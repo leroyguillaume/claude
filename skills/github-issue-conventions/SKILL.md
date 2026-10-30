@@ -11,16 +11,9 @@ description: >-
 
 # GitHub issue conventions (`gh` CLI)
 
-**Remaining work lives in an issue, never scattered through the repo's files.**
-A committed `TODO.md`, a "roadmap" heading in the README, a `## Status`
-checklist — they all rot within a month, conflict on every branch, and become a
-second, worse tracker sitting next to the real one. A document describes the
-project as it is, in the present tense; what remains to do is not part of it.
-
-**The one exception is a root `ROADMAP.md`**, when the project keeps one. It
-holds the shape of what is coming; the tracker still holds the actionable
-tickets, and every other file stays in the present tense. Never create one
-unasked.
+**Remaining work lives in an issue, never in the repo's files** — the one
+exception being a root `ROADMAP.md` the project already keeps, for the shape of
+what is coming, never each ticket.
 
 **GitHub only.** Everything here assumes an `origin` remote on GitHub — check
 before reaching for `gh`:
@@ -111,7 +104,6 @@ not exist, use the closest one and say so.
 
 - **Let the PR close it**, and reference follow-ups from it — the body
   conventions are in `github-pr-conventions`.
-- **Nothing stays behind in the code.** No `TODO`, no `FIXME`, no `XXX` — not
-  even one carrying the issue number. The issue is the marker; a second copy
-  in a comment only adds one more thing that goes stale and lies. Once the
-  issue exists, the code says nothing about it.
+- **Nothing stays behind in the code** — no `TODO` marker, not even one
+  carrying the issue number. Once the issue exists, the code says nothing
+  about it.

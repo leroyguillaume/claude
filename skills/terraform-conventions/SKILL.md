@@ -324,9 +324,8 @@ repo cannot fix, never its own. Being a `pre-commit` hook, it also gates CI thro
 
 ## Applying
 
-- **Never run `apply` or `destroy` unless the user explicitly asks.** `plan` is
-  always fine and is the default answer to "does this work?". `-auto-approve`
-  needs an explicit green light every time; it does not carry forward.
+- **`plan` is the default answer to "does this work?"**; `apply`, `destroy`
+  and `-auto-approve` wait for an explicit ask, every time.
 - Read the plan before proposing it: a replacement you did not expect is the
   bug, and the plan is where it is cheapest to find.
 
@@ -360,5 +359,3 @@ repo cannot fix, never its own. Being a `pre-commit` hook, it also gates CI thro
 - Never let a secret reach the state file, an output, or `terraform.tfvars`.
 - Never hand-edit state or run `state mv` where a `moved` block would do.
 - Never silence a `tflint` or `trivy` finding on your own initiative.
-- Never run `apply`, `destroy`, or anything `-auto-approve` without an
-  explicit ask.

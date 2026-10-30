@@ -150,9 +150,8 @@ matters — load `diagram-conventions` before drawing one.
 
 ## Links
 
-Relative inside the repo, `https://` URLs outside it, never a path climbing
-out of the project root — and link straight at the code described
-(`src/reconciler/`), which is what keeps this file verifiable.
+Relative inside the repo, an `https://` URL outside it. Link straight at the
+code described (`src/reconciler/`), which is what keeps this file verifiable.
 
 ## Keeping it honest
 

@@ -199,9 +199,8 @@ Two short sections at the bottom, each a link, not a copy:
 
 ## Links
 
-Relative inside the repo, `https://` URLs outside it, never a path climbing
-out of the project root — and check anchors (`README.md#getting-started`) still
-resolve after a heading moves.
+Relative inside the repo, an `https://` URL outside it. Check anchors
+(`README.md#getting-started`) still resolve after a heading moves.
 
 ## `CONTRIBUTING.md` and `LICENSE` must exist
 

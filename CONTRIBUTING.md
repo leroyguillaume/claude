@@ -100,6 +100,13 @@ pre-commit run --all-files
    read if something opens it.
 4. Do not list the skill in [CLAUDE.md](CLAUDE.md): clients list the available
    skills themselves, and a copy there only goes stale.
+5. Give each rule one home. `CLAUDE.md` holds what applies to every change
+   whatever the technology — meta-rules and guardrails — and never restates a
+   skill's convention: where it touches a skill's topic, it says so in one
+   line and names the skill. A skill may recall a `CLAUDE.md` rule that bears
+   on it, in one line, never in detail: the skills also deploy to clients that
+   never read `CLAUDE.md` (`~/.agents/skills`), so they cannot drop the
+   reminder, but the detail stays in `CLAUDE.md`.
 
 ## Running the tests
 

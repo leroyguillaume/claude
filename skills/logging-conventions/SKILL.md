@@ -12,8 +12,9 @@ description: >-
 
 # Logging and observability
 
-Applies to every language and runtime. The language skills restate the
-mechanics (library, level names, env var) where they need to be made concrete.
+Applies to every language and runtime. The language skills give the
+mechanics (library, level names); `config-conventions` names the level
+variable.
 
 - Emit **debug-level** logs liberally wherever they help diagnose a problem
   after the fact: around every external / I/O call (log its inputs and its
