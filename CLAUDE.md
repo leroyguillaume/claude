@@ -289,6 +289,11 @@ artifacts are their own change, in their own worktree and branch cut from the
 default branch — independent of the feature work, never stacked on top of
 uncommitted work.
 
+That covers the baseline a repo lacks before the work starts. A file the work
+itself needs — the `ARCHITECTURE.md` that receives a decision's reasoning
+(rule 4), the tests and docs of the code you change — is part of that change,
+not a proposal.
+
 ## Conventions (load on demand)
 
 Detailed rules live in skills under `~/.claude/skills/`, which are listed with
