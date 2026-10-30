@@ -81,9 +81,24 @@ pre-commit run --all-files
    The actual conventions go here.
    ```
 
-   The `description` is a folded block scalar (`>-`), or `skill-validator`
-   rejects it; [ARCHITECTURE.md](ARCHITECTURE.md#design-decisions) says why.
-3. Do not list the skill in [CLAUDE.md](CLAUDE.md): clients list the available
+   The `description` is a folded block scalar (`>-`): a `:` inside a
+   multi-line plain scalar is not strict YAML, so `skill-validator` rejects it
+   even where Claude Code's own reader accepts it.
+
+   The `description` is the only part of a skill that is always in context,
+   and the only thing a client has to decide whether to load it. Name concrete
+   file paths and topics in `TRIGGER`: a skill whose triggers are vague never
+   loads, and nothing can force it to for a given file. Keep it to routing,
+   too — Claude Code caps the combined skill listing at about 1% of the
+   context window and drops the least-used skills' descriptions first.
+3. Keep the body under 5000 tokens, which `skill-validator` enforces: past
+   that a skill crowds out the conversation it is meant to inform. A skill
+   that outgrows it is split into a sibling skill with its own `TRIGGER`, the
+   way `rust-http-conventions` carries the HTTP stack apart from
+   `rust-conventions` — not into `references/`, since a sibling skill loads
+   automatically when its triggers match, whereas a `references/` file is only
+   read if something opens it.
+4. Do not list the skill in [CLAUDE.md](CLAUDE.md): clients list the available
    skills themselves, and a copy there only goes stale.
 
 ## Running the tests
@@ -91,6 +106,9 @@ pre-commit run --all-files
 There is no test suite to run: the "code" is Markdown, and its correctness is
 what the linters assert. `skill-validator` is what plays that role — it is the
 only check that can fail on the content of a change rather than its formatting.
+It asserts that a skill is well-formed, not that a client applies it: that
+feedback only exists in the projects using the skills, through their own
+linters and CI.
 
 Validate every skill:
 
@@ -117,11 +135,9 @@ failures come up often:
 - **`parsing frontmatter YAML: mapping values are not allowed in this
   context`** — the `description` is a plain scalar rather than `>-`; see
   [Adding or editing a skill](#adding-or-editing-a-skill).
-- **`SKILL.md body is N tokens (spec recommends < 5000)`** — the skill has
-  grown past what is loaded into context comfortably. Split it into a second
-  skill with its own `TRIGGER`, rather than moving prose into `references/`:
-  a sibling skill is loaded automatically when its triggers match, whereas a
-  `references/` file is only read if something opens it.
+- **`SKILL.md body is N tokens (spec recommends < 5000)`** — split the skill
+  into a sibling skill; see
+  [Adding or editing a skill](#adding-or-editing-a-skill).
 
 ## Pre-commit hooks
 

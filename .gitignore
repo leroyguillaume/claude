@@ -8,7 +8,6 @@
 !/.gitignore
 !/.pre-commit-config.yaml
 !/.yamllint.yaml
-!/ARCHITECTURE.md
 !/CLAUDE.md
 !/CONTRIBUTING.md
 !/LICENSE

@@ -16,12 +16,12 @@ them.
 
 [`CLAUDE.md`](CLAUDE.md) holds the rules Claude Code applies to every project
 unless a project-level `CLAUDE.md` overrides one. It is specific to Claude Code,
-and the repository doubles as that tool's `~/.claude` directory.
+and the repository doubles as that tool's `~/.claude` directory. It is written
+for one person's machines and addresses that person directly, so adopting it
+means rewriting it; the skills are self-contained and install on their own.
 
 There is nothing to build or run: the repository is Markdown that a client
 reads.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and the reasoning behind it.
 
 ## Getting started
 
@@ -75,7 +75,9 @@ git clone git@github.com:leroyguillaume/claude.git ~/.claude
 
 The [`.gitignore`](.gitignore) is an allow-list: it ignores everything except
 what the repository versions, so Claude Code's sessions, caches and history
-land beside the tracked files without showing up in `git status`.
+land beside the tracked files without showing up in `git status`. A deny-list
+would have to grow every time Claude Code writes a new kind of state, and the
+cost of forgetting one is a committed credential.
 
 To keep an existing `~/.claude` and put it under version control instead,
 initialise it in place:
