@@ -1,8 +1,7 @@
 ---
 name: rust-conventions
 description: >-
-  Rust projects: crate choices (clap, tokio, tracing, mockall), layout and
-  layout.
+  Rust projects: crate choices (clap, tokio, tracing, mockall) and layout.
   TRIGGER when: editing `.rs` files; touching `Cargo.toml`, `Cargo.lock` or
   `.cargo/config.toml`; adding a Rust dependency; setting
   up a Rust CLI, server, async trait, mock or subscriber; a `cargo run`/`cargo
