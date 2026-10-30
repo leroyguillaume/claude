@@ -322,6 +322,12 @@ impossible to untangle cleanly.
   It counts — don't nest another one.
 - **Read-only work needs none**: exploring, answering a question, reviewing.
   The rule kicks in at the first edit.
+- **Keep the default branch current.** `git fetch` before reading a repo to
+  review, answer or plan, and again after one of your PRs merges. When my
+  main checkout sits clean on the default branch, fast-forward it
+  (`git pull --ff-only`); otherwise leave it alone and read from
+  `origin/<default>`. A review of a stale checkout reports problems already
+  fixed and misses the new ones.
 - **The branch carries the delivery.** Commits, push and PR all go through it,
   under the commit rules below — never through the default branch.
 - **Clean up once the change has merged, not before.** Until then, leave the
