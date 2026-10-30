@@ -192,9 +192,8 @@ script is the only supported way to release — say so here
 
 ## Links
 
-Relative inside the repo, `https://` URLs outside it, never a path climbing
-out of the project root — and link the workflow and config files described, so
-a hook is one click from its definition.
+Relative inside the repo, an `https://` URL outside it. Link the workflow and
+config files described, so a hook is one click from its definition.
 
 ## Keeping it honest
 
