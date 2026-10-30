@@ -5,7 +5,7 @@ description: >-
   TRIGGER when: editing a `.tf`, `.tfvars`, `.tftest.hcl` or
   `.terraform.lock.hcl` file; adding a resource, variable, output, module or
   provider; pre-commit or CI for Terraform; user asks about Terraform/OpenTofu
-  state, providers, tflint, terraform-docs or trivy findings.
+  state, providers, tflint, terraform-docs or trivy findings on HCL.
   SKIP when: no HCL is involved.
 ---
 

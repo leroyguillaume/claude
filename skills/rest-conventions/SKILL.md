@@ -4,7 +4,7 @@ description: >-
   REST resource design for HTTP APIs: URLs, methods, status codes, errors.
   TRIGGER when: adding, renaming or reviewing an HTTP endpoint, route or
   controller; designing a URL, method or status code; a path contains a verb
-  or `?action=`; writing an OpenAPI document; user asks about REST or endpoint
+  or `?action=`; user asks about REST or endpoint
   naming.
   SKIP when: the surface is deliberately not REST (gRPC, GraphQL, JSON-RPC,
   webhooks). Load `api-conventions` alongside.

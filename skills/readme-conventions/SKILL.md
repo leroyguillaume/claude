@@ -3,11 +3,11 @@ name: readme-conventions
 description: >-
   README.md: what goes in it and how it is structured.
   TRIGGER when: creating or editing any `README.md`; adding a `LICENSE` or a
-  logo;
-  scaffolding a project; a change alters install, config, run or deploy steps;
-  user asks what belongs in the README.
+  logo; scaffolding a project; a change alters install, config, run or
+  deploy steps; user asks what belongs in the README.
   SKIP when: editing `CONTRIBUTING.md` (`contributing-conventions`),
-  `ARCHITECTURE.md` rationale, or non-README docs under `docs/`.
+  `ARCHITECTURE.md` rationale (`architecture-conventions`), or non-README
+  docs under `docs/` (`documentation-conventions`).
 ---
 
 # README conventions

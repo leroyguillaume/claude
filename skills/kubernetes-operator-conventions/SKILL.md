@@ -4,9 +4,10 @@ description: >-
   Kubernetes operator/controller reconcile loops, any framework.
   TRIGGER when: editing reconcile handlers or controllers (`kopf`,
   `controller-runtime`, `operator-sdk`, `Reconcile()`); handling errors,
-  retries, events or finalizers in a controller; user asks about requeue, CRDs
-  or status conditions.
-  SKIP when: the code is not a controller reconcile path.
+  retries, events or finalizers in a controller; generating CRD manifests;
+  setting a field manager; documenting an operator's README; user asks about
+  requeue, CRDs or status conditions.
+  SKIP when: not operator code.
 ---
 
 # Kubernetes operator conventions

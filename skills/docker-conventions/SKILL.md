@@ -2,12 +2,13 @@
 name: docker-conventions
 description: >-
   Dockerfiles: base images, multi-stage builds, non-root USER, hadolint and
-  Trivy.
-  TRIGGER when: editing or creating a `Dockerfile`, `Containerfile` or
-  `.dockerignore`; user asks about base images, image size, container CVEs,
-  non-root users or hadolint.
-  SKIP when: no Dockerfile is touched and the user isn't asking about
-  container builds.
+  Trivy; Compose file naming.
+  TRIGGER when: editing or creating a `Dockerfile`, `Containerfile`,
+  `.dockerignore` or Compose file (`docker-compose.yaml`, `compose.yaml`);
+  user asks about base images, image size, container CVEs, non-root users,
+  hadolint or naming a compose file.
+  SKIP when: no Dockerfile or Compose file is touched and the user isn't
+  asking about container builds.
 ---
 
 # Docker conventions
@@ -16,7 +17,7 @@ description: >-
 
 - Create a `.dockerignore` file to exclude unnecessary files from the build
   context (`.git/`, `node_modules/`, `*.log`, `README.md`, etc.).
-- A Compose file is named per `docker-compose-conventions`.
+- A Compose file is named per "Compose files" below.
 - **Pick the smallest runtime base image the app can actually run on.** Every
   package in the final image is a CVE waiting to be reported against you, and
   the fastest way to fix a vulnerability is to not ship the package. Walk down
@@ -194,3 +195,14 @@ description: >-
   exception is `DL3008`** (apt version pinning), which is pre-authorised — see
   the apt rule above. Everything else, including `DL3018`, still needs an
   explicit ask.
+
+## Compose files
+
+- **Name the file `docker-compose.yaml`.** Always use this exact name, with the
+  `.yaml` extension (not `.yml`), and not the shorter `compose.yaml` /
+  `compose.yml` form. Compose discovers all of these automatically, so the
+  choice is about consistency: every Compose file across every project carries
+  the same recognisable name.
+- If a repo already has a `compose.yaml`, `compose.yml`, or `docker-compose.yml`,
+  rename it to `docker-compose.yaml` rather than leaving the variant in place.
+- YAML inside the file follows `yaml-conventions`.

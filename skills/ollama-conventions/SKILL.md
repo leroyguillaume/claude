@@ -6,7 +6,8 @@ description: >-
   Ollama model (`ollama pull`/`run`, `/api/chat`, `/api/generate`,
   `/api/embed`, `OLLAMA_*`, a `Modelfile`); choosing a local model tag; user
   asks which model to use with Ollama or self-hosted LLMs.
-  SKIP when: a hosted provider only, or the user already chose the model.
+  SKIP when: a hosted provider only. The model-selection study is skipped when
+  the user already chose the model.
 ---
 
 # Ollama conventions

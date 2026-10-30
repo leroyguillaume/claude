@@ -4,7 +4,7 @@ description: >-
   GitHub repo settings via `gh`: labels, merge methods, branch deletion,
   Pages.
   TRIGGER when: `.github/release.yaml` is created or its labels change; user
-  asks to sync labels, change merge methods, toggle head-branch deletion, or
+  asks to sync labels or create/delete a single label, change merge methods, toggle head-branch deletion, or
   enable GitHub Pages; a repo gains an `actions/deploy-pages` workflow; a
   Pages deploy fails because Pages is off.
   SKIP when: editing workflow files (`github-actions-conventions`).
