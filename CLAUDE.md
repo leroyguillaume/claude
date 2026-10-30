@@ -452,7 +452,12 @@ it returns.
   question. Delegating those costs more than it saves.
 - **One agent per worktree.** Two agents never edit the same checkout.
 - **Brief it like a peer**: the goal, the constraints, what is already
-  ruled out. Use `fork` when the task depends on the conversation so far.
+  ruled out. A fresh agent with that brief is the default: a fork
+  re-reads the whole parent conversation on every one of its turns, so
+  its cost grows with how long the session has run.
+- **Fork only when the brief would lose what matters**: nuance from the
+  conversation too rich to restate, in a conversation still short enough
+  that carrying it is cheap.
 - **Relay, don't redo.** Once work is delegated, wait for its result
   instead of running the same checks; never report a result before the
   agent's notification arrives.
@@ -474,6 +479,10 @@ one line of the message that launches it ("Sonnet: well-scoped search").
 
 A custom agent whose frontmatter already sets `model` keeps it unless the
 task clearly calls for the other one — then override it and say why.
+
+A fork always runs on the parent's model, whatever `model` says, so
+choosing to fork is also choosing that model: weigh it like any other
+launch.
 
 ## Interaction defaults
 
