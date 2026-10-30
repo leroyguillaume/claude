@@ -12,7 +12,8 @@ See [README.md](README.md#getting-started) for installing and using the skills.
 
 Two tools are needed beyond `git`:
 
-- [pre-commit](https://pre-commit.com) 4.x — runs the gate.
+- [pre-commit](https://pre-commit.com), at the version pinned in
+  [.github/requirements.txt](.github/requirements.txt) — runs the gate.
 - [skill-validator](https://github.com/agent-ecosystem/skill-validator) —
   validates `skills/*/SKILL.md` structure, links, content and cross-language
   contamination. The hook runs it too, but running it directly gives faster
@@ -24,19 +25,9 @@ Two tools are needed beyond `git`:
 pre-commit builds two hooks (`actionlint`, `skill-validator`) from source with
 the Go on `PATH`, and downloads a toolchain of its own when there is none.
 
-**macOS**
-
-```bash
-brew install pre-commit
-```
-
-**Linux**
-
 ```bash
 pipx install pre-commit
 ```
-
-**Both**
 
 ```bash
 go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@<rev>
@@ -159,16 +150,12 @@ pre-commit run --all-files
 pre-commit run <hook-id> --all-files
 ```
 
-From [.pre-commit-config.yaml](.pre-commit-config.yaml):
+The hooks are listed in [.pre-commit-config.yaml](.pre-commit-config.yaml);
+most are formatters or checks that name the file to fix. These need more:
 
 | Hook | What it checks | How to fix |
 | --- | --- | --- |
-| `trailing-whitespace`, `end-of-file-fixer` | Whitespace hygiene | Fixed in place; re-stage and re-run |
-| `check-yaml` | YAML parses | Fix the syntax error it points at |
-| `check-added-large-files` | No large blob committed | Don't commit the blob |
-| `check-merge-conflict` | No conflict marker left behind | Finish the merge |
-| `detect-private-key` | No private key committed | Remove it, then rotate the key |
-| `yamllint` | YAML style, per [.yamllint.yaml](.yamllint.yaml) | Fix the finding; block style only, no `---` opening a file |
+| `yamllint` | YAML style, per [.yamllint.yaml](.yamllint.yaml), with `--strict` so warning-level rules fail too | Fix the finding; block style only, no `---` opening a file |
 | `actionlint` | Workflow files are valid | Fix the expression or key it names |
 | `skill-validator` | Skill structure, relative links, content, contamination | See [Running the tests](#running-the-tests) |
 | `no-co-authors` (`commit-msg` stage) | No `Co-Authored-By:` trailer or `Generated with` line in the commit message. Runs on `git commit` only: `pre-commit run --all-files`, and so CI, skips it | Rewrite the message; a commit has one author |
@@ -180,9 +167,9 @@ somewhere slower.
 
 ## Continuous integration
 
-| Workflow | Triggers on | What it does | Reproduce locally |
-| --- | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | push to `main`, every PR, weekly | `pre-commit` job: `pre-commit run --all-files`. `skills` job: checks the external links, with `--emit-annotations` so a dead link lands on its line in the diff | `pre-commit run --all-files` and `skill-validator validate links skills/` |
+| Workflow | What it does | Reproduce locally |
+| --- | --- | --- |
+| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `skills` job: checks the external links, with `--emit-annotations` so a dead link lands on its line in the diff | `pre-commit run --all-files` and `skill-validator validate links skills/` |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The
 weekly run is for the external links: a documentation URL dies without any file
@@ -194,11 +181,12 @@ a gate that fails on a train is a gate people learn to bypass.
 The workflow needs no secret and only reads the repository, so it runs the same
 on a fork's pull request.
 
-[`dependabot.yaml`](.github/dependabot.yaml) opens weekly pull requests for the
-action SHA pins, the pre-commit hook revisions and the `pre-commit` version CI
-installs ([.github/requirements.txt](.github/requirements.txt)). Minor and
-patch updates are grouped into one pull request per ecosystem; each major
-update gets its own. They are never automerged.
+[`dependabot.yaml`](.github/dependabot.yaml) keeps the action SHA pins, the
+pre-commit hook revisions and the `pre-commit` version CI installs
+([.github/requirements.txt](.github/requirements.txt)) current. Pins are SHAs
+and tags can move, so a bot bumps them rather than a person remembering to;
+grouping keeps the noise to one pull request per ecosystem, and nothing is
+automerged.
 
 ## Submitting a change
 

@@ -44,6 +44,8 @@ jobs:
       - name: set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
+          # Floats on purpose: Dependabot has no ecosystem that bumps a Go
+          # version in a workflow, so a pin here would only go stale.
           go-version: stable
           # The default cache keys on go.sum, which this repository has none of:
           # every run warns and restores nothing.
