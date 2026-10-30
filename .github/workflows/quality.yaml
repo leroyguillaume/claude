@@ -56,12 +56,6 @@ jobs:
           version="$(yq '.repos[] | select(.repo == "https://github.com/agent-ecosystem/skill-validator") | .rev' .pre-commit-config.yaml)"
           go install "github.com/agent-ecosystem/skill-validator/cmd/skill-validator@${version}"
 
-      # The pre-commit job already gates on this. This one exists for
-      # --emit-annotations, which anchors each finding on the offending line of
-      # the pull request diff instead of burying it in a log.
-      - name: validate the skills
-        run: skill-validator check --strict --emit-annotations skills/
-
       # `check` only resolves relative links. This one hits the network, which
       # is why it lives here and not in a pre-commit hook.
       - name: check the external links

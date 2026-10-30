@@ -182,7 +182,7 @@ somewhere slower.
 
 | Workflow | Triggers on | What it does | Reproduce locally |
 | --- | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | push to `main`, every PR, weekly | `pre-commit` job: `pre-commit run --all-files`. `skills` job: re-runs `skill-validator check` with `--emit-annotations` so findings land on the diff, then checks the external links | `pre-commit run --all-files` and `skill-validator validate links skills/` |
+| [`quality.yaml`](.github/workflows/quality.yaml) | push to `main`, every PR, weekly | `pre-commit` job: `pre-commit run --all-files`. `skills` job: checks the external links, with `--emit-annotations` so a dead link lands on its line in the diff | `pre-commit run --all-files` and `skill-validator validate links skills/` |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The
 weekly run is for the external links: a documentation URL dies without any file
