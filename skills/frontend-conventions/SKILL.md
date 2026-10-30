@@ -53,7 +53,7 @@ description: >-
   module configured at app startup, and log key-values
   (`logger.debug("fetch.done", { url, status })`), never by interpolating
   values into the message string. Gate verbosity by a log level the app's
-  config module reads once (`import.meta.env.VITE_LOG_LEVEL`, see
+  config module reads once (with Vite, `import.meta.env.VITE_LOG_LEVEL`; see
   `config-conventions`), never read inline at the call site.
 - Provide **tests** for components and logic with Vitest + React Testing
   Library (or the framework's first-party test runner). Test behaviour

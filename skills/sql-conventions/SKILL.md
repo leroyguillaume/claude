@@ -16,7 +16,7 @@ contains `.sql` files must have the sqlfluff pre-commit hook. Add it to
 
 ```yaml
 - repo: https://github.com/sqlfluff/sqlfluff
-  rev: <latest tag SHA>  # <latest tag>
+  rev: <latest tag SHA>  # frozen: <latest tag>
   hooks:
     - id: sqlfluff-lint
 ```

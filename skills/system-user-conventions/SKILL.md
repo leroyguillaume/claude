@@ -124,6 +124,9 @@ modes around it.
 | Config files, `/etc/myapp/*` | `root:myapp` | `0640` | Readable by the service, writable by nobody but root |
 | Secret file | `root:root`, or `root:myapp` when the service opens it itself | `0600`, or `0640` | `LoadCredential=` and `EnvironmentFile=` are read by PID 1 — see `systemd-conventions` |
 | State, `/var/lib/myapp/` | `myapp:myapp` | `0700` (`StateDirectoryMode=0700`; the default is `0755`) | The one place it writes |
+| Runtime, `/run/myapp/` | `myapp:myapp` | `0700` (`RuntimeDirectoryMode=0700`) | Sockets and PIDs; wiped on stop, so nothing stale survives a restart |
+| Cache, `/var/cache/myapp/` | `myapp:myapp` | `0700` (`CacheDirectoryMode=0700`) | Disposable, but its content is still the service's own |
+| Logs, `/var/log/myapp/` | `myapp:myapp` | `0700` (`LogsDirectoryMode=0700`) | Own log files; the rest of the box has no need to read them |
 
 - **`chown -R myapp /opt/myapp` is not a fix.** When a permission error shows
   up, find the single path that must be writable and grant that one — usually
