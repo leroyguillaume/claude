@@ -35,7 +35,10 @@ vary, so read them from the repo or ask. Never guess a runner tag.
   anchors, because anchors don't cross `include:` boundaries. pre-commit's
   `check-yaml` rejects custom tags, so give it the `--unsafe` arg in a repo
   that uses `!reference`.
-- Block style, no leading `---`, per `yaml-conventions`.
+- Block style, no leading `---`, per `yaml-conventions` — with one exception:
+  `!reference` takes its path in flow style, the only form GitLab documents,
+  so mark the line `# yamllint disable-line rule:brackets` or the strict
+  yamllint hook rejects it.
 
 ## The pipeline header
 
