@@ -2,13 +2,14 @@
 name: rust-conventions
 description: >-
   Rust projects: crate choices (clap, tokio, tracing, mockall), layout and
-  toolchain.
-  TRIGGER when: editing `.rs` files; touching `Cargo.toml`, `Cargo.lock`,
-  `rust-toolchain*` or `.cargo/config.toml`; adding a Rust dependency; setting
+  layout.
+  TRIGGER when: editing `.rs` files; touching `Cargo.toml`, `Cargo.lock` or
+  `.cargo/config.toml`; adding a Rust dependency; setting
   up a Rust CLI, server, async trait, mock or subscriber; a `cargo run`/`cargo
   test` needing env vars.
   SKIP when: no Rust is involved. Load `rust-http-conventions` alongside for
-  HTTP.
+  HTTP, `rust-build-conventions` for the toolchain pin, sqlx tests, `build.rs`
+  and cargo-chef.
 ---
 
 # Rust conventions

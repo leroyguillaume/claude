@@ -3,7 +3,8 @@ name: rust-build-conventions
 description: >-
   Rust build and test infrastructure: toolchain pin, sqlx database tests,
   `build.rs`, cargo-chef.
-  TRIGGER when: creating or editing `rust-toolchain.toml` or a `build.rs`;
+  TRIGGER when: creating or editing `rust-toolchain.toml` (or `rust-toolchain`) or a
+  `build.rs`;
   writing a Rust test against Postgres (`#[sqlx::test]`, `sqlx::migrate!`);
   "relation does not exist" after adding a migration; building a Rust
   `Dockerfile` or touching `cargo chef`; CI red after a clippy release.
