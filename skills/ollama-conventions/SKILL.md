@@ -52,12 +52,9 @@ possibly-stale memory — don't present a remembered model as a current best.
 
 ## Plumbing conventions
 
-- **Configuration via env vars.** Always honour `OLLAMA_HOST` and the
-  standard `OLLAMA_*` names as they are — they are upstream's, not yours to
-  rename or prefix. Name your own surrounding config by who owns the
-  environment: bare (`DATABASE_URL`, `LOG_LEVEL`) for a service that owns it,
-  prefixed with the tool's name (`MYTOOL_LOG_LEVEL`) for a CLI that shares a
-  shell with everything else — and read only that one name.
+- **Configuration via env vars.** Honour `OLLAMA_HOST` and the standard
+  `OLLAMA_*` names as they are — they are upstream's, not yours to rename or
+  prefix. Your own variables follow `config-conventions`.
 - **Don't pin `:latest`.** Always use an explicit, reproducible model tag in
   code, compose files, Modelfiles, and docs.
 - **Document the choice.** When you commit a model tag, leave a one-line note

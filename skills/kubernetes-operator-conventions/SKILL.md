@@ -154,15 +154,10 @@ writes, then re-check.
 
 ## Observability
 
-- Verbosity is controlled **only by the log level** (e.g. `LOG_LEVEL`), never a
-  bespoke flag. Emit debug logs around every external call (inputs + outcome)
-  and at each decision branch, so a failure is diagnosable from logs alone.
-- Log with **structured key-values**, never string interpolation, and **never
-  log secrets** (bearer tokens, client secrets, DB URLs).
+- Logs follow `logging-conventions`.
 - Surface user-facing state through **events** and **status conditions**, not
   just logs — the spec author sees `kubectl describe`, not the operator's pod
   logs.
-- The log format defaults to `text`, as `logging-conventions` sets out.
 
 ## Documentation
 

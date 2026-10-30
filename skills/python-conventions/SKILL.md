@@ -40,15 +40,9 @@ description: >-
   error and warning before considering a change done. When Pylance and
   ruff disagree on a stylistic point, prefer the change that satisfies
   both; never silence one to keep the other happy.
-- Build CLIs with `typer`. Configuration must resolve in this order:
-  CLI flags → environment variables → defaults. Use `typer` option
-  `envvar=...`, or `pydantic-settings` for richer config models.
-- **Name the variable after who owns the environment**: bare for a service
-  that owns it (`envvar="BIND_ADDR"`), prefixed with the tool's name for a CLI
-  sharing a shell with everything else (`envvar="MYTOOL_CONFIG_FILE"`; in
-  `pydantic-settings`, `env_prefix="mytool_"`). Read one name only, never a
-  bare-name fallback; cross-tool standards (`NO_COLOR`, `HTTP_PROXY`) keep
-  their names.
+- Build CLIs with `typer`, every option carrying its `envvar=...`, or use
+  `pydantic-settings` for richer config models (`env_prefix="mytool_"` for a
+  CLI). Precedence and variable names follow `config-conventions`.
 - Declare `typer` parameters with `Annotated[T, typer.Option(...)] = default`,
   not `param: T = typer.Option(default, ...)`. The `Annotated` form keeps the
   default value in the standard Python position and is the form `typer`
@@ -66,11 +60,9 @@ description: >-
   ```
 - Apply `logging-conventions`. Python mechanics: use the standard `logging`
   module (or `structlog` when the project already does), configured once at
-  process start; level controlled by an env var (e.g. `LOG_LEVEL`,
-  `MYTOOL_LOG_LEVEL` for a CLI) routed through the `typer` /
-  `pydantic-settings` config layer, and a `LOG_FORMAT` (`MYTOOL_LOG_FORMAT`
-  for a CLI) option beside it
-  (`text` by default, `json` opt-in) choosing the formatter. Log structured
+  process start; the level and the format are options of the `typer` /
+  `pydantic-settings` config layer (names in `config-conventions` and
+  `logging-conventions`), the format choosing the formatter. Log structured
   key-values (`logger.debug("fetched", extra={"url": url, "status": resp.status})`),
   never f-string interpolation of values into the message. The default
   `logging` formatter silently drops `extra=` fields, so install a structured
