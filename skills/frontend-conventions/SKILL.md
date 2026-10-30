@@ -23,24 +23,18 @@ description: >-
   family). Additionally enable `noUncheckedIndexedAccess` and
   `exactOptionalPropertyTypes`. Treat `tsc --noEmit` as a **blocking gate**,
   on the same footing as Biome — fix every type error before a change is
-  done. Wire `tsc --noEmit` into both `.pre-commit-config.yaml` and CI.
+  done. Run `tsc --noEmit` via pre-commit, which CI runs.
 - Format and lint with **Biome** (`biome check --write`). It replaces both
   ESLint and Prettier. Configure everything in `biome.json` (or
   `biome.jsonc`). Enable the recommended rules and set
   `suspicious/noExplicitAny` to `error`.
-- Add a **Biome pre-commit hook** (`biomejs/pre-commit`) running
-  `biome check`, alongside the baseline hooks from `pre-commit-conventions`.
-- **Exclude the frontend lockfile from the `check-added-large-files`
-  baseline hook.** A committed `package-lock.json` (or `pnpm-lock.yaml` /
-  `yarn.lock` / `bun.lock`, or the binary `bun.lockb` of Bun < 1.2) is
-  legitimately large and must stay versioned, so it should never trip the
-  large-file check. Add an `exclude` to that hook rather than raising
-  `--maxkb` for everything:
-  ```yaml
-  - id: check-added-large-files
-    exclude: ^package-lock\.json$
-  ```
-  Widen the pattern to match whichever lockfile(s) the repo uses.
+- Add a **Biome pre-commit hook** as a local `language: system` hook running
+  the lockfile's Biome (`npm run lint`, or `npx biome check`), alongside the
+  baseline hooks from `pre-commit-conventions`. Not `biomejs/pre-commit`: its
+  `additional_dependencies` is a second Biome version to keep in step. CI runs
+  `npm ci` before `pre-commit` so the hook finds Biome.
+- **Exclude the frontend lockfile from `check-added-large-files`**, as
+  `pre-commit-conventions` describes for every lockfile.
 - Design **mobile-first**. Base, unprefixed styles target the smallest
   viewport; layer larger layouts additively with `min-width` breakpoints
   (or the framework's `sm:` / `md:` / `lg:` responsive prefixes, which are

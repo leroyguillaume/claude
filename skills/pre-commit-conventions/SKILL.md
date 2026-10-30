@@ -18,7 +18,7 @@ stack:
 
 ```yaml
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: <latest tag SHA>  # <latest tag>
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -27,9 +27,15 @@ stack:
           - --allow-multiple-documents
         exclude: ^charts/[^/]+/templates/
       - id: check-added-large-files
+        exclude: ^(.*/)?(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lock|uv\.lock|Cargo\.lock|poetry\.lock)$
       - id: check-merge-conflict
       - id: detect-private-key
 ```
+
+The `exclude` on `check-added-large-files` keeps lockfiles out of the size
+check: they are legitimately large and must stay versioned, and widening
+`--maxkb` for everything would be worse. Keep only the patterns of the
+lockfiles the repo has (`bun.lockb` for Bun < 1.2).
 
 On top of them: the `yamllint` and `commit-msg` hooks below, and the hooks the
 matching skill lists for every technology present in the repo.
@@ -48,37 +54,35 @@ Always run the tool directly. In order of preference:
 2. **A `repo: local` hook with `language: system`**, calling the binary from
    `PATH`.
 
+One deliberate exception to that order: **Biome runs as a local `system` hook**
+(`frontend-conventions`). The upstream `biomejs/pre-commit` hook installs its
+own Biome through `additional_dependencies`, a second version to keep in step
+with the one in the lockfile.
+
 ### Known repos that ship both variants
 
 | Tool | ❌ Docker id | ✅ Use instead |
 | --- | --- | --- |
 | hadolint (`hadolint/hadolint`) | `hadolint-docker` | `hadolint` (`language: system`) |
-| shellcheck (`koalaman/shellcheck-precommit`) | `shellcheck` — **Docker only**, whole repo unusable | local `system` hook, or `shellcheck-py/shellcheck-py` |
+| shellcheck (`koalaman/shellcheck-precommit`) | `shellcheck` — **Docker only**, whole repo unusable | `shellcheck-py/shellcheck-py` |
 
 ### Canonical shellcheck hook
 
 `koalaman/shellcheck-precommit` exposes *only* a `docker_image` hook, so drop
-the repo entirely and declare a local one:
+the repo entirely and use `shellcheck-py`, a pip wheel bundling the binary:
+native, nothing to preinstall, and the version is pinned in the config.
 
 ```yaml
-  - repo: local
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: <latest tag SHA>  # <latest tag>
     hooks:
       - id: shellcheck
-        name: shellcheck
-        entry: shellcheck
-        language: system
-        types:
-          - shell
 ```
 
-`shellcheck` then comes from the system package manager (`brew install
-shellcheck`, `pacman -S shellcheck`, `apt install shellcheck`). Document that
-prerequisite in `CONTRIBUTING.md` and install it in CI before running
+A local `language: system` hook calling a `shellcheck` from `PATH` is the
+fallback for a runner that cannot install the wheel; the binary is then a
+prerequisite (`contributing-conventions`) and CI installs it before
 `pre-commit`.
-
-If a runner genuinely cannot have the binary preinstalled, use
-`shellcheck-py/shellcheck-py` (pinned, e.g. `rev: v0.11.0.1`) — it is a pip
-wheel bundling the binary, still no Docker.
 
 ## Always include yamllint
 
@@ -89,7 +93,7 @@ whoever happens to be reviewing.
 
 ```yaml
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.38.0
+    rev: <latest tag SHA>  # <latest tag>
     hooks:
       - id: yamllint
         # Warning-level rules (document-start among them) are printed and then
@@ -217,7 +221,17 @@ analysis, they stay in pre-commit.
 
 ## Other rules
 
-- **Pin every `rev`** to a tag; never `master`/`main`.
+- **Pin every `rev` to a full commit SHA, with the tag as a comment**; never
+  `master`/`main`, never a bare tag: a tag can be moved, and hooks run in CI
+  (`ci-conventions`). `pre-commit autoupdate --freeze` writes exactly that, and
+  Dependabot's `pre-commit` ecosystem bumps the SHA and the comment together
+  (`dependency-update-conventions`).
+- **A `rev`, image tag or tool version written into a file is resolved when you
+  write it, never from memory.** Look up the upstream's latest release
+  (`gh release view -R <owner>/<repo> --json tagName`, or the registry) and
+  write that; then take the commit it points to for a `rev`
+  (`gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`). Snippets in skills
+  show a placeholder (`<latest tag>`) for that reason.
 - **Local hooks always set `language: system`** plus either `types:`/`files:`
   or `pass_filenames: false` — an unfiltered local hook runs on every file in
   the repo. The exception is a pure regex check, which uses `language:

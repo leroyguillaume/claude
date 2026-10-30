@@ -45,7 +45,8 @@ the user already told you exactly which model to use.
    "as of <month/year>" — in the reply, so it's clear the data has a shelf
    life.
 4. **Pin an exact tag.** Recommend and hard-code a concrete, reproducible tag
-   (e.g. `qwen2.5-coder:7b-instruct-q4_K_M`), never a floating `:latest`.
+   (shaped `<family>:<size>-<variant>-<quant>`, as listed on the model's
+   page), never a floating `:latest`.
 
 If web access is unavailable, **say so** and flag that the suggestion is from
 possibly-stale memory — don't present a remembered model as a current best.
