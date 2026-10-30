@@ -165,7 +165,7 @@ failing PRs above are the real signal:
 
 | Ecosystem | Family |
 | --- | --- |
-| cargo | `opentelemetry*`; `tonic*` with `prost*`; `aws-sdk-*` with `aws-config`, `aws-smithy-*` |
+| cargo | `opentelemetry*`; `tonic*` with `prost*`; `aws-sdk-*` with `aws-config`, `aws-smithy-*`; `aide` with `schemars`, `axum`, `axum-extra` |
 | npm | `@astrojs/*` with `astro`; `react` with `react-dom`; `@typescript-eslint/*` |
 | pip | `boto3` with `botocore` |
 | Helm / Argo CD | a chart and its separately-sourced CRDs |
