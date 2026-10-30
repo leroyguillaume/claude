@@ -1,14 +1,14 @@
 ---
 name: rust-conventions
 description: >-
-  Rust projects: crate choices (clap, tokio, tracing, mockall), layout and
-  toolchain.
-  TRIGGER when: editing `.rs` files; touching `Cargo.toml`, `Cargo.lock`,
-  `rust-toolchain*` or `.cargo/config.toml`; adding a Rust dependency; setting
+  Rust projects: crate choices (clap, tokio, tracing, mockall) and layout.
+  TRIGGER when: editing `.rs` files; touching `Cargo.toml`, `Cargo.lock` or
+  `.cargo/config.toml`; adding a Rust dependency; setting
   up a Rust CLI, server, async trait, mock or subscriber; a `cargo run`/`cargo
   test` needing env vars.
   SKIP when: no Rust is involved. Load `rust-http-conventions` alongside for
-  HTTP.
+  HTTP, `rust-build-conventions` for the toolchain pin, sqlx tests, `build.rs`
+  and cargo-chef.
 ---
 
 # Rust conventions
@@ -180,9 +180,10 @@ description: >-
   audience, not by severity: stdout is for the next program in the pipeline,
   stderr is for the person at the terminal.
 
-  This does not loosen the logging rule — diagnostics about the program's own
-  workings still go through `tracing` (writing to stderr, as above), never
-  through either macro.
+  This does not loosen the logging rule. The line is between what a CLI says
+  *to its user* — results on stdout, a final error message on stderr before it
+  exits non-zero — and diagnostics about the program's own workings, which go
+  through `tracing` (writing to stderr, as above), never through either macro.
 - Format with `rustfmt` and lint with `clippy` (`cargo clippy -- -D warnings`).
   Add local `cargo fmt --check` and `cargo clippy` hooks to
   `.pre-commit-config.yaml`.
@@ -221,54 +222,16 @@ description: >-
   the scoped form every time. Beware of writing the allow-list *before* the
   code: allows added at bootstrap "because everyone disables those" are
   cargo-cult, and some will not even be in the group any more.
-- **Pin the toolchain with a `rust-toolchain.toml`** at the repository root, on
-  an exact patch version, as soon as the project lints with `pedantic` and
-  fails the build on warnings. Without a pin, a clippy release turns CI red on
-  code nobody touched; with one, a toolchain bump is a reviewable diff.
-  ```toml
-  [toolchain]
-  channel = "1.97.1"
-  components = ["rustfmt", "clippy"]
-  profile = "minimal"
-  ```
-  This pin is **not** the MSRV. `rust-version` in `Cargo.toml` is what
-  consumers must have and should stay as low as the code allows; the toolchain
-  file is what contributors and CI build with and should stay current. Never
-  collapse the two.
-- For database integration tests, run against a **real Postgres** (the
-  project's `docker-compose` service) and isolate with **`#[sqlx::test]`** —
-  it creates a fresh database per test, applies the migrations, and injects a
-  `PgPool` (or `PgConnection`). Point `DATABASE_URL` at the compose Postgres
-  when running the suite. Do **not** use `testcontainers`.
-- When a crate embeds migrations with `sqlx::migrate!(...)`, **add a `build.rs`**
-  that re-runs on migration changes. The macro embeds the migrations at compile
-  time, so adding a new `.sql` file does not, on its own, make Cargo rebuild the
-  crate — the macro keeps expanding to the stale set and tests fail with
-  confusing "relation does not exist" errors against the just-added schema. The
-  fix is one line:
-  ```rust
-  // build.rs
-  fn main() {
-      println!("cargo::rerun-if-changed=build.rs");
-      println!("cargo::rerun-if-changed=migrations");
-  }
-  ```
-  Create this `build.rs` as soon as the crate calls `sqlx::migrate!`, not after
-  the first stale-migration surprise.
-- **This is specific to macros that read files themselves** (`sqlx::migrate!`
-  and similar proc macros). `include_str!` / `include_bytes!` need no
-  `build.rs`: `rustc` records the included file in its dep-info, and Cargo
-  rebuilds when it changes. Whenever a `build.rs` exists, emit
-  `rerun-if-changed` for `build.rs` itself and every path it watches: a build
-  script that emits **no** `rerun-if-changed` at all is re-run on *any* file
-  change in the package. The `cargo::` form needs Rust ≥ 1.77; a crate whose
-  `rust-version` is lower keeps the single-colon `cargo:` form.
+- Toolchain pin (`rust-toolchain.toml`), `sqlx` database tests, `build.rs` for
+  `sqlx::migrate!` and `cargo-chef` Docker builds live in
+  `rust-build-conventions`; load it alongside for those.
 - Use `mockall` for test doubles. Define collaborators as traits, annotate
   them with `#[cfg_attr(test, mockall::automock)]` (or `mock!` when you
   cannot own the trait), and inject the mock in unit tests. Keep production
   injection on static dispatch (generics / `impl Trait`); only the test
-  wiring may fall back to a trait object if generics make the seam
-  impractical. Add `mockall` under `[dev-dependencies]` via `cargo add
+  wiring of a **synchronous** trait may fall back to a trait object if
+  generics make the seam impractical (async traits are not object-safe, see
+  below). Add `mockall` under `[dev-dependencies]` via `cargo add
   --dev mockall`. `mockall` supports native async traits (Rust ≥ 1.75), so
   there is no need for `async-trait` to make a trait mockable — keep
   `#[cfg_attr(test, mockall::automock)]` *above* the trait definition.
@@ -278,16 +241,6 @@ description: >-
   `fn f(&self, …) -> impl Future<Output = …> + Send`. Such traits are not
   object-safe, which is fine: inject them with generics (`T: Trait`), not
   `dyn Trait`, consistent with the static-dispatch rule above.
-- When the project ships a `Dockerfile`, build it with **cargo-chef** —
-  but **only inside the `Dockerfile`**. Install it there with
-  `cargo install cargo-chef --locked` (`chef` → `planner`
-  (`cargo chef prepare`) → `builder` (`cargo chef cook` then
-  `cargo build --release --locked`)). The recipe normalises away the package
-  version and other non-dependency `Cargo.toml` metadata, so the cooked
-  dependency layer stays cached across version bumps and source-only changes.
-  Never add `cargo-chef` to `Cargo.toml` (deps or dev-deps) and never invoke
-  it in local development or CI outside the image build — it is purely a
-  Docker layer-caching tool.
 
 **Never:**
 
@@ -299,9 +252,6 @@ description: >-
   development stack. Development defaults must lose to a real environment.
 - Never front a documented `cargo run` / `cargo test` with a wall of
   `VAR=value` assignments when `.cargo/config.toml` can carry them.
-- Never use `testcontainers` (or other throwaway-container harnesses) for
-  database tests. Use a real Postgres (the project's `docker-compose`) with
-  `#[sqlx::test]` for per-test isolation.
 - Never use `println!` / `eprintln!` (or ad-hoc `log` setup) for
   application diagnostics; route everything through `tracing`.
 - Never add a `clap` option without an `env = "..."` attribute, never give a
