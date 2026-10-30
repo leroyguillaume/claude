@@ -162,6 +162,13 @@ out of the project root — and link straight at the code described
   convention sends content here (a design decision's rationale, an ADR's new
   state) and the file does not exist yet: create it rather than drop the
   content.
+- **A repository with no code needs none.** When it holds only documentation
+  — a handbook, a set of guides, a docs site's content — the documents *are*
+  the system, and the README's layout section is the whole mental model a
+  contributor needs. Tooling around the docs (a lint config, a CI workflow)
+  does not count as code. There, do not create the file unprompted, even when
+  another convention says "created if missing": the reasoning goes in the
+  README or in the document it concerns. Create it only when the user asks.
 - **Cross-link both ways**: the README points here from the sections whose
   reasoning moved out; this file points at the README for commands. Check the
   anchors after a split — a moved heading takes its anchor with it.
