@@ -2,7 +2,7 @@
 name: signal-handling-conventions
 description: >-
   Signals and graceful shutdown for long-running processes.
-  TRIGGER when: writing or editing a `main`/entrypoint, an HTTP or RPC server,
+  TRIGGER when: writing or editing the `main` of a long-running process, an HTTP or RPC server,
   a worker, a queue consumer or a daemon loop; wiring shutdown, signal
   handlers or drain logic; user asks about SIGTERM, SIGINT or graceful
   shutdown.

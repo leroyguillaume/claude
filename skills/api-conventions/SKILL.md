@@ -1,14 +1,15 @@
 ---
 name: api-conventions
 description: >-
-  HTTP/RPC API payloads in any language: DTOs, JSON casing, pagination,
+  HTTP/JSON API payloads in any language: DTOs, JSON casing, pagination,
   OpenAPI docs.
   TRIGGER when: adding or changing an endpoint, handler, route, controller or
   DTO/schema type; returning a list from an endpoint; designing a JSON body,
   params or an OpenAPI spec; user asks about API contracts, serialisation,
   casing or pagination.
-  SKIP when: no request/response surface is touched. Load `rest-conventions`
-  alongside for URLs and methods.
+  SKIP when: no request/response surface is touched, or the surface is not
+  JSON over HTTP (gRPC, GraphQL, JSON-RPC). Load `rest-conventions` alongside
+  for URLs and methods.
 ---
 
 # API conventions

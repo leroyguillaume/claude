@@ -7,7 +7,7 @@ description: >-
   replacing `print`/`println`/`echo`/`console.log`; user asks about logging or
   observability.
   SKIP when: the change adds no behaviour worth logging (formatting, comments,
-  config).
+  non-logging config).
 ---
 
 # Logging and observability

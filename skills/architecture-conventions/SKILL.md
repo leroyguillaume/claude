@@ -3,8 +3,8 @@ name: architecture-conventions
 description: >-
   ARCHITECTURE.md: the system as it stands, in the present tense.
   TRIGGER when: creating or editing `ARCHITECTURE.md`; a *why* paragraph lands
-  in the README; adding a component, datastore, external dependency or
-  invariant; user asks how the system fits together or where a trade-off goes.
+  in the README; adding a component, datastore, external service or
+  system, or an invariant; user asks how the system fits together or where a trade-off goes.
   SKIP when: install/run instructions (`readme-conventions`), or dev setup,
   pre-commit or CI (`contributing-conventions`).
 ---

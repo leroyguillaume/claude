@@ -4,7 +4,7 @@ description: >-
   pre-commit configuration and hook choice.
   TRIGGER when: creating or editing `.pre-commit-config.yaml`; adding,
   replacing or bumping a hook; a hook only ships a `docker` variant; setting
-  up linting for a repo with YAML; wiring a test suite (`pytest`, `cargo
+  up linting for a repo with YAML (`.yamllint.yaml`); wiring a test suite (`pytest`, `cargo
   test`, …) into a commit gate; user asks why a hook is slow or needs Docker.
   SKIP when: not touching pre-commit configuration.
 ---

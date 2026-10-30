@@ -4,7 +4,7 @@ description: >-
   Jsonnet: structure, documented exports, failures, `jsonnetfmt`.
   TRIGGER when: creating or editing a `.jsonnet`/`.libsonnet` file; factoring
   shared jsonnet into a library; user asks about jsonnet layout, extVars or
-  extracting a helper.
+  extracting a jsonnet helper or library.
   SKIP when: no jsonnet is involved.
 ---
 
