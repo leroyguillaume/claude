@@ -183,8 +183,7 @@ often. The dashboard is what turns that into a visible list.
 ```json
 {
   "dependencyDashboard": true,
-  "dependencyDashboardTitle": "Dependency dashboard",
-  "dependencyDashboardLabels": ["dependencies"]
+  "dependencyDashboardTitle": "Dependency dashboard"
 }
 ```
 
@@ -224,16 +223,15 @@ Baseline:
   "extends": ["config:recommended"],
   "timezone": "Europe/Paris",
   "dependencyDashboard": true,
-  "labels": ["dependencies"],
   "prConcurrentLimit": 5,
   "minimumReleaseAge": "3 days"
 }
 ```
 
-- **When the repo has `.github/release.yaml`, `labels` must include the
-  repo's changelog-category label** so bot PRs land in the right
-  release-notes section — see `github-pr-conventions`, and read the repo's
-  actual labels rather than inventing one. Without that file, set no
+- **The baseline sets no label.** When the repo has `.github/release.yaml`,
+  add `"labels": ["<changelog-category label>"]` so bot PRs land in the
+  right release-notes section — see `github-pr-conventions`, and read the
+  repo's actual labels rather than inventing one. Without that file, set no
   category label. **Renovate applies no label** unless `labels` is set;
   relabelling a bot PR by hand is lost on the next one, so fix the config.
 - **Match the repository's commit style**, read from `git log --oneline`

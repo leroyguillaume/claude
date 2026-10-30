@@ -401,7 +401,9 @@ Pull requests are **not** covered here — see the `github-pr-conventions` skill
   `Cargo.toml` / `package.json`, or any equivalent application or chart
   version field, unless I explicitly ask for it. This holds even when you
   ship a breaking change — releases are my call. If you think a bump is
-  warranted, mention it and wait for confirmation.
+  warranted, mention it and wait for confirmation. When the repo has a
+  `scripts/release.sh`, hand me its command instead of editing, even if I ask
+  (see `release-script-conventions`).
 
 ## System packages
 

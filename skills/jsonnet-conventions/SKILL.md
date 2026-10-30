@@ -217,7 +217,7 @@ to install and no Docker (see `pre-commit-conventions`). Both match
 
 ```yaml
   - repo: https://github.com/google/go-jsonnet
-    rev: v0.22.0
+    rev: <latest tag SHA>  # <latest tag>
     hooks:
       - id: jsonnet-format
       - id: jsonnet-lint

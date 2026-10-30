@@ -7,7 +7,8 @@ description: >-
   asks to sync labels or create/delete a single label, change merge methods, toggle head-branch deletion, or
   enable GitHub Pages; a repo gains an `actions/deploy-pages` workflow; a
   Pages deploy fails because Pages is off.
-  SKIP when: editing workflow files (`github-actions-conventions`).
+  SKIP when: workflow YAML with no repo setting involved
+  (`github-actions-conventions`).
 ---
 
 # GitHub repository settings (`gh` CLI)
@@ -25,8 +26,10 @@ repo should have. Two distinct purposes coexist:
   classify *reported* problems/requests, whether or not the repo cuts releases.
   They legitimately exist even when absent from `release.yaml`. **Do not delete
   them just because the changelog config doesn't reference them.**
-- **PR / changelog labels** (`feature`, `fix`, `chore`, `dependencies`, `rust`, …):
-  classify the *change shipped*. These are what `release.yaml` maps to categories.
+- **PR / changelog labels** (`feature`, `fix`, `chore`, `dependencies`, …):
+  classify the *change shipped*. These category labels are what `release.yaml`
+  maps to categories. Area and ecosystem labels (`rust`, …) stay out of it and
+  never select a category (see `github-pr-conventions`).
   **Without `release.yaml`, none are created**: nothing reads them (see
   `github-pr-conventions`), so the sync below does not apply. The labels
   Dependabot creates for its own PRs are its config's business (see the notes).
@@ -47,8 +50,9 @@ Procedure:
    These must all exist on the repo.
 2. List current labels: `gh label list --limit 100`.
 3. Create any release.yaml label that's missing. Add any repo label missing from
-   release.yaml into the right category (or `exclude`) **if it's a PR label**;
-   leave issue-triage labels out of `release.yaml` but keep them on the repo.
+   release.yaml into the right category (or `exclude`) **if it's a category
+   label**; leave issue-triage and area/ecosystem labels out of `release.yaml`
+   but keep them on the repo.
 4. Only delete a label when the user actually wants it gone — never purely because
    it's absent from `release.yaml`.
 

@@ -62,4 +62,4 @@ Keep non-trivial SQL in `.sql` files rather than inline string literals, so the
 linter sees it and the code stays readable. In Rust with `sqlx`, load them with
 `include_str!("../queries/<entity>/<op>.sql")` — it stays a `&'static str` (so
 sqlx 0.9's anti-injection guard is satisfied) and the compiler tracks each file
-for rebuilds. See `rust-conventions` for the sqlx specifics.
+for rebuilds. See `rust-build-conventions` for the sqlx specifics.

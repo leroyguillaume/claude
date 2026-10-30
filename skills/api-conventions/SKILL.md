@@ -14,7 +14,7 @@ description: >-
 
 # API conventions
 
-Applies to every HTTP/RPC surface, in any language or framework. The language
+Applies to every JSON-over-HTTP surface, in any language or framework. The language
 skills restate the mechanics (which validation crate, which serde attribute)
 where they need to be concrete.
 
@@ -71,8 +71,8 @@ no endpoint is called `/list` or `/update`. Both apply to every HTTP endpoint.
   (`https://cdn.jsdelivr.net/npm/@scalar/api-reference@<x.y.z>`, the latest
   release resolved when you write it — `npm view @scalar/api-reference
   version` — never from memory), not from a build vendored into the service,
-  which moves only when the library bundling it does (`aide` 0.15 ships a
-  Scalar 1.31 build). An unpinned URL serves whatever was published last: the
+  which moves only when the library bundling it does (check which Scalar
+  build the `aide` version in use ships). An unpinned URL serves whatever was published last: the
   page changes, or breaks, with no change to the service, and two deploys of
   one commit render differently. The trade-off is that `/docs` needs egress
   **from the reader's browser** — the service itself never calls out for it,
