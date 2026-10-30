@@ -65,12 +65,14 @@ description: >-
   `cargo install cargo-chef --locked --version "${CARGO_CHEF_VERSION}"`, the
   version in an `ARG CARGO_CHEF_VERSION=<latest release>` resolved when you
   write it, preceded by `# renovate: datasource=crate depName=cargo-chef` for
-  the Dockerfile custom manager (`dependency-update-conventions`). The `ARG`
-  sits at the top of the `Dockerfile` with the other version knobs
-  (`docker-conventions`) and is redeclared, bare, in the `chef` stage: an `ARG`
-  before `FROM` is not visible inside a stage. Stage it `chef` → `planner` (`cargo chef prepare`) → `builder`
-  (`cargo chef cook` then `cargo build --release --locked`). The recipe normalises away the package
-  version and other non-dependency `Cargo.toml` metadata, so the cooked
+  the Renovate custom manager that keeps it current
+  (`dependency-update-conventions`). The `ARG` sits at the top of the
+  `Dockerfile` with the other version knobs (`docker-conventions`) and is
+  redeclared, bare, in the `chef` stage: an `ARG` before `FROM` is not visible
+  inside a stage. Stage it `chef` → `planner` (`cargo chef prepare`) →
+  `builder` (`cargo chef cook` then `cargo build --release --locked`). The
+  recipe normalises away the package version and other non-dependency
+  `Cargo.toml` metadata, so the cooked
   dependency layer stays cached across version bumps and source-only changes.
   Never add `cargo-chef` to `Cargo.toml` (deps or dev-deps) and never invoke
   it in local development or CI outside the image build — it is purely a
