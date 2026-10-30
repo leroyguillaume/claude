@@ -401,6 +401,17 @@ Pull requests are **not** covered here — see the `github-pr-conventions` skill
   (`uv add`, `cargo add`, `npm install` inside the project) are not
   affected by this rule.
 
+## Real infrastructure
+
+- **Never change real infrastructure without an explicit ask in the current
+  session.** No `terraform`/`tofu` `apply` or `destroy`, `helm install`/
+  `upgrade`/`uninstall`, `kubectl apply`/`delete`, `argocd app sync`, or
+  anything else that writes to a live cluster, cloud account or service. Like
+  a push, it acts on shared state, and an undo is not guaranteed. The ask
+  covers the command asked for, not the next one. What only reads or renders
+  needs no ask: `plan`, `helm template`, `helm diff`, `kubectl diff`,
+  `--dry-run`, `get`/`describe`.
+
 ## The main session dispatches; sub-agents do the long work
 
 The main session stays free to talk to me. Work that takes more than a
