@@ -39,13 +39,14 @@ skill says how each one maps onto files and triggers.
   docs, configuration or skills has no `security` pipeline.
 - **`chart`**: when a Helm chart exists. It publishes the chart as an **OCI
   artefact**. The chart has its **own release lifecycle**, decoupled from the
-  app. It triggers on the `chart-X.Y.Z` tag namespace (plus manual runs) and
-  never on a change proposal, where `helm lint` inside `pre-commit` is the
-  validation. The chart version comes from the tag
-  (`helm package --version <v>`). `appVersion` stays whatever `Chart.yaml`
-  pins. It runs the same drift guard as `release`, which covers
-  `Chart.yaml` and the README's `helm install --version`. A chart tag never
-  gets a release page. The only release pages are the app's.
+  app. It triggers on the `chart-X.Y.Z` tag namespace, pre-release
+  `chart-X.Y.Z-rcN` tags included (plus manual runs), and never on a change
+  proposal, where `helm lint` inside `pre-commit` is the validation. The chart
+  version comes from the tag (`helm package --version <v>`). `appVersion`
+  stays whatever `Chart.yaml` pins. It runs the same drift guard as `release`
+  on every chart tag: `Chart.yaml` always, the README's `helm install
+  --version` on a stable tag. A chart tag never gets a release page. The only
+  release pages are the app's.
 - **`release`**: when the repository publishes an application artefact (an
   image, a package, a binary); a chart alone is the `chart` pipeline's. It is
   the app-release orchestrator, triggered by a `vX.Y.Z` tag. It derives the

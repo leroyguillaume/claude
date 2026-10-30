@@ -175,7 +175,8 @@ description: >-
   annotation immediately above it — no value is allowed to ship
   undocumented, including nested keys and empty defaults (`[]`, `{}`,
   `~`). The comment must describe what the value does, not just restate
-  its name.
+  its name. This is a deliberate exception to the sparse-comment rule:
+  `helm-docs` turns these annotations into the chart README's values table.
 - For an **unset / undefined** value in `values.yaml`, use `~` (YAML
   `null`) rather than an empty string, a placeholder, or omitting the
   key. For an **empty collection**, use `{}` for an unset dict and `[]`
@@ -191,9 +192,9 @@ description: >-
   extraPodLabels: {}
   # -- (list) Extra environment variables to inject into every workload.
   extraEnv: []
-  # -- Pod-level security context applied to all workloads.
+  # -- Pod-level security context for every workload; loosening it breaks the restricted Pod Security Standard.
   podSecurityContext:
-    # -- Run all containers as a non-root user.
+    # -- Refuse to start a container whose image runs as UID 0.
     runAsNonRoot: true
   ```
 - Add the `norwoodj/helm-docs` pre-commit hook (or a local hook invoking

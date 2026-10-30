@@ -62,9 +62,10 @@ description: >-
   `rust-version` is lower keeps the single-colon `cargo:` form.
 - When the project ships a `Dockerfile`, build it with **cargo-chef** —
   but **only inside the `Dockerfile`**. Install it there with
-  `cargo install cargo-chef --locked` (`chef` → `planner`
-  (`cargo chef prepare`) → `builder` (`cargo chef cook` then
-  `cargo build --release --locked`)). The recipe normalises away the package
+  `cargo install cargo-chef --locked --version "${CARGO_CHEF_VERSION}"`, the
+  version in an `ARG CARGO_CHEF_VERSION=<latest release>` resolved when you
+  write it, and stage it `chef` → `planner` (`cargo chef prepare`) → `builder`
+  (`cargo chef cook` then `cargo build --release --locked`). The recipe normalises away the package
   version and other non-dependency `Cargo.toml` metadata, so the cooked
   dependency layer stays cached across version bumps and source-only changes.
   Never add `cargo-chef` to `Cargo.toml` (deps or dev-deps) and never invoke

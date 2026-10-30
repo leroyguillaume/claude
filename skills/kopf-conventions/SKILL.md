@@ -66,19 +66,25 @@ on the *object* logger, not a module-level `logging.getLogger(...)`).
   @kopf.on.update(GROUP, VERSION, PLURAL)
   async def reconcile(spec, body, name, logger, **_):
       try:
-          await _reconcile(spec, body, name, logger)
+          changed = await _reconcile(spec, body, name, logger)
       except Exception as exc:
+          logger.error("reconcile failed", extra={"cause": str(exc)})
           kopf.event(body, type="Warning", reason="ReconcileFailed",
                      message=f"Reconcile failed: {exc}")
-          raise
-      kopf.event(body, type="Normal", reason="Reconciled",
-                 message="Desired state applied.")
+          if isinstance(exc, kopf.TemporaryError):
+              raise
+          raise kopf.TemporaryError(f"reconcile failed: {exc}") from exc
+      if changed:
+          kopf.event(body, type="Normal", reason="Reconciled",
+                     message="Desired state applied.")
   ```
 
   Make the raised `TemporaryError` message carry the failing operation + cause
   (e.g. `"creating the backing database failed: 500 ..."`) so the single
-  rolled-up `ReconcileFailed` event still names what broke. Re-raising
-  preserves the requeue.
+  rolled-up `ReconcileFailed` event still names what broke; anything else is
+  wrapped, never re-raised raw, and the requeue holds either way. `_reconcile`
+  returns whether it changed anything: `on.resume` runs it for every CR at each
+  operator start, and a steady-state pass posts nothing.
 
 - **Log-posted events: extra detail, never the failure event.** To add one
   event per failing operation from the requeue chokepoint without plumbing

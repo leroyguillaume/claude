@@ -6,7 +6,7 @@ description: >-
   test); the user asks to file or track something; you are about to write
   remaining work into a file.
   SKIP when: the repo has no GitHub `origin` remote (say it in chat instead),
-  or the work is small enough to just do now.
+  or the user asked for the work in the current change.
 ---
 
 # GitHub issue conventions (`gh` CLI)

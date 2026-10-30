@@ -80,10 +80,10 @@ endpoint that compiles and documents nothing.
   `axum, axum-json, axum-query, macros`. A custom extractor likewise needs a
   (no-op) `impl OperationInput`.
 - For file uploads, take axum's `Multipart` extractor (`multipart/form-data`,
-  one field per file → supports several files in one request). Enable **two**
-  features: `multipart` on `axum` and **`axum-multipart`** on `aide` (the
-  latter provides `Multipart`'s `OperationInput`, else the `OperationHandler`
-  bound fails). axum's default request body limit is only **2 MiB**, far too
+  one field per file → supports several files in one request). Enable
+  **`axum-multipart`** on `aide`: it provides `Multipart`'s `OperationInput`
+  (else the `OperationHandler` bound fails) and turns on axum's `multipart`
+  feature itself. axum's default request body limit is only **2 MiB**, far too
   small for PDFs — raise it per route with
   `post_with(handler, …).layer(DefaultBodyLimit::max(N))`
   (`aide`'s `ApiMethodRouter` has `.layer`, so the limit stays scoped to the

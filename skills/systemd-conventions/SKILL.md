@@ -120,13 +120,16 @@ understands is a directive somebody deletes:
 given. Grant that with the `*Directory=` directives, never with a `mkdir -p`
 plus `chown` in provisioning:
 
-| Need | Directive | Path | Owner/mode |
-| --- | --- | --- | --- |
-| Persistent state | `StateDirectory=myapp` + `StateDirectoryMode=0700` | `/var/lib/myapp` | service user, `0700` |
-| Runtime sockets/PIDs | `RuntimeDirectory=myapp` + `RuntimeDirectoryMode=0700` | `/run/myapp` | service user, `0700`, wiped on stop |
-| Caches | `CacheDirectory=myapp` + `CacheDirectoryMode=0700` | `/var/cache/myapp` | service user, `0700` |
-| Own log files | `LogsDirectory=myapp` + `LogsDirectoryMode=0700` | `/var/log/myapp` | service user, `0700` |
-| Config | `ConfigurationDirectory=myapp` + `ConfigurationDirectoryMode=0755` | `/etc/myapp` | `root:root`, `0755`, never chowned; files `root:myapp` `0640` |
+| Need | Directive | Path |
+| --- | --- | --- |
+| Persistent state | `StateDirectory=myapp` + `StateDirectoryMode=0700` | `/var/lib/myapp` |
+| Runtime sockets/PIDs | `RuntimeDirectory=myapp` + `RuntimeDirectoryMode=0700` | `/run/myapp`, wiped on stop |
+| Caches | `CacheDirectory=myapp` + `CacheDirectoryMode=0700` | `/var/cache/myapp` |
+| Own log files | `LogsDirectory=myapp` + `LogsDirectoryMode=0700` | `/var/log/myapp` |
+| Config | `ConfigurationDirectory=myapp` + `ConfigurationDirectoryMode=0755` | `/etc/myapp` |
+
+Who owns each path, and the modes of the files inside, are
+`system-user-conventions`.
 
 Every `*DirectoryMode=` defaults to `0755`, and `UMask=` does not apply to
 these directories — without the explicit mode, the rest of the box can list
