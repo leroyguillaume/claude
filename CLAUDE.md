@@ -20,6 +20,7 @@ says how.
    for every technology in use.
 3. **`README.md` and `CONTRIBUTING.md` always exist** at the repo root;
    **`ARCHITECTURE.md` exists when there is a design worth explaining** —
+   never by default in a repository with no code, only documentation;
    `architecture-conventions` decides. Each stays up to date with the change
    that affects it; what goes in them is the `readme-conventions`,
    `architecture-conventions` and `contributing-conventions` skills' job.
