@@ -45,9 +45,8 @@ description: >-
   not contain — harmless, since an image with no shell and no `sshd` has no
   login path to refuse in the first place.
 - **Scan the built image in CI** (`trivy image`) and fail the build
-  on `HIGH`/`CRITICAL`, then **re-scan the published image daily** — a CVE
-  lands on an image nobody rebuilt (the scheduled re-scan is in
-  `ci-conventions`). A skinny base is what makes that gate cheap
+  per the gate policy in `ci-conventions`, which also owns the daily re-scan
+  of the published image. A skinny base is what makes that gate cheap
   enough to keep enabled.
 - **Scan the `Dockerfile` itself with `trivy config`, and fix every finding.**
   These are the `DS-xxxx` checks (`DS-0002` running as root, `DS-0026` missing
@@ -64,10 +63,11 @@ description: >-
         entry: trivy config --exit-code 1 Dockerfile
         language: system
         pass_filenames: false
-        files: ^Dockerfile$
+        files: (^|/)(Docker|Container)file$
   ```
   `trivy config` takes one target, so a repo with several `Dockerfile`s gets
-  one hook per file rather than passed filenames.
+  one hook per file rather than passed filenames: set `entry` and `files` to
+  that file's path (`docker/api/Dockerfile`, `Containerfile`).
 - **`trivy` does not replace `hadolint`. Run both.** They overlap on the
   obvious stuff (absolute `WORKDIR`, `cd` in `RUN`, `--no-install-recommends`),
   but each catches things the other is blind to:

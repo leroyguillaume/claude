@@ -234,7 +234,8 @@ Baseline:
   repo's changelog-category label** so bot PRs land in the right
   release-notes section — see `github-pr-conventions`, and read the repo's
   actual labels rather than inventing one. Without that file, set no
-  category label.
+  category label. **Renovate applies no label** unless `labels` is set;
+  relabelling a bot PR by hand is lost on the next one, so fix the config.
 - **Match the repository's commit style**, read from `git log --oneline`
   rather than assumed. Renovate's default is `chore(deps): …`; a repo writing
   lowercase `<area>: <imperative>` subjects sets `semanticCommits: "disabled"`
@@ -358,7 +359,8 @@ only, per `yaml-conventions`.
   **`labels`, when set, replaces Dependabot's defaults rather than adding to
   them**: the `dependencies` label and the per-ecosystem one (`javascript` for
   npm, `github_actions`, …) disappear unless listed, so list every label
-  wanted.
+  wanted. Dependabot silently skips a label the repo lacks: create it
+  (`github-repo-settings`).
 - **`groups`** for patch/minor per ecosystem; majors ungrouped — except
   lockstep families, grouped whatever the update type and listed first (see
   "Group what must move together").

@@ -221,6 +221,8 @@ watch load — before any work happens.
 
 - Default the Pod's **memory request to `256Mi`** and **limit to `512Mi`**.
   CPU stays uncapped (compressible) — set only a request (e.g. `100m`).
+  These come on top of the requests and limits `helm-conventions` requires
+  (CPU and ephemeral storage included).
 - If the Pod restarts with reason `OOMKilled`, raise the memory limit first;
   don't chase a leak prematurely — it's usually just the kopf baseline.
 

@@ -194,9 +194,8 @@ machine, and it is *very* easy to hand out too many.
         Description=myapp
   ```
 
-- **The service account gets no sudo, ever.** Create it locked down
-  (`system-user-conventions` has the `users:` block), and keep sudo for the
-  human/admin account the user explicitly asked for.
+- **The service account gets no sudo, ever** — `system-user-conventions` owns
+  that rule and has the `users:` block.
 
 - **Lock the box's own doors**: `disable_root: true`, `ssh_pwauth: false`,
   keys via `ssh_authorized_keys` only. No password hashes in user-data.

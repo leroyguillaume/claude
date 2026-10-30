@@ -35,9 +35,8 @@ it. Without them, the pressure to narrate the past leaks into the design doc
 and rots it (see `architecture-conventions`).
 
 **A decision that changes the design updates both, in the same change**: the
-ADR records what was decided, and `ARCHITECTURE.md` — created if the project
-has none yet — is rewritten to describe the new state as though it had always
-been that way. `ARCHITECTURE.md` may link an ADR as the record; it must never
+ADR records what was decided, and `ARCHITECTURE.md` is rewritten to describe
+the new state as though it had always been that way. `ARCHITECTURE.md` may link an ADR as the record; it must never
 narrate the change.
 
 ## When to write one
@@ -62,11 +61,7 @@ Write one when, and only when, the diagram changes because:
 - a constraint from outside — org policy, a platform limit, a quota, a
   compliance rule — forces the design to bend around it.
 
-**When an ADR does carry a diagram, it is Mermaid** — the decision here is
-usually a shape, and two small diagrams (the option taken, the one rejected)
-argue it better than a page of prose. Never ASCII art, never a committed image:
-an ADR is immutable, so a diagram nobody can edit is one nobody can ever fix.
-See `diagram-conventions`.
+An ADR's diagram, when it carries one, follows `diagram-conventions`.
 
 **Do not write one for anything that leaves the diagram unchanged**: an
 endpoint or a screen, a dependency bump, a refactor with no interface change, a
@@ -74,9 +69,8 @@ naming or ergonomics choice, a default value, a config or file format, a CLI
 flag, an error-handling policy, a library picked over a near-identical one, or
 a deliberate deviation from one of these conventions. Those are real decisions
 and their reasoning is worth keeping — it goes in **`ARCHITECTURE.md` as
-standing rationale, in the present tense** (see `architecture-conventions`;
-create the file if the project has none yet), in
-a code comment where it is genuinely farfelu, or nowhere.
+standing rationale, in the present tense** (see `architecture-conventions`),
+in a code comment where it is genuinely farfelu, or nowhere.
 
 **When it is not clear-cut, ask — and do not write it meanwhile.** How
 load-bearing and how permanent a decision feels is a judgement about *this*

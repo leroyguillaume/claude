@@ -63,8 +63,8 @@ whether the project is what they're looking for.
 - Key features as a short bullet list, only if it genuinely clarifies scope.
 
 Not here: architecture diagrams, design trade-offs, tech-stack justification,
-benchmarks. Those go in `ARCHITECTURE.md` — created if the project has none
-yet — linked from the end of the description. (And when one is drawn there, it is Mermaid — see
+benchmarks. Those go in `ARCHITECTURE.md` (see `architecture-conventions`), linked from
+the end of the description. (And when one is drawn there, it is Mermaid — see
 `diagram-conventions`.)
 
 ```markdown
@@ -248,8 +248,8 @@ comments, while `helm-docs` regenerates the whole `README.md` from
 - **Update the README in the same change as the code it describes.** A new
   environment variable, a renamed command, a changed default — same change.
 - **Length is a smell.** Past the size `documentation-conventions` sets, the
-  *why* has usually crept in: move it to `ARCHITECTURE.md` (created if
-  missing) and link.
+  *why* has usually crept in: move it to `ARCHITECTURE.md` (see
+  `architecture-conventions`) and link.
 - **Never duplicate a section** across `README.md`, `ARCHITECTURE.md` and
   `CONTRIBUTING.md`. One home per fact, links from the others.
 - **Running the tests belongs in `CONTRIBUTING.md`**, not here — a user runs

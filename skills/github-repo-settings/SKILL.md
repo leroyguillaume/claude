@@ -82,11 +82,9 @@ Notes:
   `feature`/`fix` label (see `github-actions-conventions` for the baseline file).
 - Otherwise, only create the category labels the repo's `release.yaml` actually
   maps; the exclude label only makes sense alongside an `exclude.labels` entry.
-- **Leave the ecosystem labels to Dependabot.** With its default labels it
-  creates `rust`, `github_actions`, `docker`, `python`, `javascript` (npm)
-  itself; creating your own variant gives the repo two labels for one concept.
-  **When `dependabot.yaml` sets `labels`**, Dependabot applies only those,
-  silently skipping any the repo lacks — create them yourself.
+- **Leave the ecosystem labels to Dependabot**, and create the ones a
+  `labels` setting names (`dependency-update-conventions`); creating your own
+  variant gives the repo two labels for one concept.
 - `gh label create --force` upserts, so it is safe to re-run.
 - Deleting a label removes it from every issue/PR it is on and **cannot be
   undone** — it is destructive. Absence from `release.yaml` is **not** a reason to

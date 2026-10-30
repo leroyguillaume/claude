@@ -135,10 +135,9 @@ dependency, change the base image, harden the manifest. If an entry is
 genuinely unavoidable, the user decides, and it carries a comment with the
 finding's ID, the reason, and the condition that lifts it.
 
-The only pre-authorised exceptions are `DL3008` (apt version pinning), an
-inline `# hadolint ignore=DL3008` per `docker-conventions`, and `KSV-0011` /
-`KSV-0110` (CPU limit, hardcoded namespace), listed in the root
-`.trivyignore` per `helm-conventions`. Nothing else is.
+The only pre-authorised exceptions are the ones `docker-conventions`
+(`DL3008`) and `helm-conventions` (`KSV-0011`, `KSV-0110`) list. Nothing else
+is.
 
 ## Path filters: don't trigger for nothing
 
