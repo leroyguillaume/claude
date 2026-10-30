@@ -16,7 +16,8 @@ do I get a working setup and land a green PR?"** It is the *contributor's*
 counterpart to the README's *user* view, and it is linked from the README (see
 `readme-conventions`).
 
-**Always in English.** Keep it operational: commands, not philosophy.
+Keep it operational: commands, not philosophy — and in English
+(`documentation-conventions`).
 
 ## Mandatory structure
 
@@ -46,11 +47,14 @@ mandatory.
 Everything a contributor needs that a *user* does not. The README covers
 running the project; this covers building on it.
 
-- **List the tooling with versions**, and how to get it — the toolchain
-  (`rustup`, `uv`, `node`), the package manager, `pre-commit` itself, and any
-  binary the hooks or tests shell out to (`sqlfluff`, `helm`, `terraform`,
-  `hadolint`, `trivy`). If a hook needs a binary that isn't installed, the
-  contributor discovers it as a cryptic failure — list it here instead.
+- **List the tooling**, and how to get it — the toolchain (`rustup`, `uv`,
+  `node`), the package manager, `pre-commit` itself, and any binary the hooks
+  or tests shell out to (`sqlfluff`, `helm`, `terraform`, `hadolint`,
+  `trivy`). If a hook needs a binary that isn't installed, the contributor
+  discovers it as a cryptic failure — list it here instead. **Link the file
+  that pins a version** (`rust-toolchain.toml`, `.python-version`, a hook's
+  `rev`) rather than copying the number; write one only when nothing in the
+  repo pins it (`pre-commit` 4.x).
 - **Give the bootstrap as a copy-pasteable sequence**, in order, from a fresh
   clone:
 
@@ -127,10 +131,11 @@ contributor lives with it.
   pre-commit run <hook-id> --all-files
   ```
 
-- **List the hooks and what they enforce**, briefly — derive the list from the
-  repo's actual `.pre-commit-config.yaml`, never from memory. A short table
-  (hook → what it checks → how to fix) beats prose; formatters mostly fix
-  themselves on re-run, linters don't.
+- **Link `.pre-commit-config.yaml` for the hook list** rather than copying
+  it, and explain only the hooks whose failure needs explaining — a binary to
+  install, a fix that is not re-running, a stage `--all-files` skips. A short
+  table (hook → what it checks → how to fix) beats prose for those; formatters
+  mostly fix themselves on re-run, linters don't.
 - **Say that `--no-verify` and `SKIP=` are not the fix.** A red hook is a real
   finding; the answer is to fix the code or, if the rule is genuinely wrong for
   this repo, to change the configuration in the same PR and say why.
@@ -144,16 +149,19 @@ contributor lives with it.
 never a generic "we run tests on every PR" that drifts from reality within a
 month.
 
-For each workflow, cover four things: **when it triggers, what it does, what
-it blocks, and how to reproduce it locally.** A table carries this well:
+For each workflow, link the file and cover **what it does, what it blocks,
+and how to reproduce it locally**. Its triggers are in the file; mention one
+only where it would surprise a contributor (a path filter that skips a job on
+their PR, a schedule that fails with no change of theirs). A table carries
+this well:
 
 ```markdown
-| Workflow | Triggers on | What it does | Reproduce locally |
-| --- | --- | --- | --- |
-| `quality.yaml` | every PR | `pre-commit run --all-files`, unit tests | `pre-commit run --all-files` |
-| `build.yaml` | every PR, `main` | builds the image, `trivy` scan | `docker build .` |
-| `security.yaml` | every PR, `main`, daily | `trivy fs`, `trivy image` on the latest release | `trivy fs .` |
-| `release.yaml` | tag `v*` | publishes image + chart | — |
+| Workflow | What it does | Reproduce locally |
+| --- | --- | --- |
+| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit run --all-files`, unit tests | `pre-commit run --all-files` |
+| [`build.yaml`](.github/workflows/build.yaml) | builds the image, `trivy` scan | `docker build .` |
+| [`security.yaml`](.github/workflows/security.yaml) | `trivy fs`, plus a daily `trivy image` on the latest release | `trivy fs .` |
+| [`release.yaml`](.github/workflows/release.yaml) | publishes the image from a `v*` tag | — |
 ```
 
 Then, in a few lines:

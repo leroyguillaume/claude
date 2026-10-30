@@ -34,12 +34,23 @@ description: >-
 - Format and lint with `ruff` (`ruff format` + `ruff check --fix`).
   Configure in `pyproject.toml`.
 - Add `astral-sh/ruff-pre-commit` to `.pre-commit-config.yaml` with both
-  `ruff` and `ruff-format` hooks.
-- Treat **Pylance** diagnostics (and any `pyright` output it surfaces) as
-  blocking, on the same footing as `ruff` errors. Fix every reported
-  error and warning before considering a change done. When Pylance and
-  ruff disagree on a stylistic point, prefer the change that satisfies
-  both; never silence one to keep the other happy.
+  `ruff-check` and `ruff-format` hooks.
+- Type-check with **`pyright`** as a blocking pre-commit hook, on the same
+  footing as `ruff`: `RobertCraigie/pyright-python`, hook id `pyright`, the
+  wrapper pyright's own docs point to. Pylance runs pyright, so it is the
+  editor view of the same diagnostics, not a separate gate. The hook runs in
+  its own virtualenv, so point pyright at the project's in `pyproject.toml`,
+  or every third-party import is unresolved:
+
+  ```toml
+  [tool.pyright]
+  venvPath = "."
+  venv = ".venv"
+  ```
+
+  Fix every reported error and warning before considering a change done.
+  When pyright and ruff disagree on a stylistic point, prefer the change that
+  satisfies both; never silence one to keep the other happy.
 - Build CLIs with `typer`, every option carrying its `envvar=...`, or use
   `pydantic-settings` for richer config models (`env_prefix="mytool_"` for a
   CLI). Precedence and variable names follow `config-conventions`.

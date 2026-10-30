@@ -12,7 +12,7 @@ description: >-
 
 # Release script conventions
 
-## Every publishable project ships `scripts/release.sh`
+## Every project that publishes an artefact ships `scripts/release.sh`
 
 Cutting a release by hand is three separate steps — edit the version,
 regenerate whatever derives from it, tag with a name that matches — on the one
@@ -30,6 +30,12 @@ One script does all of it, in order, or none of it:
 
 The script is the only supported way to cut a release. Say so in
 `CONTRIBUTING.md`, and make CI enforce it (see the drift guard below).
+
+**The user runs it, never an agent.** It commits and tags on the default
+branch, where an agent never commits, and its push is the publish. An agent
+writes and maintains the script, and delivers the changes a release will carry
+as pull requests; when asked for a release, it gives the user the command to
+run.
 
 ## The version lives in two places, and one tool writes both
 
@@ -164,9 +170,12 @@ stop. Change nothing, and never prompt — there is nothing to push.
 **Never:**
 
 - Never bump a version outside this script — not in a normal commit, not "just
-  this once". And **never bump a version unasked**, even through the script:
-  it exists for the user to run, and writing it is not permission to run it.
-- Never push, tag, or publish without the user having asked for a release.
+  this once".
+- Never run the script as an agent, even when asked for a release: writing it
+  is not permission to run it, and it commits on the default branch. Hand the
+  user the command instead.
+- Never tag, push or publish a release yourself: that is the user's step,
+  through the script.
 - Never hand-edit a lockfile to match a bumped manifest.
 - Never continue past a dirty tree, a stale branch, or an existing tag.
 - Never cut a release by editing a version field and tagging separately — that

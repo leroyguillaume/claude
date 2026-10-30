@@ -17,7 +17,7 @@ An **Architecture Decision Record** captures one decision, at the moment it is
 taken, and is then frozen. It answers a question no other file can: *what did
 we know, what else was on the table, and why did we pick this?*
 
-**Always in English**, like every other document in the repository.
+In English, like every document (`documentation-conventions`).
 
 ## The split with `ARCHITECTURE.md`
 
@@ -77,8 +77,8 @@ load-bearing and how permanent a decision feels is a judgement about *this*
 project, which the user holds and the diff does not. One question costs a
 sentence; a directory of ADRs nobody asked for costs every future reader's
 attention, permanently. **Never write an ADR unasked unless it is
-unambiguously one of the three cases above** — and never write a batch of them
-to document a project retrospectively.
+unambiguously one of the three cases above** — and never, unasked, write a
+batch of them to document a project retrospectively.
 
 ## Files
 
@@ -132,18 +132,17 @@ wearing one number — split it.
 `proposed` → `accepted` → `superseded by [ADR-NNNN](NNNN-….md)`, plus
 `rejected` for a decision that was weighed and turned down.
 
-**An accepted ADR is never edited again, except its `Status` line.** Not to
-fix the reasoning, not to add what was learned, not to reflect how things
-turned out. The record is of what was decided *then*, with what was known
-*then*; edited in place it stops being a record and becomes a second, worse
-`ARCHITECTURE.md`.
+**An accepted ADR is never edited again, except its `Status` line, a typo or
+a dead link.** Not to fix the reasoning, not to add what was learned, not to
+reflect how things turned out. The record is of what was decided *then*,
+with what was known *then*; edited in place it stops being a record and
+becomes a second, worse `ARCHITECTURE.md`.
 
 - **Changed your mind? Write a new ADR** that supersedes the old one, and set
   the old one's status to point at it. Both stay in the tree.
 - **Never delete a superseded or rejected ADR**, and never renumber around a
   gap. The trail is the value — a rejected option that keeps coming up is
   answered by pointing at its ADR.
-- Typos and dead links are the only free edits.
 
 ## Writing them for an existing project
 
@@ -162,7 +161,8 @@ When adopting ADRs in a repository that already exists:
 
 - Never write an ADR for a decision that leaves the architecture unchanged, and
   never write one unasked when the call is not clear-cut — ask instead.
-- Never edit an accepted ADR beyond its status line — supersede it instead.
+- Never edit an accepted ADR beyond its status line, a typo or a dead link —
+  supersede it instead.
 - Never delete or renumber an ADR, superseded or rejected included.
 - Never put a decision log inside `ARCHITECTURE.md`, and never let an ADR
   drift into describing the whole system.

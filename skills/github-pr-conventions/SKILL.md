@@ -11,11 +11,12 @@ description: >-
 
 # GitHub pull request conventions (`gh` CLI)
 
-## Rebase onto `main` before opening it
+## Rebase onto its base before opening it
 
-**A PR is opened from a branch that has just been rebased onto an up-to-date
-`main`** — always, even when the branch is an hour old and the diff looks
-unrelated to everything that landed since:
+**A PR is opened from a branch that has just been rebased onto its up-to-date
+base branch** — `main`, or the parent's branch for a stacked PR (see below) —
+always, even when the branch is an hour old and the diff looks unrelated to
+everything that landed since:
 
 ```bash
 git fetch origin

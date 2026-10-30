@@ -17,7 +17,7 @@ this and how do I run it?"** Anything that doesn't serve that question belongs
 somewhere else (`ARCHITECTURE.md` for the *why*, `CONTRIBUTING.md` for the
 *how do I help*, `docs/` for depth).
 
-**Always in English**, whatever language the project or the conversation is in.
+In English, like every document (`documentation-conventions`).
 
 ## Mandatory structure
 

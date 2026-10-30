@@ -46,11 +46,15 @@ This is the non-negotiable core rule.
   - **Client / input** errors (`4xx` such as `422` invalid manifest, `403`
     RBAC; or a failed spec validation): retry **slowly** (e.g. 300s) to avoid a
     hot loop, since they need an external change — but still retry.
-- **Centralise this in one module** exposing a single requeue chokepoint plus
-  helpers that extract the cause from each client's error, log it, and
-  requeue. Route every reconcile-path failure through it instead of scattering
-  bare status checks and re-raises. Extract a shared helper on the third copy of
-  the same logic, not before.
+  - This is the deliberate opposite of an HTTP client, which stops on a `422`
+    (`rest-conventions`): a reconciler's desired state persists in the object,
+    and the fix lands outside it, so stopping would leave it broken after the
+    fix.
+- **The requeue logic converges on one chokepoint**: when the third handler
+  repeats the extract-cause, log, requeue sequence, extract it into one module
+  with a single requeue entry point and per-client cause extractors, and route
+  every reconcile-path failure through it instead of scattering bare status
+  checks and re-raises. Not before the third copy.
 - **Validate the spec first** and requeue on invalid input the same way — a
   malformed spec is a slow-retry client error, not a silent no-op and not a
   crash.

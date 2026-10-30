@@ -48,7 +48,7 @@ written into a file. Pick per message; there is no rule to follow here beyond
 "is this readable in a terminal".
 
 **The moment it goes into a file, it becomes Mermaid.** Committed ASCII art is
-still out, for the reasons it always was: it misaligns in a proportional font,
+out: it misaligns in a proportional font,
 it cannot be edited without rebuilding the whole box, and it carries no
 semantics — a reader cannot tell a queue from a database from a decision. If
 you are counting spaces to line up a `│` *in a file*, stop and write Mermaid.
