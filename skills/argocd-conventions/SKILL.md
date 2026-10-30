@@ -43,7 +43,7 @@ and an `index.yaml` that gets regenerated under you.
 - The repository credential in Argo CD is `type: helm` with `enableOCI: true`.
 - **An HTTP chart repository is a documented exception**, not a fallback:
   when upstream publishes no OCI chart at all. That reason goes beside the
-  line or in `ARCHITECTURE.md` (created if the repo has none); switching it
+  line or in `ARCHITECTURE.md` (see `architecture-conventions`); switching it
   to OCI once upstream publishes one is tracked in an issue.
 - **Mirrored registries**: keep the *registry* in the cluster's values and the
   *path* beside the chart, then build the reference from the two. The path is
@@ -116,9 +116,9 @@ separate knob, set in the app's values file. Same reasoning, same answer.)
 ### Passing values into jsonnet
 
 One `extVar` carrying a whole config object as JSON (`{{ toJson .config }}`),
-decoded with `std.parseJson`, rather than one extVar per key. It scales to any
-schema without adding a goTemplate expression, and the set of expressions that
-can reach a rendered Application stays small enough to reproduce offline.
+decoded as `jsonnet-conventions` says, rather than one extVar per key: the set
+of goTemplate expressions that can reach a rendered Application stays small
+enough to reproduce offline.
 
 **Pass it as a plain string, never `code: true`** — `code` evaluates the value
 as jsonnet, which turns a values file into an execution channel for nothing.
@@ -158,7 +158,7 @@ State the cost rather than hiding it:
 - A sync that exhausts its retries is re-run by hand.
 
 Turning it back on is one block, in the ApplicationSet template — say so in
-`ARCHITECTURE.md`, creating it if the repo has none, so nobody has to find it:
+`ARCHITECTURE.md` (see `architecture-conventions`), so nobody has to find it:
 
 ```yaml
 automated:

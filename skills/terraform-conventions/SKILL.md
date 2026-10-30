@@ -318,8 +318,9 @@ committed one, so an undocumented variable blocks the commit.
 
 **The `trivy-terraform` hook above fails on every misconfiguration finding;
 fix each at the source.** Findings carry provider-prefixed IDs (`AWS-0086`,
-`GCP-0001`, `AZU-…`). No self-authorised ignores (`ci-conventions`). Being a
-`pre-commit` hook, it also gates CI through `quality`.
+`GCP-0001`, `AZU-…`). No self-authorised ignores (`ci-conventions`);
+`--tf-exclude-downloaded-modules` is not one, as it skips third-party code the
+repo cannot fix, never its own. Being a `pre-commit` hook, it also gates CI through `quality`.
 
 ## Applying
 

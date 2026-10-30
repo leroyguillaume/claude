@@ -177,10 +177,8 @@ changelog-only or release-plumbing PR.
 
 ## Bot pull requests
 
-- **Dependabot labels its own PRs** (`dependencies` plus the ecosystem label,
-  or the `labels` its config sets instead); **Renovate applies none** unless its
-  config sets `labels`. Leave bot PRs' labels to that config: relabelling by
-  hand is lost on the next PR — fix the config instead.
+- **Bot PRs' labels come from the bot's config**, never by hand — see
+  `dependency-update-conventions`.
 - **Reuse Dependabot's ecosystem labels** (`rust`, `github_actions`, `docker`,
   …) verbatim as your area labels rather than a parallel set that means the
   same thing — see `github-repo-settings`.

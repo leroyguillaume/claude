@@ -152,8 +152,7 @@ A diagram is documentation, so every rule about documentation applies to it:
 ## Where diagrams belong
 
 - **`ARCHITECTURE.md`** — the component graph and the flow that matters. This
-  is the usual home — created if the project has none; see
-  `architecture-conventions`.
+  is the usual home; see `architecture-conventions`.
 - **An ADR** — only when the decision *is* a shape, and then usually two small
   diagrams: what it looks like under the option taken, and under the one
   rejected. Mermaid, always: an ADR is immutable, so a diagram nobody can edit

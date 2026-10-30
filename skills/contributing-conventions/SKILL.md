@@ -203,7 +203,7 @@ a hook is one click from its definition.
   contributor the same twenty minutes.
 - **Never duplicate the README or `ARCHITECTURE.md`.** One home per fact; link
   across. Setup and gates here, usage in the README, design reasoning in
-  `ARCHITECTURE.md` — created if it does not exist yet.
+  `ARCHITECTURE.md` (see `architecture-conventions`).
 - **Every command must work from a fresh clone**, in the order written. Run
   them if you can.
 - Skip the boilerplate. A code of conduct is a separate file
