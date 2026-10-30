@@ -81,7 +81,7 @@ give it alt text, and bound its width — Markdown image syntax cannot, so use a
 
 ```markdown
 <p align="center">
-  <img src="docs/assets/logo.svg" alt="<project-name> logo" width="200">
+  <img src="logo.svg" alt="<project-name> logo" width="200">
 </p>
 ```
 
