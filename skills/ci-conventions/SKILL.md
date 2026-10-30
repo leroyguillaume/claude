@@ -46,13 +46,14 @@ skill says how each one maps onto files and triggers.
   pins. It runs the same drift guard as `release`, which covers
   `Chart.yaml` and the README's `helm install --version`. A chart tag never
   gets a release page. The only release pages are the app's.
-- **`release`**: always. It is the app-release orchestrator, triggered by a
-  `vX.Y.Z` tag. It derives the version from the tag, **refuses to run when
-  the committed version disagrees** (the drift guard in
-  `release-script-conventions`), runs `build` with push enabled, then creates
-  the platform's release page with generated notes. It does **not** publish
-  the chart. When a documentation site exists, it also redeploys it once
-  the release page is created.
+- **`release`**: always, in a repository with code. It is the app-release
+  orchestrator, triggered by a `vX.Y.Z` tag. It derives the version from the
+  tag, **refuses to run when the committed version disagrees** (the drift
+  guard in `release-script-conventions`), runs `build` with push enabled, then
+  creates the platform's release page with generated notes. It does **not**
+  publish the chart. When a documentation site exists, it also redeploys it
+  once the release page is created. A repo of docs, configuration or skills
+  has no `release` pipeline.
 - **`docs`**: when the repo has a documentation site. It builds the site on
   every change proposal that touches it, and deploys it from the default
   branch only: on a push there, and on a stable release. What it builds, and

@@ -186,7 +186,9 @@ changelog:
         - "*"
 ```
 
-Every label listed here must exist on the repo (see `github-repo-settings`).
+Creating this file or changing its labels includes syncing the repo's labels
+to it (`github-repo-settings`), in the same change: `gh pr create --label`
+fails on a label the repo lacks.
 
 ## Trivy on GitHub
 
