@@ -230,9 +230,11 @@ Baseline:
 }
 ```
 
-- **`labels` must include the repo's changelog-category label** so bot PRs
-  land in the right release-notes section — see `github-pr-conventions`, and
-  read the repo's actual labels rather than inventing one.
+- **When the repo has `.github/release.yaml`, `labels` must include the
+  repo's changelog-category label** so bot PRs land in the right
+  release-notes section — see `github-pr-conventions`, and read the repo's
+  actual labels rather than inventing one. Without that file, set no
+  category label.
 - **Match the repository's commit style**, read from `git log --oneline`
   rather than assumed. Renovate's default is `chore(deps): …`; a repo writing
   lowercase `<area>: <imperative>` subjects sets `semanticCommits: "disabled"`
@@ -350,11 +352,13 @@ only, per `yaml-conventions`.
 - **One entry per ecosystem present in the repo**, plus **`github-actions`
   always** — that is what keeps the SHA pins and their tag comments fresh
   (see `github-actions-conventions`).
-- Set `labels` to the same changelog-category label as Renovate's, and
-  `open-pull-requests-limit` to something a human can actually work through.
-  **`labels` replaces Dependabot's defaults rather than adding to them**: the
-  `dependencies` label and the per-ecosystem one (`javascript` for npm,
-  `github_actions`, …) disappear unless listed, so list every label wanted.
+- When the repo has `.github/release.yaml`, set `labels` to the same
+  changelog-category label as Renovate's. Set `open-pull-requests-limit` to
+  something a human can actually work through.
+  **`labels`, when set, replaces Dependabot's defaults rather than adding to
+  them**: the `dependencies` label and the per-ecosystem one (`javascript` for
+  npm, `github_actions`, …) disappear unless listed, so list every label
+  wanted.
 - **`groups`** for patch/minor per ecosystem; majors ungrouped — except
   lockstep families, grouped whatever the update type and listed first (see
   "Group what must move together").
@@ -381,7 +385,7 @@ only, per `yaml-conventions`.
 - Never put `commitMessage*` at the top level and assume it applies — manager
   defaults win.
 - Never document a rule with a comment when it takes a `description`.
-- Never let a bot PR go in without the changelog-category label the repo's
-  release notes sort on.
+- In a repo with `.github/release.yaml`, never let a bot PR go in without
+  the changelog-category label its release notes sort on.
 - Never patch lockstep bot PRs one by one — bump the family together and add
   the group in the same PR.
