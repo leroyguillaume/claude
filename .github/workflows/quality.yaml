@@ -27,6 +27,8 @@ jobs:
       - name: set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
+          # Minor-pinned: pre-commit builds its hook environments with this
+          # interpreter, so a floating version changes them under a green tree.
           python-version: "3.13"
 
       - name: install pre-commit

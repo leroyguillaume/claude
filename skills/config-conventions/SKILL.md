@@ -70,8 +70,9 @@ The right name depends on **who owns the environment the process runs in**.
 - **Rust names it `LOG_FILTER`** (`MYTOOL_LOG_FILTER`, `--log-filter`): it
   carries a `tracing` `EnvFilter` directive (`info,myapp=debug,hyper=warn`),
   not a level, and the name says what the value is.
-- **A browser bundle takes `VITE_LOG_LEVEL`, at build time**: it has no flags
-  and no runtime environment, and Vite exposes only `VITE_`-prefixed
+- **A browser bundle takes its bundler's public-env name, at build time**
+  (`VITE_LOG_LEVEL` with Vite, `NEXT_PUBLIC_LOG_LEVEL` with Next.js): it has no
+  flags and no runtime environment, and the bundler exposes only prefixed
   variables to client code. It is the one exception to the precedence above.
 - **Never a language-named variable such as `RUST_LOG`**: the name describes
   the knob, not the language the binary is written in.

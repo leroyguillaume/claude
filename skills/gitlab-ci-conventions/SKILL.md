@@ -213,7 +213,7 @@ release:
 
 ## `chart`
 
-On `$CI_COMMIT_TAG =~ /^chart-\d+\.\d+\.\d+/` (no `$`: an rc chart tag
+On `$CI_COMMIT_TAG =~ /^chart-\d+\.\d+\.\d+(-rc\d+)?$/` (an rc chart tag
 publishes too) and manual runs: `helm package --version <v>` then `helm push`
 to `oci://<registry>/charts`, after the same version drift guard as `release`
 (`release-script-conventions`).

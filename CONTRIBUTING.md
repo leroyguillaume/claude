@@ -26,7 +26,7 @@ pre-commit builds two hooks (`actionlint`, `skill-validator`) from source with
 the Go on `PATH`, and downloads a toolchain of its own when there is none.
 
 ```bash
-pipx install pre-commit
+pipx install "pre-commit==$(sed -n 's/^pre-commit==//p' .github/requirements.txt)"
 ```
 
 ```bash
@@ -185,8 +185,8 @@ on a fork's pull request.
 pre-commit hook revisions and the `pre-commit` version CI installs
 ([.github/requirements.txt](.github/requirements.txt)) current. Pins are SHAs
 and tags can move, so a bot bumps them rather than a person remembering to;
-grouping keeps the noise to one pull request per ecosystem, and nothing is
-automerged.
+grouping folds the minor and patch bumps into one pull request per
+ecosystem, each major gets its own, and nothing is automerged.
 
 ## Submitting a change
 

@@ -18,7 +18,7 @@ stack:
 
 ```yaml
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: <latest tag SHA>  # <latest tag>
+    rev: <latest tag SHA>  # frozen: <latest tag>
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -74,7 +74,7 @@ native, nothing to preinstall, and the version is pinned in the config.
 
 ```yaml
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: <latest tag SHA>  # <latest tag>
+    rev: <latest tag SHA>  # frozen: <latest tag>
     hooks:
       - id: shellcheck
 ```
@@ -93,7 +93,7 @@ whoever happens to be reviewing.
 
 ```yaml
   - repo: https://github.com/adrienverge/yamllint
-    rev: <latest tag SHA>  # <latest tag>
+    rev: <latest tag SHA>  # frozen: <latest tag>
     hooks:
       - id: yamllint
         # Warning-level rules (document-start among them) are printed and then
@@ -223,7 +223,7 @@ analysis, they stay in pre-commit.
 
 - **Pin every `rev` to a full commit SHA, with the tag as a comment**; never
   `master`/`main`, never a bare tag: a tag can be moved, and hooks run in CI
-  (`ci-conventions`). `pre-commit autoupdate --freeze` writes exactly that, and
+  (`ci-conventions`). `pre-commit autoupdate --freeze` writes it as `# frozen: <tag>`, and
   Dependabot's `pre-commit` ecosystem bumps the SHA and the comment together
   (`dependency-update-conventions`).
 - **A `rev`, image tag or tool version written into a file is resolved when you

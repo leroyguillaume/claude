@@ -285,7 +285,7 @@ Baseline hooks plus, pinned to one binary so laptop and CI agree:
 
 ```yaml
 - repo: https://github.com/antonbabenko/pre-commit-terraform
-  rev: <latest tag SHA>  # <latest tag>
+  rev: <latest tag SHA>  # frozen: <latest tag>
   hooks:
     - id: terraform_fmt
       args:
