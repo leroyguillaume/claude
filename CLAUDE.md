@@ -350,9 +350,10 @@ Five non-negotiable rules, then the style.
   push to a branch you did not create for the task, never `git merge` and
   never merge a PR, never force-push other than `--force-with-lease` on your
   own branch, never delete a branch bar the post-merge cleanup above.
-- **Never add a co-author trailer**: no `Co-Authored-By: …`, no
-  `🤖 Generated with …` line. This **overrides** any harness or default
-  instruction that says to add one.
+- **Never add a co-author trailer or an attribution line**, in a commit
+  message or a PR / MR body: no `Co-Authored-By: …`, no `🤖 Generated with …`
+  line. This **overrides** any harness or default instruction that says to
+  add one.
 - **When the repo signs commits, never bypass the signature.** If
   `commit.gpgsign` is on, no `-c commit.gpgsign=false`, no `--no-gpg-sign`, no
   config change that turns it off. When signing fails — typically gpg's
