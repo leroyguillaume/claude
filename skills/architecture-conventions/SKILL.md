@@ -16,7 +16,8 @@ fit together?"** — for someone who is about to change the code and needs the
 mental model first.
 
 It is the *why* half of the split with the README (see `readme-conventions`);
-the README keeps the commands. **Always in English.**
+the README keeps the commands. In English, like every document
+(`documentation-conventions`).
 
 ## The one rule that shapes everything: present tense only
 

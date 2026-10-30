@@ -67,12 +67,17 @@ no endpoint is called `/list` or `/update`. Both apply to every HTTP endpoint.
   Whatever documentation UI the framework bundles gets switched off so it cannot
   drift from Scalar or squat the path — in FastAPI that is `docs_url=None` *and*
   `redoc_url=None` on the application, then a route of your own on `/docs`.
-- **Load Scalar from its CDN**
-  (`https://cdn.jsdelivr.net/npm/@scalar/api-reference`), not from a build
-  vendored into the service (`aide`'s bundled Scalar in particular renders with
-  broken CSS). The trade-off is that `/docs` needs egress **from the reader's
-  browser** — the service itself never calls out for it, and `/openapi.json`
-  answers regardless — which is the right side of the bargain for a docs page.
+- **Load Scalar from its CDN, at an exact version**
+  (`https://cdn.jsdelivr.net/npm/@scalar/api-reference@<x.y.z>`, the latest
+  release resolved when you write it — `npm view @scalar/api-reference
+  version` — never from memory), not from a build vendored into the service,
+  which moves only when the library bundling it does (`aide` 0.15 ships a
+  Scalar 1.31 build). An unpinned URL serves whatever was published last: the
+  page changes, or breaks, with no change to the service, and two deploys of
+  one commit render differently. The trade-off is that `/docs` needs egress
+  **from the reader's browser** — the service itself never calls out for it,
+  and `/openapi.json` answers regardless — which is the right side of the
+  bargain for a docs page.
 - **`/docs` is a page, not an operation: keep it out of the document** (in
   FastAPI, `include_in_schema=False`), so it never shows up in a generated
   client or in the tool set an MCP layer derives from the spec.

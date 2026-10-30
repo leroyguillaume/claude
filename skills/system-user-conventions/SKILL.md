@@ -120,7 +120,8 @@ modes around it.
 | --- | --- | --- | --- |
 | Binary, `/usr/local/bin/myapp` | `root:root` | `0755` | A service that can write its own binary rewrites it after a compromise and survives every restart |
 | Unit file, timers, `/etc/systemd/**` | `root:root` | `0644` | Writing them is a direct path back to root |
-| Config, `/etc/myapp/` | `root:myapp` | `0640` | Readable by the service, writable by nobody but root |
+| Config directory, `/etc/myapp/` | `root:root` | `0755` (what `ConfigurationDirectory=` creates) | Holds nothing secret itself; the files' modes guard their content |
+| Config files, `/etc/myapp/*` | `root:myapp` | `0640` | Readable by the service, writable by nobody but root |
 | Secret file | `root:root`, or `root:myapp` when the service opens it itself | `0600`, or `0640` | `LoadCredential=` and `EnvironmentFile=` are read by PID 1 — see `systemd-conventions` |
 | State, `/var/lib/myapp/` | `myapp:myapp` | `0700` (`StateDirectoryMode=0700`; the default is `0755`) | The one place it writes |
 

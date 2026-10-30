@@ -37,6 +37,9 @@ link to the source of truth.
 
 ## Rules
 
+**Always in English**, every document in the repository, whatever language the
+project or the conversation is in.
+
 **One home per fact; everything else links.** A fact is written once, where it
 is paid for — next to the code or config it describes. Other pages point to it.
 Never paraphrase another doc "for convenience": the paraphrase drifts and the
@@ -72,10 +75,17 @@ ADR means following its status to the next one — and the index is updated in
 the same change as every ADR it lists, so it cannot drift.
 
 **Do not restate configuration.** Versions, chart names, namespaces, feature
-flags, enabled/disabled switches, image tags, ports — if a config file holds it,
-the doc links the file and says *why* the value is what it is, never *what* it
-is. The one exception: a value a reader needs to type (a hostname, a command
-argument) in a procedure.
+flags, enabled/disabled switches, image tags, ports, hook lists, workflow
+triggers — if a config file holds it, the doc links the file and says *why*
+the value is what it is, never *what* it is. The exceptions are facts a reader
+needs before the file holding them is any use to them:
+
+- a value they type in a procedure (a hostname, a command argument);
+- a README's prerequisites, with the version that matters (`Python ≥ 3.13`):
+  the reader installs them before the repository's manifests mean anything;
+- a README's environment-variable table, with defaults: the code reading the
+  variables is no reference for a user, so that table is their home, updated
+  in the change that adds or alters one (`readme-conventions`).
 
 **No state.** "Deployed", "not applied yet", "live", "pending", "done": a
 document describes what the project *is*, in the present tense, never where

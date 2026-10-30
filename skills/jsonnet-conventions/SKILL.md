@@ -12,7 +12,8 @@ description: >-
 
 **In an existing repository, follow its layout** — where its jsonnet lives,
 how it names things — and do not challenge it. The rules below about *what the
-jsonnet itself looks like* apply either way.
+jsonnet itself looks like* apply either way, and existing jsonnet that breaks
+one is still pointed out once, as a proposal for its own change.
 
 **Jsonnet is configuration, not a program.** Its reader is someone debugging a
 broken deployment at an inconvenient hour, working backwards from the rendered
@@ -112,8 +113,12 @@ Not this — it restates the signature and buys nothing:
 allowFrom(name, port, fromNamespaces):: { ... }
 ```
 
-**Every `.libsonnet` gets a file header**: what this library is for, in two or
-three lines. **Inside function bodies the normal rule applies** — no
+**Every `.libsonnet` gets a file header**: what this library is for, and
+which of the extraction reasons above it meets, in two or three lines. That
+makes the header always necessary rather than only when the name is unclear:
+the reason a library exists is never readable from its name, and it is what
+the next person weighs before inlining it. **Inside function bodies the normal
+rule applies** — no
 narration, comments only where the code is genuinely surprising, and then
 saying what breaks without the line.
 
@@ -203,22 +208,26 @@ apply.
 - A library imported by exactly one file and unlikely to gain a second caller
   is not a library — inline it.
 
-## Formatting
+## Formatting and linting
 
-`jsonnetfmt` runs in pre-commit over `\.(jsonnet|libsonnet)$`, as a
-`language: system` hook shelling out to the real binary — never a Docker-backed
-one (see `pre-commit-conventions`):
+`jsonnetfmt` and `jsonnet-lint` run in pre-commit from go-jsonnet's own hooks,
+which are `language: golang` — pre-commit builds them, so there is no binary
+to install and no Docker (see `pre-commit-conventions`). Both match
+`.jsonnet` and `.libsonnet`:
 
 ```yaml
-- id: jsonnetfmt
-  name: jsonnetfmt
-  entry: jsonnetfmt --in-place
-  language: system
-  files: \.(jsonnet|libsonnet)$
+  - repo: https://github.com/google/go-jsonnet
+    rev: v0.22.0
+    hooks:
+      - id: jsonnet-format
+      - id: jsonnet-lint
+        args:
+          - -J
+          - lib
 ```
 
-Note it in `CONTRIBUTING.md` as a required binary — pre-commit installs
-packages, not the tools a system hook shells out to.
+Give `jsonnet-lint` the same `-J` library paths the render uses, or every
+import through the search path fails to resolve.
 
 **Never:**
 

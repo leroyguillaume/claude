@@ -20,15 +20,16 @@ has.
 
 **Use the layout the repository already has** — its directory names, its
 templating, where its values live, how it onboards a cluster and switches an
-app on. Do not challenge the structure: not in a comment, not in a "this would
-be cleaner as…", not by quietly adding a `lib/`. A layout is load-bearing for
-people and pipelines you cannot see, and a repository that is half one shape
-and half another is worse than either. If the user wants a refactor, they will
-ask.
+app on. Do not challenge that structure: not in a comment, not in a "this
+would be cleaner as…", not by quietly adding a `lib/`. A layout is
+load-bearing for people and pipelines you cannot see, and a repository that is
+half one shape and half another is worse than either. If the user wants a
+refactor, they will ask.
 
-The rules below apply to what you write, in the local idiom. Do not sweep the
-repo to retrofit them, and if an existing choice is a genuine correctness
-problem, say it once, plainly, then let it go.
+The carve-out covers layout and structure only. The rules below apply to what
+you write, in the local idiom; do not sweep the repo to retrofit them. An
+existing choice that breaks a rule or is a genuine correctness problem is
+still said once, plainly, and proposed as its own change — then let go.
 
 ## Charts: OCI first
 

@@ -126,12 +126,13 @@ plus `chown` in provisioning:
 | Runtime sockets/PIDs | `RuntimeDirectory=myapp` + `RuntimeDirectoryMode=0700` | `/run/myapp` | service user, `0700`, wiped on stop |
 | Caches | `CacheDirectory=myapp` + `CacheDirectoryMode=0700` | `/var/cache/myapp` | service user, `0700` |
 | Own log files | `LogsDirectory=myapp` + `LogsDirectoryMode=0700` | `/var/log/myapp` | service user, `0700` |
-| Config | `ConfigurationDirectory=myapp` | `/etc/myapp` | root-owned, readable |
+| Config | `ConfigurationDirectory=myapp` + `ConfigurationDirectoryMode=0755` | `/etc/myapp` | `root:root`, `0755`, never chowned; files `root:myapp` `0640` |
 
 Every `*DirectoryMode=` defaults to `0755`, and `UMask=` does not apply to
 these directories — without the explicit mode, the rest of the box can list
-and read them. systemd creates them with the right owner and mode before
-`ExecStart=`, and
+and read them. The config directory keeps `0755` on purpose: systemd creates
+it `root:root` and never changes its owner, so a `0750` locks the service out.
+systemd creates them with the right owner and mode before `ExecStart=`, and
 recreates them if they are missing — provisioning that pre-creates them by
 hand is one `chown` away from being wrong and never noticed. `ReadWritePaths=`
 is the last resort, for a path the app does not own (a data mount, a socket

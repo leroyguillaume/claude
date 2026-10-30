@@ -54,11 +54,11 @@ kopf's log-to-event handler posts a record only when **all** of these hold: `pos
 **`posting.loggers`**, and the record carrying a `k8s_ref` (i.e. it was logged
 on the *object* logger, not a module-level `logging.getLogger(...)`).
 
-### Surfacing errors as events — pick one, deliberately
+### Surfacing errors as events — post them explicitly
 
-- **Explicit lifecycle events (preferred for quality).** Keep `posting.loggers`
-  off and post your own events at the reconcile level — good `reason`s, one
-  event per outcome, no framework duplication. Wrap the handler:
+- **Explicit lifecycle events: the failure event.** Post your own events at
+  the reconcile level — good `reason`s, one event per outcome, no framework
+  duplication. Wrap the handler:
 
   ```python
   @kopf.on.create(GROUP, VERSION, PLURAL)
@@ -80,9 +80,9 @@ on the *object* logger, not a module-level `logging.getLogger(...)`).
   rolled-up `ReconcileFailed` event still names what broke. Re-raising
   preserves the requeue.
 
-- **Granular log-posted events (set both knobs).** If you want one event per
-  failing operation straight from the shared error chokepoint without plumbing
-  `body` everywhere, set in the startup handler:
+- **Log-posted events: extra detail, never the failure event.** To add one
+  event per failing operation from the requeue chokepoint without plumbing
+  `body` everywhere, set all three in the startup handler:
 
   ```python
   settings.posting.enabled = True
@@ -97,8 +97,10 @@ on the *object* logger, not a module-level `logging.getLogger(...)`).
   `reason="Logging"` (less descriptive than an explicit one), and the framework
   may also post its own error log — expect duplicates.
 
-Pick explicit events for control; pick `posting.loggers` only when you
-genuinely want per-line mirroring. Don't half-set it (`enabled` without
+Log posting never replaces the explicit Warning that
+`kubernetes-operator-conventions` requires: it hangs on three settings and on
+logging through the object logger, so a settings refactor or a module-level
+logger drops the event without a sound. Don't half-set it (`enabled` without
 `loggers`) and assume errors post — they won't.
 
 ### Cluster-scoped objects & other event gotchas
