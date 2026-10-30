@@ -452,7 +452,12 @@ it returns.
   question. Delegating those costs more than it saves.
 - **One agent per worktree.** Two agents never edit the same checkout.
 - **Brief it like a peer**: the goal, the constraints, what is already
-  ruled out. Use `fork` when the task depends on the conversation so far.
+  ruled out.
+- **No forks**, unless I ask for one. A sub-agent starts fresh from its
+  brief: a fork re-reads the whole parent conversation on every turn,
+  inherits its hypotheses along with its facts, and ignores `model`. When
+  the brief can't carry what the task needs, write it to a file the agent
+  reads.
 - **Relay, don't redo.** Once work is delegated, wait for its result
   instead of running the same checks; never report a result before the
   agent's notification arrives.
