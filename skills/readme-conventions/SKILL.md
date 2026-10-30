@@ -86,8 +86,9 @@ give it alt text, and bound its width — Markdown image syntax cannot, so use a
 ```
 
 The logo sits above the title, never in place of it: the `#` heading stays, so
-the page keeps a text title and its anchor. Prefer SVG when one exists. No logo
-in the repo → no image; never invent or hotlink one.
+the page keeps a text title and its anchor. The file is an SVG; a raster logo
+is redrawn first, per `logo-conventions`. No logo in the repo → no image; never
+invent or hotlink one.
 
 ### 2. Getting started
 
