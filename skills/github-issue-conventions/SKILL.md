@@ -103,7 +103,7 @@ not exist, use the closest one and say so.
 ## Closing the loop
 
 - **Let the PR close it**, and reference follow-ups from it — the body
-  conventions are in `github-pr-conventions`.
+  conventions are in `pr-conventions`.
 - **Nothing stays behind in the code** — no `TODO` marker, not even one
   carrying the issue number. Once the issue exists, the code says nothing
   about it.

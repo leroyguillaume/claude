@@ -392,7 +392,8 @@ Body (only when needed):
 - Explain *why*, not *what* — the diff already shows the what.
 - Keep it short: a sentence or two beats a paragraph.
 
-Pull requests are **not** covered here — see the `github-pr-conventions` skill.
+Pull and merge requests are **not** covered here — see the `pr-conventions`
+skill.
 
 ## Versioning
 
