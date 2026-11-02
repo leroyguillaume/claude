@@ -1,92 +1,19 @@
 ---
 name: github-pr-conventions
 description: >-
-  Opening GitHub pull requests with `gh`: labels, rebasing, stacked PRs.
-  TRIGGER when: creating a pull request (`gh pr create`), opening a stack of
-  dependent PRs, or fixing a PR's labels.
-  SKIP when: managing label definitions or merge methods
-  (`github-repo-settings`), or authoring workflow/release-note YAML
-  (`github-actions-conventions`).
+  GitHub pull request labels with `gh`, as `.github/release.yaml` release
+  notes read them.
+  TRIGGER when: creating a pull request on GitHub (`gh pr create`), or fixing
+  a PR's labels.
+  SKIP when: a GitLab merge request; managing label definitions or merge
+  methods (`github-repo-settings`); authoring workflow/release-note YAML
+  (`github-actions-conventions`). Load `pr-conventions` alongside.
 ---
 
-# GitHub pull request conventions (`gh` CLI)
+# GitHub pull request labels (`gh` CLI)
 
-## Rebase onto its base before opening it
-
-**A PR is opened from a branch that has just been rebased onto its up-to-date
-base branch** — `main`, or the parent's branch for a stacked PR (see below) —
-always, even when the branch is an hour old and the diff looks unrelated to
-everything that landed since:
-
-```bash
-git fetch origin
-git rebase origin/main
-```
-
-Before `gh pr create`, not after a reviewer trips over a conflict marker. What
-it buys, and why "it'll merge fine anyway" is not a reason to skip it:
-
-- **The PR's diff is the change and nothing else.** A branch cut from a stale
-  `main` drags everything that moved in between into the comparison, and the
-  reviewer spends their attention telling the two apart.
-- **CI runs against the code that will actually be merged.** Green on a
-  three-week-old base says nothing about green on today's `main`; the failure
-  then surfaces after the merge, where it is everybody's problem instead of
-  mine.
-- **Conflicts get resolved by whoever wrote the code**, while the reasons are
-  still fresh, rather than by whoever hits the merge button.
-
-**Rebase, never merge `main` into the branch.** A `Merge branch 'main' into …`
-commit carries no information, and it makes the branch impossible to read as a
-series of changes.
-
-If the rebase conflicts, resolve it and **re-run the tests and the linters
-before opening the PR** — a conflict resolution is fresh code that nothing has
-checked yet. On a branch that was already pushed, force-push with
-`--force-with-lease`, never a bare `--force`.
-
-## A stacked PR is opened as a draft
-
-**A PR whose base is another PR's branch — not `main` — is opened with
-`--draft`**, and stays a draft until everything under it has merged:
-
-```bash
-gh pr create --draft --base <parent-branch> --head <branch> …
-```
-
-The reason is the merge button. On a stacked PR it merges into the *parent's
-branch*, not into `main`: the change silently folds into the PR below it, which
-then carries two changes under one title and one description. Draft status is
-what makes that button unavailable while the stack is waiting.
-
-A draft leaves the stack's dependency visible, and gets a normal review in the
-meantime. Mark it ready only when its base is `main` again: the parent has
-merged, the PR has been retargeted to `main`, and the branch has been rebased
-onto it (see above; with squash merges, `git rebase --onto origin/main
-<old-parent-tip>`, so the parent's pre-squash commits are dropped):
-
-```bash
-gh pr ready <number>
-```
-
-Only the bottom PR of a stack, the one based on `main`, is ever ready for
-review. Say in each stacked PR's description which PR it sits on.
-
-## Title and body
-
-- **The title follows the repo's commit-subject style** (read
-  `git log --oneline`): a squash merge makes it the commit subject on the
-  default branch.
-- **Link the issue it resolves** with `Closes #123` in the body, so the merge
-  closes it. Never close an issue by hand on the user's behalf.
-- **A follow-up spotted while opening the PR** goes in the body as
-  `Follow-up: #123`, after the issue is opened (see
-  `github-issue-conventions`) — never as a comment in the code.
-- **A breaking change says what breaks, and how to migrate**, in the body — a
-  removed or renamed API, CLI flag, env var, config key or chart value; a
-  changed default, wire format or schema that needs a migration; a dropped
-  platform or version. Anything that forces a user to change something to
-  upgrade.
+Rebasing, stacks, drafts, title and body are `pr-conventions`, which covers
+GitHub and GitLab alike. This skill is the GitHub-only part: labels.
 
 ## Labels
 
@@ -144,11 +71,11 @@ section. Two consequences that drive every choice below:
   on a docs PR, and a repo without a `Maintenance` category sends `chore`
   straight to "Other". Match the labels that repo actually maps.
 - **Add `breaking` on top of the category label when the PR breaks
-  something** (see [Title and body](#title-and-body)). It is the one label
-  that stacks with the category label: `breaking` + `feature` lands under
-  *Breaking changes* because that category comes first in `release.yaml`. If
-  the repo has no `breaking` label or no *Breaking changes* category, don't
-  drop the flag — say so (see below).
+  something** (the body says what breaks, see `pr-conventions`). It is the
+  one label that stacks with the category label: `breaking` + `feature` lands
+  under *Breaking changes* because that category comes first in
+  `release.yaml`. If the repo has no `breaking` label or no *Breaking changes*
+  category, don't drop the flag — say so (see below).
 - **Add the area / technology labels that apply** on top of the category label.
   Area labels never select a category on their own, so they are safe to stack:
   a Rust PR gets `rust` as well as `feature`/`fix`/…. A PR typically ends up
