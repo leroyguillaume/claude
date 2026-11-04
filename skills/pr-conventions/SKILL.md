@@ -2,7 +2,7 @@
 name: pr-conventions
 description: >-
   Pull requests and GitLab merge requests (`gh`, `glab`): rebasing, stacks,
-  drafts, title and body.
+  drafts, source-branch deletion, title and body.
   TRIGGER when: opening a PR or MR (`gh pr create`, `glab mr create`, an API
   call that creates one); marking one ready (`gh pr ready`,
   `glab mr update --ready`, dropping `Draft:` from an MR title); changing its
@@ -55,6 +55,28 @@ before opening the PR** — a conflict resolution is fresh code that nothing has
 checked yet. On a branch that was already pushed, force-push with
 `--force-with-lease`, never a bare `--force`.
 
+## An MR deletes its source branch on merge
+
+**Every GitLab MR is opened with `--remove-source-branch`**, whatever the
+project's default says — without it, `glab mr create` falls back to the
+project setting, and merged branches pile up on the remote:
+
+```bash
+glab mr create --remove-source-branch --target-branch main --source-branch <branch> …
+```
+
+Through the API, that is `remove_source_branch: true`. On an MR opened
+without it, check before fixing it: `glab mr update --remove-source-branch`
+*toggles* the option, so running it on an MR that already has it turns it off.
+
+```bash
+glab mr view <iid> -F json --jq .force_remove_source_branch
+glab mr update <iid> --remove-source-branch
+```
+
+Stacked MRs are safe: when a parent merges and its branch is deleted, GitLab
+retargets the MRs based on it onto the parent's own target branch.
+
 ## A stacked PR is opened as a draft
 
 **A PR whose base is another PR's branch — not the default branch — is opened
@@ -65,7 +87,7 @@ gh pr create --draft --base <parent-branch> --head <branch> …
 ```
 
 ```bash
-glab mr create --draft --target-branch <parent-branch> --source-branch <branch> …
+glab mr create --draft --remove-source-branch --target-branch <parent-branch> --source-branch <branch> …
 ```
 
 On GitLab, draft status is the `Draft:` title prefix: a title edit that drops
