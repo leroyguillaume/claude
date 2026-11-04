@@ -178,6 +178,13 @@ gets, so it has to mean something. Reserved names, always at the root:
   by index or by environment.
 - Name the *thing*, not its shape: `data.google_project.this`, not
   `data.google_project.project_data`.
+- **Reusing an existing resource is the moment to challenge its name.** When
+  a change references a resource created earlier, check its label against
+  these rules and against what the resource is now used for; an existing name
+  is not a reason to keep a wrong one. When it falls short, say so and
+  propose the better name: relabelling is a `moved` block, cheap and
+  reviewable. Renaming the cloud-side `name` attribute usually forces
+  replacement — flag that cost instead of changing it silently.
 
 ## Variables
 
