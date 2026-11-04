@@ -21,9 +21,10 @@ In English, like every document (`documentation-conventions`).
 
 ## Mandatory structure
 
-Every README has these blocks, in this order — the License section only when
-the project has a licence (see below). Nothing else is required; add a section
-only when it earns its place.
+Every README has these blocks, in this order — The need section only in the
+root README of a CLI, the License section only when the project has a licence
+(see below). Nothing else is required; add a section only when it earns its
+place.
 
 ```markdown
 # <project-name>
@@ -33,6 +34,10 @@ only when it earns its place.
 ## Description
 
 <A few short paragraphs — see below.>
+
+## The need
+
+<CLI projects only — see below.>
 
 ## Getting started
 
@@ -90,7 +95,36 @@ the page keeps a text title and its anchor. The file is an SVG; a raster logo
 is redrawn first, per `logo-conventions`. No logo in the repo → no image; never
 invent or hotlink one.
 
-### 2. Getting started
+### 2. The need — CLI projects
+
+**The root README of a project whose deliverable is a command-line tool has a
+`## The need` section**, between Description and Getting started. A CLI
+competes with a shell one-liner, a script in somebody's dotfiles, or doing the
+thing by hand: the reader has to recognise their own situation before the
+install steps are worth their time.
+
+Write it from the user's seat, in the present tense:
+
+- **The situation** — who runs into this, doing what: `rotating a credential
+  across a dozen clusters`, `bumping a chart version in every app of a GitOps
+  repository`.
+- **What it takes without the tool** — the manual steps, the throwaway script,
+  the console clicks, and what goes wrong with them: slow, error-prone, not
+  repeatable, not reviewable.
+- **What the CLI changes** — the same task as one command, and what that buys
+  (dry run, idempotence, runs in CI). One invocation can make the point; the
+  full usage stays in Getting started.
+
+A few short paragraphs or a short list. It expands the Description's
+one-sentence "what problem it solves" without repeating it. Not here: a feature
+catalogue, the design or why it is built that way (`ARCHITECTURE.md`), or an
+origin story — "we got tired of…" is history, and the section describes the
+need as it stands (`documentation-conventions`).
+
+Root README only, and only for a CLI: a sub-README, a library, a service or a
+chart makes do with the Description's sentence.
+
+### 3. Getting started
 
 **The core of the file.** A newcomer must be able to copy-paste their way from
 zero to a running project without leaving this section.
@@ -185,7 +219,7 @@ a config directory (`~/Library/…` vs `~/.config/…`), a service manager
 invocation. If the instruction differs between the two, both spellings are
 given or neither is.
 
-### 3. Contributing and licence
+### 4. Contributing and licence
 
 Two short sections at the bottom, each a link, not a copy:
 
@@ -236,7 +270,7 @@ files exist.
 
 A `README.md` in a subdirectory (a chart, a module, a sub-package) follows the
 same shape, scoped to that component: what it is, how to use *it*, and a link
-back to the root README. No contributing/licence sections — those live once, at
+back to the root README. No need, contributing or licence sections — those live once, at
 the root. Generated content belongs in these files, and is never hand-edited
 where the generator writes: `terraform-docs` fills the block between its marker
 comments, while `helm-docs` regenerates the whole `README.md` from
@@ -256,4 +290,5 @@ comments, while `helm-docs` regenerates the whole `README.md` from
   other dev-loop command (see `contributing-conventions`).
 - The test for anything ambiguous: **if deleting it would not stop someone from
   installing, running or deploying the project, it does not belong in the
-  README.**
+  README.** The need section is the one exception: it is what tells a reader
+  whether the CLI is worth installing at all.
