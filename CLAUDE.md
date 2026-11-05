@@ -427,6 +427,21 @@ skill.
   needs no ask: `plan`, `helm template`, `helm diff`, `kubectl diff`,
   `--dry-run`, `get`/`describe`.
 
+## Repositories that aren't mine
+
+- **Never write to a repository I neither own nor belong to the organisation
+  of without an explicit ask in the current session**: no issue, no comment,
+  no pull request, no discussion, no reaction. It speaks for me to strangers,
+  in public, and cannot be taken back once their notifications have gone out.
+  A task on my own repo — even "fix this upstream bug" — is not that ask.
+- **Check the owner before any write**: compare it with
+  `gh api user --jq .login` and `gh api user/orgs --jq '.[].login'`. When it
+  matches neither, or the check fails, treat the repo as foreign.
+- **Draft it, don't send it**: give me the target repo, the title and the
+  body ready to run, and wait for a yes. The yes covers that one write, not
+  the next one.
+- Reading — viewing, searching, cloning — needs no ask.
+
 ## The main session dispatches; sub-agents do the long work
 
 The main session stays free to talk to me. Work that takes more than a
