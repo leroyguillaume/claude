@@ -47,6 +47,11 @@ BODY
 
 The permission does not carry forward: the next issue needs its own ask.
 
+An issue on any other repository than `origin` — an upstream dependency, a
+tool's bug tracker — falls under the `CLAUDE.md` rule on repositories that
+aren't the user's: name the target repo in the proposal, and check its owner
+first.
+
 ## Before creating one, look for it
 
 Issues duplicate easily, and a duplicate is worse than none — it splits the
