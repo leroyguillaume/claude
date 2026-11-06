@@ -2,7 +2,7 @@
 name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
-  a new herdr pane, as an opt-in alternative to the `Agent` tool.
+  a herdr tab of its own, as an opt-in alternative to the `Agent` tool.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
   with `HERDR_ENV=1`, the main session is about to delegate long work the user
   may want to watch or steer, work likely to hit approval prompts, or a
@@ -15,12 +15,12 @@ description: >-
 # Delegating through herdr
 
 Delegation uses the `Agent` tool by default. Inside herdr, the main session
-can instead delegate to a real `claude` session in a pane of its own, which
-the user sees appear and can watch, steer or resume later. It costs a pane and
-the user's attention, so it is opt-in.
+can instead delegate to a real `claude` session in a tab of its own, which the
+user sees appear and can watch, steer or resume later. It costs a tab and the
+user's attention, so it is opt-in.
 
 The installed `herdr` binary is the authority on its syntax: `herdr --skill`
-for the full guide, `herdr pane <command> --help` and
+for the full guide, `herdr tab <command> --help` and
 `herdr agent <command> --help` for one command. This skill holds the policy.
 
 ## When to use it
@@ -31,12 +31,12 @@ Check both variables in one command, for presence only:
 if [ "${HERDR_ENV:-}" = 1 ] && [ -z "${CLAUDE_HERDR_DELEGATED:-}" ]; then echo herdr; else echo agent; fi
 ```
 
-- **`agent`: never open a pane.** Outside herdr, or in a session started by
-  this flow (its pane carries `CLAUDE_HERDR_DELEGATED=1`), sub-agents are
+- **`agent`: never open a tab.** Outside herdr, or in a session started by
+  this flow (its tab carries `CLAUDE_HERDR_DELEGATED=1`), sub-agents are
   `Agent` tool calls, even when the brief mentions herdr.
-- **`herdr`, and the user asked for a visible session**: use a pane.
+- **`herdr`, and the user asked for a visible session**: use a tab.
 - **`herdr`, otherwise**: ask in one line when delegating ("Opus: launch it
-  in a visible pane?"), and only for long work the user may want to watch or
+  in a visible tab?"), and only for long work the user may want to watch or
   steer, work likely to hit approval prompts, or a session they may want to
   resume. Never for a routine search or a mechanical edit. Without a yes,
   use the `Agent` tool.
@@ -47,29 +47,21 @@ and named in the message that launches it.
 
 ## Launch
 
-1. **Pick the direction** from the calling pane's rect:
+1. **Pick a name** that says what the agent works on and that
+   `herdr agent list` does not already show.
+
+2. **Open a tab** in the current workspace, labelled with that name, with the
+   marker set and the user's focus kept where it is:
 
    ```bash
-   herdr pane layout --pane "$HERDR_PANE_ID" \
-     | jq --arg p "$HERDR_PANE_ID" '.result.layout.panes[] | select(.pane_id == $p).rect'
-   ```
-
-   The rect is in cells, which are about twice as tall as they are wide:
-   `right` when the width is at least twice the height, `down` otherwise.
-
-2. **Split the calling pane**, with the marker set and the user's focus kept
-   where it is:
-
-   ```bash
-   herdr pane split --current --direction right --cwd "$PWD" \
-     --env CLAUDE_HERDR_DELEGATED=1 --no-focus
+   herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$PWD" \
+     --label fix-login-timeout --env CLAUDE_HERDR_DELEGATED=1 --no-focus
    ```
 
    `--cwd` is the task's worktree when the main session already created it,
-   `$PWD` otherwise. The new pane's ID is `.result.pane.pane_id`.
+   `$PWD` otherwise. The tab's pane ID is `.result.root_pane.pane_id`.
 
-3. **Start `claude` in it**, under a name that says what it works on and
-   that `herdr agent list` does not already show:
+3. **Start `claude` in that pane**:
 
    ```bash
    herdr agent start fix-login-timeout --kind claude --pane <pane-id> -- --model sonnet
@@ -80,7 +72,7 @@ and named in the message that launches it.
    `--permission-mode` unless the main session was started with one, and
    then the same.
 
-4. **Send the brief through the pane**, as a background command:
+4. **Type the brief into it**, as a background command:
 
    ```bash
    herdr agent prompt fix-login-timeout "<brief>" --wait
@@ -112,12 +104,12 @@ and named in the message that launches it.
 - **A blocked agent is waiting on the user, not on you.** When `agent start`
   returns `agent_not_ready` or a wait returns `blocked` (a permission prompt,
   a question, the folder-trust dialog of a fresh worktree), tell the user
-  which agent is waiting in its pane. Never answer it with `send-keys`. Once
-  the user says it is unblocked, wait again with `herdr agent wait <name>`.
+  which tab is waiting on them. Never answer it with `send-keys`. Once the
+  user says it is unblocked, wait again with `herdr agent wait <name>`.
 
 ## Leave the layout to the user
 
-- **Never close a pane this flow created.** It is where the user reads what
-  the agent did; they close it when they are done with it.
-- **Never touch a pane or an agent you did not create**, and never run
+- **Never close a tab or pane this flow created.** It is where the user
+  reads what the agent did; they close it when they are done with it.
+- **Never touch a tab, pane or agent you did not create**, and never run
   `herdr server stop`.
