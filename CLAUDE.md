@@ -463,10 +463,6 @@ it returns.
 - **Relay, don't redo.** Once work is delegated, wait for its result
   instead of running the same checks; never report a result before the
   agent's notification arrives.
-- **Inside herdr (`HERDR_ENV=1`), the main session delegates through a
-  visible herdr pane**, not the `Agent` tool — see `herdr-delegation`. A
-  delegated session (`CLAUDE_HERDR_DELEGATED` set) uses the `Agent` tool for
-  its own sub-agents.
 
 ## Sub-agents: pick the model on purpose
 

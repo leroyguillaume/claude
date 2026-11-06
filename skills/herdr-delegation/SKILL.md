@@ -1,27 +1,29 @@
 ---
 name: herdr-delegation
 description: >-
-  Delegating from a Claude Code session inside herdr: the sub-agent runs as a
-  visible `claude` in a new herdr pane instead of through the `Agent` tool.
-  TRIGGER when: the main session is about to delegate work or launch a
-  sub-agent and `HERDR_ENV=1`.
-  SKIP when: `CLAUDE_HERDR_DELEGATED` is set (a delegated session uses the
-  `Agent` tool for its own sub-agents), or outside herdr.
+  Delegating from a Claude Code session inside herdr to a visible `claude` in
+  a new herdr pane, as an opt-in alternative to the `Agent` tool.
+  TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
+  with `HERDR_ENV=1`, the main session is about to delegate long work the user
+  may want to watch or steer, work likely to hit approval prompts, or a
+  session worth resuming afterwards (ask the user first).
+  SKIP when: `CLAUDE_HERDR_DELEGATED` is set, even if the brief mentions
+  herdr; outside herdr; routine searches or mechanical edits, which stay on
+  the `Agent` tool.
 ---
 
 # Delegating through herdr
 
-Inside herdr, the main session delegates to a real `claude` session in a pane
-of its own, so the user sees it appear and can watch it or talk to it. The
-`Agent` tool runs in-process, with no terminal anyone can look at. Only the
-first level is visible: a delegated session's own sub-agents are its business
-and stay `Agent` tool calls.
+Delegation uses the `Agent` tool by default. Inside herdr, the main session
+can instead delegate to a real `claude` session in a pane of its own, which
+the user sees appear and can watch, steer or resume later. It costs a pane and
+the user's attention, so it is opt-in.
 
 The installed `herdr` binary is the authority on its syntax: `herdr --skill`
 for the full guide, `herdr pane <command> --help` and
 `herdr agent <command> --help` for one command. This skill holds the policy.
 
-## Which path to take
+## When to use it
 
 Check both variables in one command, for presence only:
 
@@ -29,13 +31,19 @@ Check both variables in one command, for presence only:
 if [ "${HERDR_ENV:-}" = 1 ] && [ -z "${CLAUDE_HERDR_DELEGATED:-}" ]; then echo herdr; else echo agent; fi
 ```
 
-- `herdr`: the main session, inside herdr. Delegate as below.
-- `agent`: outside herdr, or a session started by this flow, whose pane
-  carries `CLAUDE_HERDR_DELEGATED=1`. Use the `Agent` tool as usual.
+- **`agent`: never open a pane.** Outside herdr, or in a session started by
+  this flow (its pane carries `CLAUDE_HERDR_DELEGATED=1`), sub-agents are
+  `Agent` tool calls, even when the brief mentions herdr.
+- **`herdr`, and the user asked for a visible session**: use a pane.
+- **`herdr`, otherwise**: ask in one line when delegating ("Opus: launch it
+  in a visible pane?"), and only for long work the user may want to watch or
+  steer, work likely to hit approval prompts, or a session they may want to
+  resume. Never for a routine search or a mechanical edit. Without a yes,
+  use the `Agent` tool.
 
-The rest of delegating does not change: what is worth delegating, one agent
-per worktree, a brief written like a peer's, and the model (`sonnet` or
-`opus`) chosen on purpose and named in the message that launches it.
+The rest of delegating does not change: one agent per worktree, a brief
+written like a peer's, and the model (`sonnet` or `opus`) chosen on purpose
+and named in the message that launches it.
 
 ## Launch
 
@@ -67,35 +75,40 @@ per worktree, a brief written like a peer's, and the model (`sonnet` or
    herdr agent start fix-login-timeout --kind claude --pane <pane-id> -- --model sonnet
    ```
 
-4. **Send the brief** as a background command, so the main session stays
-   free to talk:
+   It runs in the main session's permission mode: a session in another mode
+   holds cross-session messages for its user's approval. Pass no
+   `--permission-mode` unless the main session was started with one, and
+   then the same.
+
+4. **Send the brief through the pane**, as a background command:
 
    ```bash
    herdr agent prompt fix-login-timeout "<brief>" --wait
    ```
 
-   Its exit is the notification. `--wait` first waits for the agent to start
-   working, then for it to settle; a separate `herdr agent wait` sent right
-   after the prompt can match the idle state the agent has not left yet. Add
-   `--timeout` only when the main session has to block on the result.
+   Typed input is what gives the agent the user's go-ahead for the task, so
+   the brief goes this way, not through `SendMessage`. It ends by asking the
+   agent to send its final report with `SendMessage` to the main session's
+   name, which `ListAgents` prints as "This session is <name>". A brief too
+   long for a command line goes in a file in the scratchpad, and the prompt
+   says to read it.
 
-   The brief ends by asking the agent to write its final report to
-   `<scratchpad>/<agent-name>-report.md`, in the main session's scratchpad,
-   and to reply with that path and nothing else. A brief too long for a
-   command line goes in a file in the scratchpad, and the prompt says to read
-   it.
+   The command's exit is the signal that the agent stopped: it returns on
+   `blocked` too, and catches an agent that went idle without reporting.
+   `--wait` first waits for the agent to start working, so it cannot match
+   the idle state the agent has not left yet.
 
-## The report comes back as a file
+## Report and follow-ups
 
-Read the file the agent named. A terminal scrape loses the start of a long
-answer, and the report is the deliverable, so the file is asked for up front.
-Fall back to `herdr agent read <name> --source recent-unwrapped` only when the
-file is missing.
-
-## While it runs
-
-- **Follow-ups go through the pane**: `herdr agent prompt <name> "<message>"
-  --wait`, in the background, where the `Agent` tool would use `SendMessage`.
+- **The report arrives as a `<cross-session-message>`.** Its `from-name` is
+  an auto-generated peer name, unrelated to the herdr agent name; reply by
+  copying its `from` attribute into `SendMessage`'s `to`.
+- **Follow-ups go through `SendMessage`** to that address, with
+  `notify_when_idle: true`, so an agent that goes idle without answering
+  still yields a notice.
+- **Fallbacks**, when no report arrives: `herdr agent read <name> --source
+  recent-unwrapped`, or ask it through `herdr agent prompt` to write the
+  report to a file and reply with the path.
 - **A blocked agent is waiting on the user, not on you.** When `agent start`
   returns `agent_not_ready` or a wait returns `blocked` (a permission prompt,
   a question, the folder-trust dialog of a fresh worktree), tell the user
