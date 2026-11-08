@@ -2,7 +2,8 @@
 
 This repository holds personal Claude Code configuration: the global
 instructions in `CLAUDE.md` and the convention skills under `skills/`. A change
-here is almost always a Markdown edit. Open an issue or a pull request on
+here is almost always a Markdown edit; the exception is the status line script
+[statusline-command.sh](statusline-command.sh). Open an issue or a pull request on
 <https://github.com/leroyguillaume/claude>; the short version is
 `pre-commit run --all-files` must be green before you push.
 
@@ -101,12 +102,19 @@ pre-commit run --all-files
 
 ## Running the tests
 
-There is no test suite to run: the "code" is Markdown, and its correctness is
-what the linters assert. `skill-validator` is what plays that role — it is the
+There is no test suite to run: the "code" is Markdown plus one shell script, and
+its correctness is what the linters assert. `skill-validator` is what plays that role — it is the
 only check that can fail on the content of a change rather than its formatting.
 It asserts that a skill is well-formed, not that a client applies it: that
 feedback only exists in the projects using the skills, through their own
 linters and CI.
+
+Try the status line script by piping it a sample of what Claude Code sends; it
+needs `jq`, and `date -r` is the BSD form (macOS):
+
+```bash
+echo '{"model":{"display_name":"Opus"},"context_window":{"used_percentage":42},"rate_limits":{"five_hour":{"used_percentage":61,"resets_at":1893456000}}}' | ./statusline-command.sh
+```
 
 Validate every skill:
 
@@ -156,6 +164,7 @@ most are formatters or checks that name the file to fix. These need more:
 | Hook | What it checks | How to fix |
 | --- | --- | --- |
 | `yamllint` | YAML style, per [.yamllint.yaml](.yamllint.yaml), with `--strict` so warning-level rules fail too | Fix the finding; block style only, no `---` opening a file |
+| `shellcheck` | Shell scripts, with [shellcheck](https://www.shellcheck.net) bundled by the hook, nothing to install | Fix the finding it names |
 | `actionlint` | Workflow files are valid | Fix the expression or key it names |
 | `skill-validator` | Skill structure, relative links, content, contamination | See [Running the tests](#running-the-tests) |
 | `no-co-authors` (`commit-msg` stage) | No `Co-Authored-By:` trailer or `Generated with` line in the commit message. Runs on `git commit` only: `pre-commit run --all-files`, and so CI, skips it | Rewrite the message; a commit has one author |

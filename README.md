@@ -20,14 +20,22 @@ and the repository doubles as that tool's `~/.claude` directory. It is written
 for one person's machines and addresses that person directly, so adopting it
 means rewriting it; the skills are self-contained and install on their own.
 
-There is nothing to build or run: the repository is Markdown that a client
-reads.
+[`statusline-command.sh`](statusline-command.sh) is the one script in the
+repository: Claude Code's status line. It prints three lines: the model with a
+bar of the context window used, then a bar of the 5-hour rate limit with its
+reset time, and a bar of the 7-day rate limit with its reset day and time. A
+rate-limit line is omitted when Claude Code reports no such limit. Bars turn
+yellow from 50% and red from 80%.
+
+Everything else is Markdown that a client reads; there is nothing to build.
 
 ## Getting started
 
 ### Prerequisites
 
 - `git`.
+- [`jq`](https://jqlang.org/download/) and a BSD `date` (macOS), for the status
+  line only.
 - An Agent Skills client, such as
   [Claude Code](https://docs.claude.com/en/docs/claude-code).
 - [pollen](https://github.com/groupbees/pollen), to deploy the skills into a
@@ -97,6 +105,21 @@ git checkout -f main
 - **Another client's global rules**: `CLAUDE.md` is only read by Claude Code.
   Copy the rules you want into that client's own instructions file (such as
   `AGENTS.md`).
+
+To show the status line, point Claude Code at the script in `settings.json`,
+which the repository does not version:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  }
+}
+```
+
+The script sits in `~/.claude` when the repository is cloned there; otherwise
+use the path of your copy.
 
 ### Usage
 
