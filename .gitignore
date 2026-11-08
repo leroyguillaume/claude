@@ -13,6 +13,7 @@
 !/LICENSE
 !/README.md
 !/skills/
+!/statusline-command.sh
 
 # Claude Code mirrors the claude.ai account's skills here on every session
 /skills/synced/
