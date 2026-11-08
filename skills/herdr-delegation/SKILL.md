@@ -85,6 +85,10 @@ and named in the message that launches it.
    long for a command line goes in a file in the scratchpad, and the prompt
    says to read it.
 
+   The brief, and every follow-up, is written in the language the user
+   speaks to the main session: they read it in the tab and steer the agent
+   from there, and the agent answers in the language it was addressed in.
+
    The command's exit is the signal that the agent stopped: it returns on
    `blocked` too, and catches an agent that went idle without reporting.
    `--wait` first waits for the agent to start working, so it cannot match
