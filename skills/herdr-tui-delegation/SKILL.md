@@ -1,0 +1,63 @@
+---
+name: herdr-tui-delegation
+description: >-
+  Herdr TUI commands (`herdr tab`, `herdr agent`) to launch, brief, wait on
+  and read a visible `claude` in a tab of its own.
+  TRIGGER when: `herdr-delegation` detected `herdr` (`HERDR_ENV=1`, no
+  `HC_TERMINAL_ID`) and a visible session is being launched, briefed, waited
+  on, read or unblocked.
+  SKIP when: `HC_TERMINAL_ID` is set (`herdr-core-delegation`);
+  `CLAUDE_HERDR_DELEGATED` is set; outside herdr. Load `herdr-delegation`
+  alongside.
+---
+
+# Delegating through Herdr TUI
+
+Herdr TUI is a terminal multiplexer whose server keeps workspaces, tabs and
+panes alive, driven by `herdr tab …` and `herdr agent …`. The policy is
+`herdr-delegation`; this skill holds the commands.
+
+The installed binary is the authority on its syntax: `herdr --skill` for the
+full guide, `herdr tab <command> --help` and `herdr agent <command> --help`
+for one command.
+
+## Loop guard
+
+A tab this flow opens carries `CLAUDE_HERDR_DELEGATED=1`, which the detection
+in `herdr-delegation` reads: the session in it delegates through the `Agent`
+tool, never through another tab.
+
+## Launch
+
+1. **Pick a name** that `herdr agent list` does not already show.
+
+2. **Open a tab** in the current workspace, labelled with that name, with the
+   marker set and the user's focus kept where it is, then **start `claude`**
+   in its pane (`.result.root_pane.pane_id`). Flags after `--` go to
+   `claude`:
+
+   ```bash
+   herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$PWD" \
+     --label fix-login-timeout --env CLAUDE_HERDR_DELEGATED=1 --no-focus
+   herdr agent start fix-login-timeout --kind claude --pane <pane-id> -- --model sonnet
+   ```
+
+3. **Type the brief into it**, as a background command:
+
+   ```bash
+   herdr agent prompt fix-login-timeout "<brief>" --wait
+   ```
+
+   `--wait` matches the first state observed after submission, so it cannot
+   match the idle state the agent has not left yet.
+
+## While it runs
+
+- **Read its screen** with `herdr agent read <name> --source
+  recent-unwrapped`.
+- **Blocked**: `agent start` returns `agent_not_ready`, or a wait returns
+  `blocked`. Never answer it with `herdr pane send-keys` or `send-text`.
+  Once the user says it is unblocked, wait again with
+  `herdr agent wait <name>`.
+- **Never** `herdr tab close` or close a pane this flow created, never touch
+  a tab, pane or agent it did not create, and never `herdr server stop`.
