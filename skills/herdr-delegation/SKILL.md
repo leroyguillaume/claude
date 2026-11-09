@@ -2,7 +2,7 @@
 name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
-  a herdr tab or terminal of its own, through the legacy `herdr` CLI or
+  a herdr tab or terminal of its own, through Herdr TUI's `herdr` or
   herdr-core's `hc`, as an opt-in alternative to the `Agent` tool.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
   inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session is
@@ -21,10 +21,11 @@ can instead delegate to a real `claude` session in a terminal of its own,
 which the user sees appear and can watch, steer or resume later. It costs a
 tab and the user's attention, so it is opt-in.
 
-herdr comes in two shapes, and the session uses whichever it runs in:
+herdr comes as two separate programs that share no agents, and the session
+uses whichever it runs in:
 
-- **Legacy `herdr`**, a terminal multiplexer: `HERDR_ENV=1`, tabs and panes
-  driven by `herdr tab …` and `herdr agent …`.
+- **Herdr TUI**, CLI `herdr`, a terminal multiplexer with its own server:
+  `HERDR_ENV=1`, tabs and panes driven by `herdr tab …` and `herdr agent …`.
 - **herdr-core**, CLI `hc` (also `herdr-core`), often with the herdr-app
   window: `HC_TERMINAL_ID` holds the session's terminal address. `hc` runs
   the terminals; the app only shows them, in spaces and tabs.
@@ -47,7 +48,7 @@ else echo agent; fi
 ```
 
 - **`agent`: never open a tab.** Outside herdr, or in a session another
-  session started (a legacy tab carries `CLAUDE_HERDR_DELEGATED=1`, an hc
+  session started (a Herdr TUI tab carries `CLAUDE_HERDR_DELEGATED=1`, an hc
   terminal started from another terminal has a `parent`), sub-agents are
   `Agent` tool calls, even when the brief mentions herdr.
 - **`herdr` or `hc`, and the user asked for a visible session**: delegate
@@ -106,10 +107,17 @@ and named in the message that launches it.
 
 3. **Type the brief into it**, as a background command:
 
-   ```bash
-   herdr agent prompt fix-login-timeout "<brief>" --wait
-   hc send --wait --timeout 3600 fix-login-timeout "<brief>"
-   ```
+   - **`herdr`**:
+
+     ```bash
+     herdr agent prompt fix-login-timeout "<brief>" --wait
+     ```
+
+   - **`hc`**:
+
+     ```bash
+     hc send --wait --timeout 3600 fix-login-timeout "<brief>"
+     ```
 
    Typed input is what gives the agent the user's go-ahead for the task, so
    the brief goes this way, not through `SendMessage`. It ends by asking the
