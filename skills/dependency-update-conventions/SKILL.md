@@ -127,8 +127,14 @@ dependency graph; that is the whole error.
 
 **The group takes every update type, majors included.** A lockstep family
 breaks on a major exactly as on a minor, and `0.x` families bump the minor for
-a breaking release anyway. Dependabot puts a dependency in the **first**
-matching group, so list lockstep groups before the patch/minor catch-all:
+a breaking release anyway. Dependabot puts a dependency matching several
+groups in the **most specific** one, whatever the declaration order. An exact
+package name always wins, so a group of exact names needs nothing more. A
+wildcard pattern (`@tanstack/*`) ranks *below* a group with no `patterns` at
+all, such as a patch/minor catch-all: the catch-all takes the package and the
+lockstep group stays empty. List each wildcard family in the catch-all's
+`exclude-patterns`, which is documented and does not depend on that scoring
+(the docs still describe "first match"; see `dependabot/dependabot-core#14576`):
 
 ```yaml
 - package-ecosystem: cargo
@@ -140,6 +146,12 @@ matching group, so list lockstep groups before the patch/minor catch-all:
     # `opentelemetry` release: bumped one at a time, each PR fails to build.
     opentelemetry:
       patterns:
+        - opentelemetry*
+    minor-and-patch:
+      update-types:
+        - minor
+        - patch
+      exclude-patterns:
         - opentelemetry*
 ```
 
@@ -360,8 +372,8 @@ only, per `yaml-conventions`.
   wanted. Dependabot silently skips a label the repo lacks: create it
   (`github-repo-settings`).
 - **`groups`** for patch/minor per ecosystem; majors ungrouped — except
-  lockstep families, grouped whatever the update type and listed first (see
-  "Group what must move together").
+  lockstep families, grouped whatever the update type and excluded from the
+  catch-all with `exclude-patterns` (see "Group what must move together").
 - **`cooldown`** for the same reason as Renovate's `minimumReleaseAge`.
 - **`commit-message.prefix`** set to the repo's subject prefix (read
   `git log --oneline`), so a squash-merged bot PR matches the commit style;
