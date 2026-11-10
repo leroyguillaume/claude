@@ -14,6 +14,12 @@
 !/README.md
 !/skills/
 !/statusline-command.sh
+!/tests/
+
+# herdr installs and manages its own hook script here; only ours is versioned
+!/hooks/
+/hooks/*
+!/hooks/herdr-tab-title.sh
 
 # Claude Code mirrors the claude.ai account's skills here on every session
 /skills/synced/

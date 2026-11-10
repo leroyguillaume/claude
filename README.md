@@ -20,12 +20,21 @@ and the repository doubles as that tool's `~/.claude` directory. It is written
 for one person's machines and addresses that person directly, so adopting it
 means rewriting it; the skills are self-contained and install on their own.
 
-[`statusline-command.sh`](statusline-command.sh) is the one script in the
-repository: Claude Code's status line. It prints three lines: the model with a
-bar of the context window used, then a bar of the 5-hour rate limit with its
-reset time, and a bar of the 7-day rate limit with its reset day and time. A
-rate-limit line is omitted when Claude Code reports no such limit. Bars turn
-yellow from 50% and red from 80%.
+Two shell scripts complete the Claude Code setup:
+
+- [`statusline-command.sh`](statusline-command.sh) is Claude Code's status
+  line. It prints three lines: the model with a bar of the context window
+  used, then a bar of the 5-hour rate limit with its reset time, and a bar of
+  the 7-day rate limit with its reset day and time. A rate-limit line is
+  omitted when Claude Code reports no such limit. Bars turn yellow from 50%
+  and red from 80%.
+- [`hooks/herdr-tab-title.sh`](hooks/herdr-tab-title.sh) is a `Stop` hook for
+  sessions run in [herdr](https://herdr.dev): it renames the tab after the
+  terminal title Claude Code gives the session, so a tab reads "Fix the flaky CI job"
+  instead of "2". It only renames a tab that holds that one pane and
+  still has herdr's default numeric label, so a label someone chose is never
+  overwritten, and a renamed tab keeps its first title. It does nothing in a
+  subagent, outside herdr, or before the session has a title of its own.
 
 Everything else is Markdown that a client reads; there is nothing to build.
 
@@ -35,7 +44,7 @@ Everything else is Markdown that a client reads; there is nothing to build.
 
 - `git`.
 - [`jq`](https://jqlang.org/download/) and a BSD `date` (macOS), for the status
-  line only.
+  line; `jq` and herdr for the tab-title hook.
 - An Agent Skills client, such as
   [Claude Code](https://docs.claude.com/en/docs/claude-code).
 - [pollen](https://github.com/groupbees/pollen), to deploy the skills into a
@@ -118,7 +127,29 @@ which the repository does not version:
 }
 ```
 
-The script sits in `~/.claude` when the repository is cloned there; otherwise
+To name herdr tabs after their session, register the hook under `Stop` in
+the same file. It runs in the background, so it never delays the end of a
+turn:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh ~/.claude/hooks/herdr-tab-title.sh",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Both scripts sit in `~/.claude` when the repository is cloned there; otherwise
 use the path of your copy.
 
 ### Usage
