@@ -452,6 +452,11 @@ it returns.
 
 - **Quick work stays inline**: a lookup, a single edit, answering a
   question. Delegating those costs more than it saves.
+- **An answer or a PR.** A sub-agent whose deliverable is an answer — a
+  search, a review, a diagnosis, a test run — is an `Agent` call. One whose
+  deliverable is a branch and a PR is, when this session runs inside herdr,
+  a visible `claude` session, without asking: `herdr-delegation` says how.
+  What I ask for explicitly wins.
 - **One agent per worktree.** Two agents never edit the same checkout.
 - **Brief it like a peer**: the goal, the constraints, what is already
   ruled out.

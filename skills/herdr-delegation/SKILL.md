@@ -2,25 +2,26 @@
 name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
-  a tab or terminal of its own, as an opt-in alternative to the `Agent` tool:
-  when to, where it opens, the brief, the report, when to close it, what never to touch.
+  a tab or terminal of its own instead of the `Agent` tool, for work that ends
+  in a PR: when to, where it opens, the brief, the report, when to close it,
+  what never to touch.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
   inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session is
-  about to delegate long work the user may want to watch or steer, work likely
-  to hit approval prompts, or a session worth resuming afterwards (ask the
-  user first).
-  SKIP when: `CLAUDE_HERDR_DELEGATED` is set or the hc terminal has a parent,
-  even if the brief mentions herdr; outside herdr; routine searches or
-  mechanical edits, which stay on the `Agent` tool. Load
+  about to delegate work whose deliverable is a branch and a PR.
+  SKIP when: the deliverable is an answer (search, review, diagnosis, test
+  run), which stays on the `Agent` tool; `CLAUDE_HERDR_DELEGATED` is set or
+  the hc terminal has a parent, even if the brief mentions herdr; outside
+  herdr. Load
   `herdr-tui-delegation` or `herdr-core-delegation` alongside.
 ---
 
 # Delegating through herdr
 
-Delegation uses the `Agent` tool by default. Inside herdr, the main session
-can instead delegate to a real `claude` session in a terminal of its own,
-which the user sees appear and can watch, steer or resume later. It costs a
-tab and the user's attention, so it is opt-in.
+Delegation uses the `Agent` tool by default. Inside herdr, work that ends in
+a PR goes instead to a real `claude` session in a terminal of its own, which
+the user sees appear and can watch, steer or resume later. It costs a tab, so
+it is kept for that work: a sub-agent that only answers stays an `Agent`
+call.
 
 herdr comes as two separate programs that share no agents, and the session
 uses whichever it runs in. Each has its own skill for the commands:
@@ -47,13 +48,21 @@ else echo agent; fi
 - **`agent`: never open a tab.** Outside herdr, or in a session another
   session started, sub-agents are `Agent` tool calls, even when the brief
   mentions herdr.
-- **`herdr` or `hc`, and the user asked for a visible session**: delegate
-  there, with `herdr-tui-delegation` or `herdr-core-delegation`.
-- **`herdr` or `hc`, otherwise**: ask in one line when delegating ("Opus:
-  launch it in a visible tab?"), and only for long work the user may want to
-  watch or steer, work likely to hit approval prompts, or a session they may
-  want to resume. Never for a routine search or a mechanical edit. Without a
-  yes, use the `Agent` tool.
+- **`herdr` or `hc`, and the user asked for one or the other** — a visible
+  session ("in a tab") or a sub-agent: that wins over the two rules below.
+- **`herdr` or `hc`, and the deliverable is a branch and a PR** —
+  implementing, fixing: delegate to a visible session, with
+  `herdr-tui-delegation` or `herdr-core-delegation`, without asking.
+- **`herdr` or `hc`, and the deliverable is an answer** — a search, a review,
+  a diagnosis, a test run, a summary: use the `Agent` tool.
+
+The deliverable is known as soon as the brief is written, and work that ends
+in a PR is the work a session of its own fits. Its tab lives as long as the
+PR and closes at the merge (below). Review comments and a red CI land on the
+same branch, so the same session picks them up. `git push` and
+`gh pr create` ask for approval, which the user answers in the tab. And a
+`claude` session can launch `Agent` sub-agents of its own, which an `Agent`
+sub-agent cannot.
 
 The rest of delegating does not change: one agent per worktree, a brief
 written like a peer's.
@@ -79,8 +88,7 @@ written like a peer's.
    sub-agent models: weigh Sonnet against Opus, Opus when in doubt, and state
    the choice in one line before launching. It applies here although no
    `Agent` call carries a `model`: it goes to `claude` as `--model`, never
-   left to its default. Work worth watching in a tab is rarely the
-   well-scoped kind Sonnet is for.
+   left to its default.
 
 4. **Start `claude`** with that `--model`, in the main session's permission
    mode: a session in another mode holds cross-session messages for its
