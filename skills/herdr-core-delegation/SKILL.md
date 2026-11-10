@@ -75,8 +75,10 @@ see the agent as `env`.
 - **Blocked**: a wait returns `blocked`. Never answer it with `hc keys` or
   `hc send --force`. Once the user says it is unblocked, wait again with
   `hc wait <name>`.
-- **Never** `hc kill` or `hc rm` what this flow created, whatever
-  `hc --skill` says about cleaning up helpers once they report.
+- **End the terminal this flow created only once its PR is merged**, with
+  `hc kill <name>` then `hc rm <name>`, as `herdr-delegation` sets out;
+  whatever `hc --skill` says about cleaning up helpers once they report,
+  nothing else is a reason.
 - **Never touch a terminal it did not create**: `hc ls` lists the user's
   other live work too.
 - **Never** `hc server stop` or `restart`, which hit every terminal and park
