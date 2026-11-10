@@ -56,8 +56,7 @@ else echo agent; fi
   yes, use the `Agent` tool.
 
 The rest of delegating does not change: one agent per worktree, a brief
-written like a peer's, and the model (`sonnet` or `opus`) chosen on purpose
-and named in the message that launches it.
+written like a peer's.
 
 ## Launch
 
@@ -65,12 +64,19 @@ and named in the message that launches it.
    already uses. It starts in the task's worktree when the main session
    already created it, in `$PWD` otherwise.
 
-2. **Start `claude`** in the main session's permission mode: a session in
-   another mode holds cross-session messages for its user's approval. Pass no
-   `--permission-mode` unless the main session was started with one, and then
-   the same.
+2. **Pick the model** as for any sub-agent, under `CLAUDE.md`'s rule on
+   sub-agent models: weigh Sonnet against Opus, Opus when in doubt, and state
+   the choice in one line before launching. It applies here although no
+   `Agent` call carries a `model`: it goes to `claude` as `--model`, never
+   left to its default. Work worth watching in a tab is rarely the
+   well-scoped kind Sonnet is for.
 
-3. **Type the brief into it**, as a background command that waits for the
+3. **Start `claude`** with that `--model`, in the main session's permission
+   mode: a session in another mode holds cross-session messages for its
+   user's approval. Pass no `--permission-mode` unless the main session was
+   started with one, and then the same.
+
+4. **Type the brief into it**, as a background command that waits for the
    agent to stop. Typed input is what gives the agent the user's go-ahead for
    the task, so the brief goes this way, not through `SendMessage`. It ends by
    asking the agent to send its final report with `SendMessage` to the main

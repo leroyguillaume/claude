@@ -39,7 +39,7 @@ tool, never through another tab.
    ```bash
    herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$PWD" \
      --label fix-login-timeout --env CLAUDE_HERDR_DELEGATED=1 --no-focus
-   herdr agent start fix-login-timeout --kind claude --pane <pane-id> -- --model sonnet
+   herdr agent start fix-login-timeout --kind claude --pane <pane-id> -- --model <model>
    ```
 
 3. **Type the brief into it**, as a background command:

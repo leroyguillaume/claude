@@ -41,7 +41,7 @@ see the agent as `env`.
    ```bash
    hc get "$HC_TERMINAL_ID" --json | jq -r '.labels["herdr.space"] // empty'
    hc run --bg --name fix-login-timeout --cwd "$PWD" --outlive-parent --no-notify \
-     --label herdr.space=<space-id> -- claude --model sonnet
+     --label herdr.space=<space-id> -- claude --model <model>
    hc wait fix-login-timeout
    ```
 
