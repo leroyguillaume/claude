@@ -3,7 +3,7 @@ name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
   a tab or terminal of its own, as an opt-in alternative to the `Agent` tool:
-  when to, where it opens, the brief, the report, what never to touch.
+  when to, where it opens, the brief, the report, when to close it, what never to touch.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
   inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session is
   about to delegate long work the user may want to watch or steer, work likely
@@ -120,9 +120,12 @@ written like a peer's.
 
 ## Leave the layout to the user
 
-- **Never close or end what this flow created**, whatever a binary's guide
-  says about cleaning up once an agent reports. It is where the user reads
-  what the agent did; they close it when they are done with it, or ask you
-  to.
+- **Close what this flow created only once its PR is merged**
+  (`gh pr view <branch> --json state` says `MERGED`), and on no other
+  condition: not when the agent reports, not when it goes idle. Do it in the
+  post-merge cleanup, before removing the worktree and branch, since the
+  agent's cwd lives in the worktree. With no PR, or one still open or closed
+  unmerged, leave it: the user closes it, or asks you to. The transcript
+  stays resumable with `claude --resume`.
 - **Never touch a tab, pane, terminal or agent you did not create.**
 - **Never stop or restart the server**, and never quit herdr-app.

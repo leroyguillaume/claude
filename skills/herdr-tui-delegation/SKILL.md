@@ -90,5 +90,7 @@ tool, never through another tab.
   `blocked`. Never answer it with `herdr pane send-keys` or `send-text`.
   Once the user says it is unblocked, wait again with
   `herdr agent wait <name>`.
-- **Never** `herdr tab close` or close a pane this flow created, never touch
-  a tab, pane or agent it did not create, and never `herdr server stop`.
+- **Close the tab this flow created only once its PR is merged**, with
+  `herdr tab close <tab-id>`, as `herdr-delegation` sets out. Never close a
+  pane on its own, never touch a tab, pane or agent it did not create, and
+  never `herdr server stop`.
