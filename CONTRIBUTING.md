@@ -2,8 +2,9 @@
 
 This repository holds personal Claude Code configuration: the global
 instructions in `CLAUDE.md` and the convention skills under `skills/`. A change
-here is almost always a Markdown edit; the exception is the status line script
-[statusline-command.sh](statusline-command.sh). Open an issue or a pull request on
+here is almost always a Markdown edit; the exceptions are the status line script
+[statusline-command.sh](statusline-command.sh) and the herdr hook
+[hooks/herdr-tab-title.sh](hooks/herdr-tab-title.sh). Open an issue or a pull request on
 <https://github.com/leroyguillaume/claude>; the short version is
 `pre-commit run --all-files` must be green before you push.
 
@@ -11,7 +12,7 @@ See [README.md](README.md#getting-started) for installing and using the skills.
 
 ## Development setup
 
-Two tools are needed beyond `git`:
+Three tools are needed beyond `git`:
 
 - [pre-commit](https://pre-commit.com), at the version pinned in
   [.github/requirements.txt](.github/requirements.txt) — runs the gate.
@@ -22,6 +23,8 @@ Two tools are needed beyond `git`:
   [Running the tests](#running-the-tests)). Install the version the hook's
   `rev` pins in [.pre-commit-config.yaml](.pre-commit-config.yaml), which needs
   a [Go](https://go.dev/doc/install) toolchain.
+- [jq](https://jqlang.org/download/) — the hook tests and the status line
+  call it.
 
 pre-commit builds two hooks (`actionlint`, `skill-validator`) from source with
 the Go on `PATH`, and downloads a toolchain of its own when there is none.
@@ -102,12 +105,21 @@ pre-commit run --all-files
 
 ## Running the tests
 
-There is no test suite to run: the "code" is Markdown plus one shell script, and
-its correctness is what the linters assert. `skill-validator` is what plays that role — it is the
-only check that can fail on the content of a change rather than its formatting.
-It asserts that a skill is well-formed, not that a client applies it: that
-feedback only exists in the projects using the skills, through their own
-linters and CI.
+The "code" is mostly Markdown, and its correctness is what the linters
+assert. `skill-validator` is what plays that role — it is the only check that
+can fail on the content of a change rather than its formatting. It asserts
+that a skill is well-formed, not that a client applies it: that feedback only
+exists in the projects using the skills, through their own linters and CI.
+
+The herdr hook has a test suite under [tests/](tests/). It runs the hook
+against a fake `herdr` placed first on `PATH`, which serves canned JSON and
+logs every call, so it needs neither herdr nor a session; only `jq`. Each
+case covers one condition the hook checks, and a change to the hook comes
+with the case that covers it:
+
+```bash
+tests/herdr-tab-title.sh
+```
 
 Try the status line script by piping it a sample of what Claude Code sends; it
 needs `jq`, and `date -r` is the BSD form (macOS):
@@ -178,7 +190,7 @@ somewhere slower.
 
 | Workflow | What it does | Reproduce locally |
 | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `skills` job: checks the external links, with `--emit-annotations` so a dead link lands on its line in the diff | `pre-commit run --all-files` and `skill-validator validate links skills/` |
+| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `tests` job: every `tests/*.sh`. `skills` job: checks the external links, with `--emit-annotations` so a dead link lands on its line in the diff | `pre-commit run --all-files`, `tests/herdr-tab-title.sh` and `skill-validator validate links skills/` |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The
 weekly run is for the external links: a documentation URL dies without any file
