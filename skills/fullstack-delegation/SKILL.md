@@ -8,9 +8,9 @@ description: >-
   touching both the backend and the frontend of a webapp; user asks how to
   split webapp work across agents.
   SKIP when: only one side is touched; already running as a delegated
-  sub-agent (never re-orchestrate from inside one). Inside herdr, agents
-  that end in a PR launch through `herdr-delegation`; the e2e agent, which
-  reports, stays on the `Agent` tool.
+  sub-agent (never re-orchestrate from inside one). Inside herdr, an Opus
+  slice, contract or side launches through `herdr-delegation`; a Sonnet side
+  and the e2e agent stay on the `Agent` tool.
 ---
 
 # Delegating full-stack work
@@ -25,10 +25,12 @@ backend directory, and its conventions come with the files.
 
 Every launch follows `CLAUDE.md`'s rules on delegation and sub-agent models;
 the model hints below are where this flow usually lands, not a substitute for
-weighing them. Inside herdr, `herdr-delegation`'s rule picks the launch: the
-vertical-slice, contract, backend and frontend agents each end in a PR, so
-they run as visible sessions; the e2e agent reports, so it is an `Agent`
-call. Nothing else in this flow depends on how an agent is launched.
+weighing them. Inside herdr, `herdr-delegation`'s rule picks the launch. A
+vertical slice, the contract and a side with design left in it usually span
+several pieces and get Opus, so they run as visible sessions. A side the
+brief gives Sonnet, mostly applying the contract, and the e2e agent, which
+reports, are `Agent` calls. Nothing else in this flow depends on how an agent
+is launched.
 
 ## One agent per vertical slice by default
 
