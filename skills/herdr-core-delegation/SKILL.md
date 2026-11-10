@@ -34,20 +34,24 @@ see the agent as `env`.
 
 1. **Pick a name** that `hc ls` does not already show.
 
-2. **Start `claude`** with `hc run`, in the user's current space, and wait
-   until it is ready for input, since a brief sent earlier can be dropped.
-   Flags after `claude` go to it:
+2. **Start `claude`** with `hc run`, in the directory and space
+   `herdr-delegation` picks, and wait until it is ready for input, since a
+   brief sent earlier can be dropped. Flags after `claude` go to it:
 
    ```bash
    hc get "$HC_TERMINAL_ID" --json | jq -r '.labels["herdr.space"] // empty'
-   hc run --bg --name fix-login-timeout --cwd "$PWD" --outlive-parent --no-notify \
+   hc run --bg --name fix-login-timeout --cwd <dir> --outlive-parent --no-notify \
      --label herdr.space=<space-id> -- claude --model <model>
    hc wait fix-login-timeout
    ```
 
-   The label puts it in a tab of that space in herdr-app; when the first
-   command prints nothing, there is no app window to show it in: drop the
-   label, and tell the user to open it with `hc attach <name>`. Use `hc run`,
+   The first command prints the current space, the one for the main
+   session's repo. For another repo, find its space from what `hc --skill`
+   documents; when it gives no way to find or create one, use the current
+   space and tell the user. The label puts it in a tab of that space in
+   herdr-app; when the first command prints nothing, there is no app window
+   to show it in: drop the label, and tell the user to open it with
+   `hc attach <name>`. Use `hc run`,
    never `herdr-app do tab.new`: hc records the main session as its parent,
    which the loop guard reads. `--outlive-parent` leaves its lifetime to the
    user rather than to the main session's tab, and `--no-notify` keeps hc
