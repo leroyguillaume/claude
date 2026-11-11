@@ -41,9 +41,11 @@ configure, debug and explain.
   Renovate**: Dependabot handles SHA pins and their trailing tag comments
   natively, which is the one thing worth keeping it for.
 
-**Never point both bots at the same ecosystem or the same file.** Two PRs for
-one bump, two lockfile updates that conflict with each other, and reviewers
-who learn to skim. Make the split explicit rather than implicit: give Renovate
+**Never point both bots at the same ecosystem or the same version string.** Two
+PRs for one bump, two lockfile updates that conflict with each other, and
+reviewers who learn to skim. One file may feed both — a `Dockerfile`'s `FROM`
+to Dependabot, its annotated `ARG`s to a Renovate custom manager — as long as
+each string has a single owner. Make the split explicit rather than implicit: give Renovate
 an `enabledManagers` list covering only what Dependabot does not, and say
 where the line is drawn in the config's own `description` (and in
 `CONTRIBUTING.md` if contributors need to know which bot opens what).
@@ -387,7 +389,7 @@ only, per `yaml-conventions`.
 
 - Never enable automerge, in either bot, in any form — including a workflow
   that merges bot PRs for you.
-- Never run both bots over the same ecosystem or the same file.
+- Never run both bots over the same ecosystem or the same version string.
 - Never turn the dependency dashboard off.
 - Never add a custom manager without a `description` quoting the line it
   matches, and never merge one without a dry run.
