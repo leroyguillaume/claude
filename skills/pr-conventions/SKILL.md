@@ -135,9 +135,9 @@ Anything but the default branch stays a draft. Only the bottom PR of a stack,
 the one based on the default branch, is ever ready for review.
 
 **A PR with others stacked on it tells their owners when it moves** —
-merged, rebased or force-pushed — so they rebase in turn. When another
-session owns them, that is a message to it, not a poll on its side
-(`herdr-delegation`).
+rebased, force-pushed, or merged once the user says so — so they rebase in
+turn. When another session owns them, that goes as a message
+(`herdr-delegation`), not as a poll on their side.
 
 If a stacked PR merged into its parent anyway, its change now ships with the
 parent: move its closing keyword into the parent's description before the

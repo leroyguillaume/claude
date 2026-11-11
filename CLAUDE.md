@@ -464,8 +464,8 @@ against it, not within the message.
 - **This session's own topic** — its work going on, a review comment or a
   red CI on its PR — stays here. It hands parts of it to `Agent` calls where
   that pays (below), and splits it across several agents only when the
-  pieces ship as separate PRs — `topic-splitting` says how — partway too, as
-  soon as the work shows that a split fits better.
+  pieces ship as separate PRs, from the start or as soon as the work shows a
+  split fits better: `topic-splitting` says how.
 - **Any other non-trivial topic**, even when it is the only thing asked,
   gets a visible session of its own when this session runs inside herdr,
   and this session stays on its topic and relays: `herdr-delegation` says
