@@ -90,9 +90,9 @@ tool, never through another tab.
   `blocked`. Never answer it with `herdr pane send-keys` or `send-text`.
   Once the user says it is unblocked, wait again with
   `herdr agent wait <name>`.
-- **Close the tab this flow created** when `herdr-delegation` says it is
-  done, with `herdr tab close <tab-id>`; `herdr agent get <name>` shows
-  whether it is idle. Never close a pane on its own, never touch a tab, pane
-  or agent it did not create, and never `herdr server stop`.
+- **Close the tab this flow created only once its PR is merged**, with
+  `herdr tab close <tab-id>`, as `herdr-delegation` sets out. Never close a
+  pane on its own, never touch a tab, pane or agent it did not create, and
+  never `herdr server stop`.
 - **Reopen it for a follow-up** with a new tab in the same worktree, as in
   the launch, and `-- --model <model> --continue` to `herdr agent start`.
