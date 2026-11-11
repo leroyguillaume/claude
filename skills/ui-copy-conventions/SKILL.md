@@ -44,8 +44,9 @@ read. A sparse screen is not a problem to fill with text.
 - **No helper text repeating the label.** Helper text carries what the label
   cannot: a format (`DD/MM/YYYY`), a constraint ("At least 12 characters"), a
   consequence ("Visible to everyone in the workspace").
-- **No tooltip on a control that has a visible label.** Tooltips are for
-  icon-only controls, and then they name the action in a word or two.
+- **A tooltip carries only what is not on screen**: the name of an icon-only
+  control, in a word or two, or the full value of a truncated one. Never on a
+  control whose label is visible.
 - **No explanation of a standard pattern.** A search field, a close button, a
   toggle or a pagination control explains itself.
 - **No message restating what the screen already shows.** No "Item deleted"
@@ -54,6 +55,9 @@ read. A sparse screen is not a problem to fill with text.
   the background, something sent elsewhere — or offer "Undo".
 - **One place per piece of information** on a screen: not in the header, the
   card and the footer.
+- **No data that teaches nothing.** A column empty across the whole data set
+  is hidden. A value identical on every row is said once, in the heading or
+  the title ("Prices in EUR"), not repeated on each row.
 
 ## Short labels
 
@@ -67,10 +71,14 @@ read. A sparse screen is not a problem to fill with text.
 - **A placeholder is never the label**, since it disappears on input, and
   never repeats it ("Enter your email" in an "Email" field). Use it for an
   example value, or leave it empty.
+- **Lead with what the user scans for**: a status, a verdict or a message
+  starts with its outcome — "Failed: disk full", not "The export could not be
+  completed because the disk is full".
 - **Numbers and units over prose**: "3 files selected", not "You have selected
   three files".
 - **One concept, one word**, everywhere: never "Delete" on one screen and
-  "Remove" on the next for the same action.
+  "Remove" on the next, nor "View", "Open" and "Details" in one list, for the
+  same action.
 
 ## Empty, loading and error states
 
