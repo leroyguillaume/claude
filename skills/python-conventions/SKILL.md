@@ -80,7 +80,8 @@ description: >-
   (JSON or key=value) formatter that renders them; and an `extra` key that
   clashes with a `LogRecord` attribute (`name`, `message`, `module`, …)
   raises `KeyError`.
-- Apply `signal-handling-conventions`. Python mechanics: Python's default
+- In a long-running process, apply `signal-handling-conventions`. Python
+  mechanics: Python's default
   `SIGTERM` action kills the process with no cleanup, and `KeyboardInterrupt`
   only covers `SIGINT`. In asyncio, register both on the running loop and
   drive shutdown from one event:
@@ -103,7 +104,9 @@ description: >-
     a protobuf/`dataclass` the API ships). Do not hand-roll a parallel
     model of something a depended-upon library already defines — convert
     at the edges with the library's own serializer
-    (`ApiClient().sanitize_for_serialization`, `.model_dump()`, …).
+    (`ApiClient().sanitize_for_serialization`, `.model_dump()`, …). A
+    request or response body your own API exposes is the exception: it gets
+    a DTO of its own (`api-conventions`).
   - Otherwise define one: a `pydantic.BaseModel` when it crosses an I/O,
     serialization, or API boundary (parsed from / rendered to JSON, YAML,
     a request, a manifest, …) — the default in a Pydantic codebase;

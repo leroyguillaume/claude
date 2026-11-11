@@ -166,10 +166,10 @@ Never write, in any documentation file:
 
 - **A "reste à faire" / "TODO" / "next steps" / "roadmap" / "coming soon"
   section**, or a single line of it buried in a paragraph. Work that remains
-  is not documentation — it belongs in the issue tracker (on GitHub, see the
-  `github-issue-conventions` skill), in the **root `ROADMAP.md`** when the
-  project keeps one (see below), in the pull request description, or in what
-  you say back to me. Never anywhere else in a committed file.
+  is not documentation — it belongs in the issue tracker (on GitHub or
+  GitLab, see the `github-issue-conventions` skill), in the **root
+  `ROADMAP.md`** when the project keeps one (see below), in the pull request
+  description, or in what you say back to me. Never anywhere else in a committed file.
 - **A status at a point in time**: `✅ done` / `🚧 in progress` checklists,
   completion percentages, phase or milestone trackers, "currently", "for now",
   "at the time of writing", "as of <date>", "recently added", "new in this

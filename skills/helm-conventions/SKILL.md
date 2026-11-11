@@ -19,19 +19,20 @@ description: >-
 - Define pod and container security context in `values.yaml`, defaulting to
   a **restricted** profile aligned with Kubernetes Pod Security Standards:
   ```yaml
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 65532
-    runAsGroup: 65532
-    fsGroup: 65532
-    seccompProfile:
-      type: RuntimeDefault
-  securityContext:
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
-    capabilities:
-      drop:
-        - ALL
+  global:
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      fsGroup: 65532
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
   ```
   The IDs must be **> 10000** (Trivy `KSV-0020` / `KSV-0021`: a low container
   UID collides with the host's user table). 65532 is the `nonroot` UID used
@@ -143,19 +144,21 @@ description: >-
   allow that existing resource to be a **`ConfigMap`** (the natural home for
   non-secret public CA certs) as well as a `Secret`:
   ```yaml
-  # -- Extra CA certificates to trust for every outbound TLS connection. Added
-  # on top of the built-in public roots — supply only your private/corporate CA.
-  caCerts:
-    # -- (string) Inline PEM bundle. Stored in a Secret and mounted. Ignored when `existing.name` is set.
-    inline: ~
-    # -- Mount the PEM bundle from a resource you already manage, instead of `inline`. Takes precedence over `inline` when `name` is set.
-    existing:
-      # -- (string) Kind of the resource: `ConfigMap` or `Secret`.
-      kind: ConfigMap
-      # -- (string) Name of the resource. Set → mounts from it instead of generating a Secret from `inline`.
-      name: ~
-      # -- Key in the resource holding the PEM bundle (also the mounted file name).
-      key: ca-certificates.crt
+  # -- Values shared by every component.
+  global:
+    # -- Extra CA certificates to trust for every outbound TLS connection. Added
+    # on top of the built-in public roots — supply only your private/corporate CA.
+    caCerts:
+      # -- (string) Inline PEM bundle. Stored in a Secret and mounted. Ignored when `existing.name` is set.
+      inline: ~
+      # -- Mount the PEM bundle from a resource you already manage, instead of `inline`. Takes precedence over `inline` when `name` is set.
+      existing:
+        # -- (string) Kind of the resource: `ConfigMap` or `Secret`.
+        kind: ConfigMap
+        # -- (string) Name of the resource. Set → mounts from it instead of generating a Secret from `inline`.
+        name: ~
+        # -- Key in the resource holding the PEM bundle (also the mounted file name).
+        key: ca-certificates.crt
   ```
   Wire it through helpers mirroring the `existingSecret` pattern —
   `caCertsEnabled` (inline or existing set), `caCertsValidate` (fail fast if
@@ -169,8 +172,9 @@ description: >-
   `REQUESTS_CA_BUNDLE`, and `AWS_CA_BUNDLE` (boto3); Go → `SSL_CERT_FILE`;
   Node → `NODE_EXTRA_CA_CERTS`; a Rust/other app that reads its own var → that
   var. Honour the established standard name; never prefix it with the app name.
-- Expose RBAC `rules` (and an appended `extraRules: []`) in `values.yaml`,
-  not hardcoded in the `ClusterRole` template.
+- Expose RBAC `rules` (and an appended `extraRules: []`) in the owning
+  component's block of `values.yaml`, not hardcoded in the `ClusterRole`
+  template.
 - Document **every** key in `values.yaml` with a `helm-docs` `# --`
   annotation immediately above it — no value is allowed to ship
   undocumented, including nested keys and empty defaults (`[]`, `{}`,
@@ -186,16 +190,18 @@ description: >-
   annotate it explicitly with `# -- (<type>) …` (e.g. `(string)`,
   `(int)`, `(bool)`, `(object)`, `(list)`, `(tpl/string)`). Examples:
   ```yaml
-  # -- (string) Optional override for the image tag. Defaults to `.Chart.AppVersion`.
-  imageTag: ~
-  # -- (object) Extra labels merged into every workload's pod template.
-  extraPodLabels: {}
-  # -- (list) Extra environment variables to inject into every workload.
-  extraEnv: []
-  # -- Pod-level security context for every workload; loosening it breaks the restricted Pod Security Standard.
-  podSecurityContext:
-    # -- Refuse to start a container whose image runs as UID 0.
-    runAsNonRoot: true
+  # -- Values shared by every component.
+  global:
+    # -- (string) Optional override for the image tag. Defaults to `.Chart.AppVersion`.
+    imageTag: ~
+    # -- (object) Extra labels merged into every workload's pod template.
+    extraPodLabels: {}
+    # -- (list) Extra environment variables to inject into every workload.
+    extraEnv: []
+    # -- Pod-level security context for every workload; loosening it breaks the restricted Pod Security Standard.
+    podSecurityContext:
+      # -- Refuse to start a container whose image runs as UID 0.
+      runAsNonRoot: true
   ```
 - Add the `norwoodj/helm-docs` pre-commit hook (or a local hook invoking
   the installed `helm-docs` binary) to `.pre-commit-config.yaml`. The hook

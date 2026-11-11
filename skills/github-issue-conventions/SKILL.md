@@ -1,11 +1,11 @@
 ---
 name: github-issue-conventions
 description: >-
-  Where remaining work goes on a GitHub repo: an issue via `gh`.
+  Where remaining work goes: an issue via `gh`, or `glab` on GitLab.
   TRIGGER when: you spot out-of-scope work (bug, follow-up, cleanup, missing
   test); the user asks to file or track something; you are about to write
   remaining work into a file.
-  SKIP when: the repo has no GitHub `origin` remote (say it in chat instead),
+  SKIP when: `origin` is neither GitHub nor GitLab (say it in chat instead),
   or the user asked for the work in the current change.
 ---
 
@@ -15,15 +15,17 @@ description: >-
 exception being a root `ROADMAP.md` the project already keeps, for the shape of
 what is coming, never each ticket.
 
-**GitHub only.** Everything here assumes an `origin` remote on GitHub — check
-before reaching for `gh`:
+**GitHub or GitLab.** The commands below are `gh`; on GitLab, the same rules
+run through `glab issue create --title … --description … --label …`,
+`glab issue list --search … --all` and `glab label list`. Check the `origin`
+remote first:
 
 ```bash
 git remote get-url origin
 ```
 
-If the repo is not on GitHub, there is no issue to open: tell the user what you
-found, in chat, and stop. Do **not** fall back to writing it in a file.
+On any other host, there is no issue to open: tell the user what you found, in
+chat, and stop. Do **not** fall back to writing it in a file.
 
 ## Never open an issue unasked
 

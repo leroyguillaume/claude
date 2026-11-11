@@ -138,8 +138,9 @@ genuinely unavoidable, the user decides, and it carries a comment with the
 finding's ID, the reason, and the condition that lifts it.
 
 The only pre-authorised exceptions are the ones `docker-conventions`
-(`DL3008`) and `helm-conventions` (`KSV-0011`, `KSV-0110`) list. Nothing else
-is.
+(`DL3008`), `helm-conventions` (`KSV-0011`, `KSV-0110`),
+`gitlab-ci-conventions` (yamllint `brackets` on a `!reference` line) and
+`sql-conventions` (`RF04`, `RF06`) list. Nothing else is.
 
 ## Path filters: don't trigger for nothing
 

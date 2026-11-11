@@ -149,19 +149,20 @@ contributor lives with it.
 never a generic "we run tests on every PR" that drifts from reality within a
 month.
 
-For each workflow, link the file and cover **what it does, what it blocks,
-and how to reproduce it locally**. Its triggers are in the file; mention one
+For each workflow, link the file and cover **what it is for, what it blocks,
+and how to reproduce it locally** — one line of purpose, never its steps,
+which the file holds (`documentation-conventions`). Its triggers are in the file; mention one
 only where it would surprise a contributor (a path filter that skips a job on
 their PR, a schedule that fails with no change of theirs). A table carries
 this well:
 
 ```markdown
-| Workflow | What it does | Reproduce locally |
+| Workflow | Purpose | Reproduce locally |
 | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit run --all-files`, unit tests | `pre-commit run --all-files` |
-| [`build.yaml`](.github/workflows/build.yaml) | builds the image, `trivy` scan | `docker build .` |
-| [`security.yaml`](.github/workflows/security.yaml) | `trivy fs`, plus a daily `trivy image` on the latest release | `trivy fs .` |
-| [`release.yaml`](.github/workflows/release.yaml) | publishes the image from a `v*` tag | — |
+| [`quality.yaml`](.github/workflows/quality.yaml) | quality gate | `pre-commit run --all-files` |
+| [`build.yaml`](.github/workflows/build.yaml) | image build and scan | `docker build .` |
+| [`security.yaml`](.github/workflows/security.yaml) | CVE scan of the code and the latest release | `trivy fs .` |
+| [`release.yaml`](.github/workflows/release.yaml) | image publish | — |
 ```
 
 Then, in a few lines:

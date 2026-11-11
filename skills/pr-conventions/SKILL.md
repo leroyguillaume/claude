@@ -153,7 +153,7 @@ parent merges, so the issue still closes.
   merge into the default branch closes it. Never close an issue by hand on the
   user's behalf.
 - **A follow-up spotted while opening the PR** goes in the body as
-  `Follow-up: #123`, after the issue is opened (on GitHub, see
+  `Follow-up: #123`, after the issue is opened (see
   `github-issue-conventions`) — never as a comment in the code.
 - **A breaking change says what breaks, and how to migrate**, in the body — a
   removed or renamed API, CLI flag, env var, config key or chart value; a
