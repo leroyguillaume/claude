@@ -2,101 +2,70 @@
 name: ui-copy-conventions
 description: >-
   User-facing text in any interface: only the words a user needs to act.
-  TRIGGER when: building or editing a screen, form, dialog or terminal prompt;
-  writing the labels, buttons, hints, empty states or errors it shows; editing
-  UI strings or locale files (`locales/`, `*.po`, `strings.xml`); user says a
-  UI is wordy or has too much text.
-  SKIP when: the text is the content the interface displays (articles or user
-  data) or is never shown to a user (logs and comments).
+  TRIGGER when: writing what a screen, form, dialog or terminal prompt says
+  (labels, buttons, hints, empty states, errors) or a locale file (`locales/`,
+  `*.po`, `strings.xml`); user says a UI is too wordy.
+  SKIP when: the text is content the UI displays, or never shown to a user.
 ---
 
 # UI copy conventions
 
-Copy is every word an interface shows: headings, labels, buttons,
-placeholders, helper text, tooltips, empty states, errors, confirmations,
-toasts, terminal prompts and messages. These rules hold for every interface —
-web, mobile, desktop, terminal, a generated page.
+Copy is every word an interface shows, on any platform. A generated interface
+drifts towards more of it: an intro under each title, a hint under each field,
+a sentence where a word does. **Write the least text that lets the user act
+without guessing.**
 
-The user is there to do something, not to read. Every string costs attention,
-and a generated interface drifts towards more of them: an intro under each
-title, a hint under each field, a sentence where a word does. **Write the least
-text that lets the user act without guessing.**
+## The test
 
-## The test: which question does this string answer?
-
-Before keeping a string, name the question the user has at that moment that it
-answers — "what goes here?", "what happens if I click?", "why did it fail?".
-
-- **No question** → delete it.
-- **Already answered on screen** — by the title, the label, the value itself,
-  the state the UI shows → delete it.
-- **Answered in more words than needed** → cut it down.
-
-When in doubt, leave it out. A missing hint surfaces as a question someone
-asks; a needless one never surfaces, it only makes every screen slower to
-read. A sparse screen is not a problem to fill with text.
+Name the question the user has at that moment that a string answers ("what
+goes here?", "why did it fail?"). No question, or already answered on screen →
+delete it. Answered in too many words → cut it. When in doubt, leave it out: a
+missing hint surfaces as a question, a needless one only slows every screen.
 
 ## No paraphrase
 
-- **No intro sentence restating the heading.** "Settings" needs no "Here you
-  can manage your settings". A description under a title is earned only by
-  something the title cannot say: a consequence, a constraint.
-- **No helper text repeating the label.** Helper text carries what the label
-  cannot: a format (`DD/MM/YYYY`), a constraint ("At least 12 characters"), a
-  consequence ("Visible to everyone in the workspace").
-- **A tooltip carries only what is not on screen**: the name of an icon-only
-  control, in a word or two, or the full value of a truncated one. Never on a
-  control whose label is visible.
-- **No explanation of a standard pattern.** A search field, a close button, a
-  toggle or a pagination control explains itself.
-- **No message restating what the screen already shows.** No "Item deleted"
-  toast when the item visibly disappears, no success dialog for a save the
-  screen already reflects. Confirm only what the user cannot see: work done in
-  the background, something sent elsewhere — or offer "Undo".
-- **One place per piece of information** on a screen: not in the header, the
-  card and the footer.
-- **No data that teaches nothing.** A column empty across the whole data set
-  is hidden. A value identical on every row is said once, in the heading or
-  the title ("Prices in EUR"), not repeated on each row.
+- **No intro restating the heading**: "Settings" needs no "Here you can manage
+  your settings".
+- **Helper text carries what the label cannot** — a format (`DD/MM/YYYY`), a
+  constraint, a consequence — never the label again.
+- **A tooltip carries only what is not on screen**: an icon-only control's
+  name, or a truncated value in full.
+- **No explanation of a standard pattern**: search field, close button,
+  toggle, pagination.
+- **No message restating what the screen shows**: no "Item deleted" toast when
+  the item visibly disappears. Confirm only what the user cannot see, or offer
+  "Undo".
+- **One place per piece of information** on a screen.
+- **No data that teaches nothing**: hide a column empty across the data set;
+  say a value shared by every row once, in the heading ("Prices in EUR").
 
 ## Short labels
 
-- **Buttons and menu items are a verb, plus its object when needed**, one to
-  three words: "Save", "Delete project", "Export CSV". Never "Click here to…",
-  "Please…", or a sentence.
+- **Buttons and menu items are a verb, plus its object when needed**, in one
+  to three words: "Save", "Export CSV". Never "Click here to…" or "Please…".
 - **A dialog's confirm button repeats its verb**: "Delete project?" →
-  "Delete", not "OK" or "Yes".
-- **Field labels and headings are nouns naming the thing**: "Email", not
-  "Please enter your email address".
-- **A placeholder is never the label**, since it disappears on input, and
-  never repeats it ("Enter your email" in an "Email" field). Use it for an
-  example value, or leave it empty.
-- **Lead with what the user scans for**: a status, a verdict or a message
-  starts with its outcome — "Failed: disk full", not "The export could not be
+  "Delete", not "OK".
+- **Field labels and headings are nouns**: "Email", not "Please enter your
+  email address".
+- **A placeholder is never the label nor a copy of it**: an example value, or
+  nothing.
+- **Lead with the outcome**: "Failed: disk full", not "The export could not be
   completed because the disk is full".
-- **Numbers and units over prose**: "3 files selected", not "You have selected
-  three files".
-- **One concept, one word**, everywhere: never "Delete" on one screen and
-  "Remove" on the next, nor "View", "Open" and "Details" in one list, for the
-  same action.
+- **Numbers over prose**: "3 files selected", not "You have selected three
+  files".
+- **One concept, one word**: not "Delete" here and "Remove" there, nor "View",
+  "Open" and "Details" for one action.
 
-## Empty, loading and error states
+## States and errors
 
-- **Empty state**: one line on why it is empty and the action that fills it —
-  "No projects" and a "New project" button. No paragraph on what the feature
-  is for.
-- **Loading**: a spinner or a skeleton. Text only when the wait needs
-  explaining, and then what is happening ("Importing 1,240 rows…"), never
-  "Please wait while we…".
-- **Errors say what happened and what to do**, in a sentence each at most,
-  next to where it happened — a field's error under the field: "Email already
-  in use. Sign in instead?". No apology, no "Something went wrong" alone, no
-  internal detail (stack trace, exception name): that goes to the logs, see
-  `logging-conventions`. An error code may follow the message when support
-  needs it.
-- **Confirm only destructive or irreversible actions**, and state the
-  consequence rather than rephrasing the question: "Delete project? Its 12
-  environments are deleted too."
-- **Terminals follow the same rules**: a command that succeeds prints its
-  result or nothing, a prompt is the question alone, `--help` gives one line
-  per option.
+- **Empty state**: one line on why, and the action that fills it — "No
+  projects" and a "New project" button.
+- **Loading**: a spinner or a skeleton; text only for a long wait, saying what
+  is happening ("Importing 1,240 rows…").
+- **An error says what happened and what to do**, next to where it happened:
+  "Email already in use. Sign in instead?". No apology, no bare "Something went
+  wrong", no stack trace: that goes to the logs (`logging-conventions`).
+- **Confirm only destructive actions**, stating the consequence: "Delete
+  project? Its 12 environments go too."
+- **Terminals**: success prints the result or nothing, a prompt is the
+  question alone, `--help` gives one line per option.
