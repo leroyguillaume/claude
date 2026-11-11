@@ -101,8 +101,9 @@ written like a peer's.
 5. **Type the brief into it**, as a background command that waits for the
    agent to stop. Typed input is what gives the agent the user's go-ahead for
    the task, so the brief goes this way, not through `SendMessage`. It ends by
-   asking the agent to send its final report with `SendMessage` to the main
-   session's name, which `ListAgents` prints as "This session is <name>". A
+   asking the agent to stop every background command and monitor it started,
+   then send its final report with `SendMessage` to the main session's name,
+   which `ListAgents` prints as "This session is <name>". A
    brief too long for a command line goes in a file in the scratchpad, and
    the prompt says to read it.
 
@@ -120,7 +121,11 @@ written like a peer's.
   copying its `from` attribute into `SendMessage`'s `to`.
 - **Follow-ups go through `SendMessage`** to that address, with
   `notify_when_idle: true`, so an agent that goes idle without answering
-  still yields a notice.
+  still yields a notice. Once its tab is closed (below), a follow-up — a
+  review comment, a red CI — reopens it instead: a new tab in the same
+  worktree, running `claude --continue` with the same `--model`, which
+  resumes the last conversation held there, and the follow-up typed in as its
+  brief.
 - **Fallbacks**, when no report arrives: read the agent's screen, or ask it,
   through the same command as the brief, to write the report to a file and
   reply with the path.
@@ -131,12 +136,16 @@ written like a peer's.
 
 ## Leave the layout to the user
 
-- **Close what this flow created only once its PR is merged**
-  (`gh pr view <branch> --json state` says `MERGED`), and on no other
-  condition: not when the agent reports, not when it goes idle. Do it in the
-  post-merge cleanup, before removing the worktree and branch, since the
-  agent's cwd lives in the worktree. With no PR, or one still open or closed
-  unmerged, leave it: the user closes it, or asks you to. The transcript
-  stays resumable with `claude --resume`.
+- **Close what this flow created once it is done**, on either condition:
+  - **its PR is merged** (`gh pr view <branch> --json state` says
+    `MERGED`): in the post-merge cleanup, before removing the worktree and
+    branch, since the agent's cwd lives in the worktree;
+  - **it sits with nothing left to do**: its final report has arrived and
+    reached the user, it is idle — never `blocked`, which waits on the user —
+    and the report leaves no background command or monitor running.
+
+  Nothing else is a reason: not a report while the agent still works, not an
+  idle agent whose report never came. The transcript stays on disk, which is
+  what lets a follow-up reopen it.
 - **Never touch a tab, pane, terminal or agent you did not create.**
 - **Never stop or restart the server**, and never quit herdr-app.
