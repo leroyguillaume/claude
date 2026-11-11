@@ -459,8 +459,9 @@ that fails for a cause of its own.
   done inline or by an `Agent` call, never in a session of its own.
 - **A single topic** is carried by this session, which hands parts of it to
   `Agent` calls where that pays (below). It splits the topic across several
-  agents only when the pieces ship as separate PRs, and splits partway as
-  soon as the work shows that a split fits better.
+  agents only when the pieces ship as separate PRs — `topic-splitting` says
+  how — and splits partway as soon as the work shows that a split fits
+  better.
 - **Several non-trivial topics** each get a visible session of their own
   when this session runs inside herdr, and this session dispatches and
   relays: `herdr-delegation` says how. Outside herdr, or in a session another
