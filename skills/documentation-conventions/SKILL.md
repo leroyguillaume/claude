@@ -95,9 +95,10 @@ to update.
 **No inventories of files.** A README does not list the files beside it, nor
 what each one holds: the person adding or changing a file edits that file, not
 the README next to it, and a "what it holds" column is a summary of the file's
-own header. What a file does belongs in its header comment. A README says what
-the directory is *for*, and names a file only where the prose needs it — the
-one that is somewhere a reader would not look, the one a procedure edits.
+own header. What a file does is said by its name, or by a header comment when
+the name is not enough. A README says what the directory is *for*, and names a
+file only where the prose needs it — the one that is somewhere a reader would
+not look, the one a procedure edits.
 
 **Similar is not the same.** Before merging near-identical text from several
 places, ask whether it changes *together*. A procedure that belongs to one
