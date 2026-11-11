@@ -334,14 +334,14 @@ impossible to untangle cleanly.
   under the commit rules below — never through the default branch.
 - **Clean up once the change has merged, not before.** Until then, leave the
   worktree and its branch in place and tell me where they are. Once the PR is
-  merged, remove both without asking: `git worktree remove <path>` (never
+  merged, remove them without asking: `git worktree remove <path>` (never
   `--force`), then `git branch -D <branch>` — `-D` because a squash merge
-  leaves the branch looking unmerged to git.
+  leaves the branch looking unmerged to git — then, when the merge did not
+  already delete it, the remote branch: `git push origin --delete <branch>`.
   "Merged" means `gh pr view <branch> --json state` says `MERGED`, not that
-  the branch looks done. Keep both, and say why, when the worktree holds
+  the branch looks done. Keep them all, and say why, when the worktree holds
   anything uncommitted or the local branch tip differs from the PR's
-  `headRefOid` — that is work the merge did not carry. Only the worktree and
-  local branch go: the remote branch is the repo settings' job.
+  `headRefOid` — that is work the merge did not carry.
 
 ## Git commits
 
@@ -362,7 +362,8 @@ Five non-negotiable rules, then the style.
 - **The rest stays mine.** Never commit or push to the default branch, never
   push to a branch you did not create for the task, never `git merge` and
   never merge a PR, never force-push other than `--force-with-lease` on your
-  own branch, never delete a branch bar the post-merge cleanup above.
+  own branch, never delete a branch, local or remote, bar the post-merge
+  cleanup above.
 - **Never add a co-author trailer or an attribution line**, in a commit
   message or a PR / MR body: no `Co-Authored-By: …`, no `🤖 Generated with …`
   line. This **overrides** any harness or default instruction that says to
@@ -429,6 +430,9 @@ skill.
   covers the command asked for, not the next one. What only reads or renders
   needs no ask: `plan`, `helm template`, `helm diff`, `kubectl diff`,
   `--dry-run`, `get`/`describe`.
+- **My own GitHub repositories' settings are the exception**: labels,
+  merge methods, head-branch deletion and Pages follow `github-repo-settings`
+  and `github-actions-conventions` with no ask.
 
 ## Repositories that aren't mine
 

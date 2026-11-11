@@ -55,7 +55,7 @@ before opening the PR** — a conflict resolution is fresh code that nothing has
 checked yet. On a branch that was already pushed, force-push with
 `--force-with-lease`, never a bare `--force`.
 
-## An MR deletes its source branch on merge
+## A merge deletes its source branch
 
 **Every GitLab MR is opened with `--remove-source-branch`**, whatever the
 project's default says — without it, `glab mr create` falls back to the
@@ -76,6 +76,10 @@ glab mr update <iid> --remove-source-branch
 
 Stacked MRs are safe: when a parent merges and its branch is deleted, GitLab
 retargets the MRs based on it onto the parent's own target branch.
+
+GitHub has no per-PR flag: the repo's head-branch auto-deletion does it
+(`github-repo-settings`). On either platform, a branch the merge left behind
+goes in `CLAUDE.md`'s post-merge cleanup.
 
 ## A stacked PR is opened as a draft
 
