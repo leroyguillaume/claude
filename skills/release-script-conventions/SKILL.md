@@ -4,10 +4,10 @@ description: >-
   Release flow: a `scripts/release.sh` that bumps and tags; CI publishes from
   the tag.
   TRIGGER when: creating or editing a release/bump script; wiring release
-  automation; setting the project's own `version`/`appVersion`; a workflow
+  automation; bumping the project's own `version`/`appVersion`; a workflow
   triggered by a `v*`/`chart-*` tag; user asks how to cut, tag or publish a
-  release, or to bump a version.
-  SKIP when: work merely reads a version.
+  release.
+  SKIP when: reading a version, or bumping a dependency's.
 ---
 
 # Release script conventions
@@ -170,9 +170,11 @@ stop. Change nothing, and never prompt — there is nothing to push.
 
 **Never:**
 
-- Never bump a version outside this script — not in a normal commit, not "just
-  this once". In a repo that publishes without one, a bump the user asks for
-  is made by hand, and the script proposed as its own change.
+- Never bump the project's own version outside this script — not in a
+  normal commit, not "just this once". In a repo that publishes without one,
+  a bump the user asks for is made by hand, and the script proposed as its
+  own change. A chart or package the project consumes is a dependency bump,
+  not this.
 - Never run the script as an agent, even when asked for a release: writing it
   is not permission to run it, and it commits on the default branch. Hand the
   user the command instead.
