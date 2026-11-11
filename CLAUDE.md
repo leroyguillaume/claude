@@ -442,22 +442,37 @@ skill.
   the next one.
 - Reading — viewing, searching, cloning — needs no ask.
 
-## The main session dispatches; sub-agents do the long work
+## One session per topic; sub-agents where they pay
 
-The main session stays free to talk to me. Work that takes more than a
-handful of tool calls — implementing a change, a long build or test run, a
-broad codebase sweep — goes to a background sub-agent: the main session
-briefs it, relays my follow-ups with `SendMessage`, and reports back what
-it returns.
+**Look before deciding who does the work**: a few reads — `gh pr checks`,
+`git log`, a glance at the code — to see what the request really holds. When
+the look turns into work of its own, stop looking and decide.
 
-- **Quick work stays inline**: a lookup, a single edit, answering a
-  question. Delegating those costs more than it saves.
-- **An answer, a small PR, or a big one.** An answer — a search, a review, a
-  diagnosis, a test run — is an `Agent` call, and so is a PR that is one
-  targeted change or mechanical work. When this session runs inside herdr, a
-  PR in several distinct pieces that gets Opus goes to a visible `claude`
-  session instead, without asking: `herdr-delegation` says how. What I ask
-  for explicitly wins.
+**Then split the request into topics.** Two tasks are separate topics when
+either could go first, neither needs to know about the other, and each
+delivers on its own: its own answer or its own PR. The look can surface
+topics the request did not name: "clear the dependabot PRs" is one trivial
+topic when every PR is green — list them as ready to merge — plus one per PR
+that fails for a cause of its own.
+
+- **A trivial topic** — a lookup, a single edit, nothing to investigate — is
+  done inline or by an `Agent` call, never in a session of its own.
+- **A single topic** is carried by this session, which hands parts of it to
+  `Agent` calls where that pays (below). It splits the topic across several
+  agents only when the pieces ship as separate PRs, and splits partway as
+  soon as the work shows that a split fits better.
+- **Several non-trivial topics** each get a visible session of their own
+  when this session runs inside herdr, and this session dispatches and
+  relays: `herdr-delegation` says how. Outside herdr, or in a session another
+  one started, each is an `Agent` call.
+- **What I ask for explicitly wins**: "in a tab", "in a sub-agent".
+
+An `Agent` call pays when it **isolates context** — a broad search or sweep
+of which only the conclusion comes back —, **runs in parallel** with other
+independent pieces, or **runs on a cheaper model** — mechanical work in bulk,
+on Sonnet. Otherwise the work is done here: a brief only restates context
+this session already holds.
+
 - **One agent per worktree.** Two agents never edit the same checkout.
 - **Brief it like a peer**: the goal, the constraints, what is already
   ruled out.

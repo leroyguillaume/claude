@@ -2,25 +2,26 @@
 name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
-  a tab or terminal of its own instead of the `Agent` tool, for a PR in
-  several pieces that takes judgement: when to, where it opens, the brief, the
-  report, when to close it, what never to touch.
+  a tab or terminal of its own, one per topic when a request holds several:
+  when to, where it opens, the brief, the report, when to close it, what never
+  to touch.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
-  inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session is
-  about to delegate a PR that spans several distinct pieces and gets Opus.
-  SKIP when: the deliverable is an answer, a targeted fix or a mechanical PR,
-  which stay on the `Agent` tool; `CLAUDE_HERDR_DELEGATED` is set or the hc
-  terminal has a parent, even if the brief mentions herdr; outside herdr.
-  Load `herdr-tui-delegation` or `herdr-core-delegation` alongside.
+  inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session has
+  split a request into several non-trivial topics.
+  SKIP when: a single topic, which the main session carries, or a trivial
+  one; `CLAUDE_HERDR_DELEGATED` is set or the hc terminal has a parent, even
+  if the brief mentions herdr; outside herdr. Load `herdr-tui-delegation` or
+  `herdr-core-delegation` alongside.
 ---
 
 # Delegating through herdr
 
-Delegation uses the `Agent` tool by default. Inside herdr, a PR in several
-pieces that takes judgement goes instead to a real `claude` session in a
-terminal of its own, which the user sees appear and can watch, steer or
-resume later. It costs a tab and the user's attention, so it is kept for that
-work: everything else stays an `Agent` call.
+`CLAUDE.md` splits a request into topics. Inside herdr, when a request holds
+several non-trivial ones, each goes to a real `claude` session in a terminal
+of its own, which the user sees appear and can watch, steer or resume later.
+A single topic stays with the main session, and a trivial one is done inline
+or by an `Agent` call: a tab costs the user's attention, and earns it only
+where there is a topic of its own to follow.
 
 herdr comes as two separate programs that share no agents, and the session
 uses whichever it runs in. Each has its own skill for the commands:
@@ -49,26 +50,22 @@ else echo agent; fi
   mentions herdr.
 - **`herdr` or `hc`, and the user asked for one or the other** — a visible
   session ("in a tab") or a sub-agent: that wins over the two rules below.
-- **`herdr` or `hc`, a PR in several pieces, and Opus** — the request holds
-  several distinct changes, or one task that splits into several pieces, and
-  the model picked under `CLAUDE.md`'s rule is Opus: delegate to a visible
-  session, with `herdr-tui-delegation` or `herdr-core-delegation`, without
-  asking.
-- **`herdr` or `hc`, otherwise**: use the `Agent` tool. That covers an
-  answer — a search, a review, a diagnosis, a test run, a summary — and a PR
-  that is one targeted change or mechanical work, even across many files:
-  there is nothing in it to watch or steer.
+- **`herdr` or `hc`, and several non-trivial topics** — named by the request
+  or surfaced by the look before deciding, such as a dependabot PR that
+  fails: one visible session per topic, with `herdr-tui-delegation` or
+  `herdr-core-delegation`, without asking.
+- **`herdr` or `hc`, otherwise**: no tab. The main session carries a single
+  topic itself, with `Agent` calls where they pay, and does a trivial one
+  inline or through an `Agent` call.
 
-A tab earns the user's attention where there is something to watch and
-steer: a request in several pieces, on work that takes judgement, where an
-agent can go astray partway. Both are known before the launch — the scope
-from the request, the model from the choice stated before every launch —
-unlike how long the work will run. Such work also fits a session of its own.
-Its tab lives as long as the PR and closes at the merge (below). Review
-comments and a red CI land on the same branch, so the same session picks
-them up. `git push` and `gh pr create` ask for approval, which the user
-answers in the tab. And a `claude` session can launch `Agent` sub-agents of
-its own, which an `Agent` sub-agent cannot.
+A session per topic matches how the user follows the work: each topic is
+steered, reviewed and followed up on its own, in its tab, while the main
+session stays free to dispatch the next. A topic that ends in a PR keeps its
+tab as long as the PR and closes it at the merge (below). Review comments and
+a red CI land on the same branch, so the same session picks them up.
+`git push` and `gh pr create` ask for approval, which the user answers in the
+tab. And a `claude` session can launch `Agent` sub-agents of its own, which
+an `Agent` sub-agent cannot, so a topic that turns out long splits from there.
 
 The rest of delegating does not change: one agent per worktree, a brief
 written like a peer's.
@@ -94,8 +91,7 @@ written like a peer's.
    sub-agent models: weigh Sonnet against Opus, Opus when in doubt, and state
    the choice in one line before launching. It applies here although no
    `Agent` call carries a `model`: it goes to `claude` as `--model`, never
-   left to its default. Unless the user asked for the tab, it is Opus: work
-   that gets Sonnet never opens one.
+   left to its default.
 
 4. **Start `claude`** with that `--model`, in the main session's permission
    mode: a session in another mode holds cross-session messages for its
