@@ -2,11 +2,10 @@
 name: argocd-conventions
 description: >-
   Argo CD objects in any GitOps repository.
-  TRIGGER when: creating or editing an `Application`, `ApplicationSet`,
-  `AppProject` manifest, the app-of-apps directory or generator inputs;
-  adding a project, app or cluster;
-  bumping a chart version there; user asks about Argo CD, generators, sync
-  policy or sync waves.
+  TRIGGER when: writing an `Application`, `ApplicationSet`, `AppProject`,
+  the app-of-apps directory or generator inputs; adding a project, app or
+  cluster; bumping a chart version or its values there; user asks about Argo
+  CD, generators, sync policy or waves.
   SKIP when: authoring the chart itself (`helm-conventions`), or manifests
   with no Argo CD involvement.
 ---
