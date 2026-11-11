@@ -131,7 +131,8 @@ written like a peer's.
   copying its `from` attribute into `SendMessage`'s `to`.
 - **Follow-ups go through `SendMessage`** to that address, with
   `notify_when_idle: true`, so an agent that goes idle without answering
-  still yields a notice. Once its tab is closed (below), a follow-up — a
+  still yields a notice. Once its tab is closed — by the user, or at the
+  merge (below) — a follow-up — a
   review comment, a red CI — reopens it instead: a new tab in the same
   worktree, running `claude --continue` with the same `--model`, which
   resumes the last conversation held there, and the follow-up typed in as its
@@ -146,16 +147,13 @@ written like a peer's.
 
 ## Leave the layout to the user
 
-- **Close what this flow created once it is done**, on either condition:
-  - **its PR is merged** (`gh pr view <branch> --json state` says
-    `MERGED`): in the post-merge cleanup, before removing the worktree and
-    branch, since the agent's cwd lives in the worktree;
-  - **it sits with nothing left to do**: its final report has arrived and
-    reached the user, it is idle — never `blocked`, which waits on the user —
-    and the report leaves no background command or monitor running.
-
-  Nothing else is a reason: not a report while the agent still works, not an
-  idle agent whose report never came. The transcript stays on disk, which is
-  what lets a follow-up reopen it.
+- **Close what this flow created only once its PR is merged**
+  (`gh pr view <branch> --json state` says `MERGED`), and on no other
+  condition: not when the agent reports, not when it goes idle. Do it in the
+  post-merge cleanup, before removing the worktree and branch, since the
+  agent's cwd lives in the worktree. With no PR, or one still open or closed
+  unmerged, leave it: it is where the user reads what the agent did, and they
+  close it, or ask you to. The transcript stays on disk, which is what lets
+  a follow-up reopen it.
 - **Never touch a tab, pane, terminal or agent you did not create.**
 - **Never stop or restart the server**, and never quit herdr-app.
