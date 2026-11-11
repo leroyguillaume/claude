@@ -1,7 +1,7 @@
 ---
 name: frontend-conventions
 description: >-
-  Frontend code: TypeScript, React, Biome, mobile-first.
+  Frontend code: TypeScript, React, Biome.
   TRIGGER when: editing `.tsx`, `.ts` in a frontend app, or React components,
   hooks or pages; touching a frontend `package.json`, `tsconfig*.json`,
   `biome.json`/`.jsonc` or lockfile; user asks about frontend tooling, React
@@ -35,11 +35,6 @@ description: >-
   `npm ci` before `pre-commit` so the hook finds Biome.
 - **Exclude the frontend lockfile from `check-added-large-files`**, as
   `pre-commit-conventions` describes for every lockfile.
-- Design **mobile-first**. Base, unprefixed styles target the smallest
-  viewport; layer larger layouts additively with `min-width` breakpoints
-  (or the framework's `sm:` / `md:` / `lg:` responsive prefixes, which are
-  themselves `min-width`-based). The default, no-media-query rendering must
-  be the mobile layout.
 - Model structured data with an **explicit `type` / `interface`**, never a
   bare inline object shape threaded through the code. First reuse a type a
   dependency already ships (an SDK's request/response model, a generated API
@@ -50,7 +45,8 @@ description: >-
   TypeScript type from the schema, so the runtime shape and the static type
   cannot drift.
 - Apply `ui-copy-conventions` to every string the UI shows, and
-  `web-layout-conventions` to layout and styling.
+  `web-layout-conventions` to layout and styling, mobile-first breakpoints
+  included.
 - Apply `logging-conventions`. Frontend mechanics: use one structured logger
   module configured at app startup, and log key-values
   (`logger.debug("fetch.done", { url, status })`), never by interpolating
@@ -79,9 +75,6 @@ description: >-
 - Never use ESLint or Prettier, and never add an `.eslintrc*` or
   `.prettierrc*`. Biome owns formatting and linting; all config lives in
   `biome.json`.
-- Never write **desktop-first** styles — no `max-width` breakpoints layered
-  down from a desktop base, and no default layout that assumes a wide
-  viewport. Start at mobile and scale up.
 - Never use class components or legacy lifecycle methods; function components
   and hooks only.
 - Never thread an untyped or inline-shaped object between components or

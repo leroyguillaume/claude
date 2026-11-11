@@ -1,7 +1,8 @@
 ---
 name: web-layout-conventions
 description: >-
-  Web page layout in CSS: overflow, truncation, type scale, spacing, tables.
+  Web page layout in CSS: mobile-first, overflow, truncation, type scale,
+  spacing, tables.
   TRIGGER when: writing CSS, Tailwind classes or inline styles; laying out a
   web page, table, card grid or dashboard; user says a web UI looks cramped,
   cut off or misaligned.
@@ -12,8 +13,16 @@ description: >-
 # Web layout conventions
 
 For any page a browser renders. Where things sit and how big they are; the
-words are `ui-copy-conventions`, the breakpoints `frontend-conventions`. Each
-rule has a check that holds on the rendered page.
+words are `ui-copy-conventions`. Each rule has a check that holds on the
+rendered page.
+
+## Mobile first
+
+- **The styles outside any media query are the mobile layout**; wider layouts
+  layer on with `min-width` breakpoints (Tailwind's `sm:` / `md:` / `lg:` are
+  `min-width`). Never a `max-width` breakpoint layered down from a desktop
+  base, never a default layout that assumes a wide viewport: at the narrowest
+  viewport, no media query matches and the page reads as intended.
 
 ## Nothing leaves its box
 
