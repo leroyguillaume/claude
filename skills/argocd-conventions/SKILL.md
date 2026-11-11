@@ -70,8 +70,9 @@ moment you edit the version, never a runtime behaviour.
   ```
 
   Read the upstream release notes before bumping a major, and say in the PR
-  what changed. A chart version is not a dependency bump like any other: it is
-  a change to every cluster at once.
+  what changed. A chart version here is a dependency bump, never a release of
+  this repository — but not one like any other: it is a change to every
+  cluster at once.
 - **Pin the exact version. Never a range.** Argo CD *does* accept a semver
   constraint in `targetRevision` (`~1.2.0`, `*`), and that is precisely the
   trap: the deployed version stops being in git, two clusters synced a week
