@@ -135,7 +135,10 @@ rather than filling it with boilerplate.
   and stay; the machinery that produces them is not.)
 - **Commands.** Install, run, test, deploy → README. If a section here needs
   one, link to the README instead of repeating it.
-- **Dev setup and code style.** → `CONTRIBUTING.md`.
+- **Dev setup, code style and contributor tooling** (linters, hooks, test
+  runners), their *why* included → `CONTRIBUTING.md`. A tool the system is
+  built with or runs on (a language, a framework, a provider) is a design
+  choice and stays.
 - **Operational runbooks and one-off procedures** — how to recover from a
   corrupted store, how the cluster was bootstrapped. Those are `docs/`
   material; this file explains the design they operate on, not the steps.

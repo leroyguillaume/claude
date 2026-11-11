@@ -129,6 +129,10 @@ chart makes do with the Description's sentence.
 **The core of the file.** A newcomer must be able to copy-paste their way from
 zero to a running project without leaving this section.
 
+**With a documentation site** (`starlight-conventions`), the site is the home
+of every fact: Getting started stops at the first working run, and the
+configuration table and full usage live on the site, linked from here.
+
 - **One command per fenced block, tagged with its language**, so each is
   copy-pasteable on its own — no `$` prompt, no interleaved output.
 - **Prerequisites first**, with versions when they matter: `Python ≥ 3.13`,
