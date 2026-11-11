@@ -2,25 +2,26 @@
 name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
-  a tab or terminal of its own, as an opt-in alternative to the `Agent` tool:
-  when to, where it opens, the brief, the report, when to close it, what never to touch.
+  a tab or terminal of its own, one per topic when a request holds several:
+  when to, where it opens, the brief, the report, when to close it, what never
+  to touch.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
-  inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session is
-  about to delegate long work the user may want to watch or steer, work likely
-  to hit approval prompts, or a session worth resuming afterwards (ask the
-  user first).
-  SKIP when: `CLAUDE_HERDR_DELEGATED` is set or the hc terminal has a parent,
-  even if the brief mentions herdr; outside herdr; routine searches or
-  mechanical edits, which stay on the `Agent` tool. Load
-  `herdr-tui-delegation` or `herdr-core-delegation` alongside.
+  inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session has
+  split a request into several non-trivial topics.
+  SKIP when: a single topic, which the main session carries, or a trivial
+  one; `CLAUDE_HERDR_DELEGATED` is set or the hc terminal has a parent, even
+  if the brief mentions herdr; outside herdr. Load `herdr-tui-delegation` or
+  `herdr-core-delegation` alongside.
 ---
 
 # Delegating through herdr
 
-Delegation uses the `Agent` tool by default. Inside herdr, the main session
-can instead delegate to a real `claude` session in a terminal of its own,
-which the user sees appear and can watch, steer or resume later. It costs a
-tab and the user's attention, so it is opt-in.
+`CLAUDE.md` splits a request into topics. Inside herdr, when a request holds
+several non-trivial ones, each goes to a real `claude` session in a terminal
+of its own, which the user sees appear and can watch, steer or resume later.
+A single topic stays with the main session, and a trivial one is done inline
+or by an `Agent` call: a tab costs the user's attention, and earns it only
+where there is a topic of its own to follow.
 
 herdr comes as two separate programs that share no agents, and the session
 uses whichever it runs in. Each has its own skill for the commands:
@@ -47,13 +48,24 @@ else echo agent; fi
 - **`agent`: never open a tab.** Outside herdr, or in a session another
   session started, sub-agents are `Agent` tool calls, even when the brief
   mentions herdr.
-- **`herdr` or `hc`, and the user asked for a visible session**: delegate
-  there, with `herdr-tui-delegation` or `herdr-core-delegation`.
-- **`herdr` or `hc`, otherwise**: ask in one line when delegating ("Opus:
-  launch it in a visible tab?"), and only for long work the user may want to
-  watch or steer, work likely to hit approval prompts, or a session they may
-  want to resume. Never for a routine search or a mechanical edit. Without a
-  yes, use the `Agent` tool.
+- **`herdr` or `hc`, and the user asked for one or the other** — a visible
+  session ("in a tab") or a sub-agent: that wins over the two rules below.
+- **`herdr` or `hc`, and several non-trivial topics** — named by the request
+  or surfaced by the look before deciding, such as a dependabot PR that
+  fails: one visible session per topic, with `herdr-tui-delegation` or
+  `herdr-core-delegation`, without asking.
+- **`herdr` or `hc`, otherwise**: no tab. The main session carries a single
+  topic itself, with `Agent` calls where they pay, and does a trivial one
+  inline or through an `Agent` call.
+
+A session per topic matches how the user follows the work: each topic is
+steered, reviewed and followed up on its own, in its tab, while the main
+session stays free to dispatch the next. A topic that ends in a PR keeps its
+tab as long as the PR and closes it at the merge (below). Review comments and
+a red CI land on the same branch, so the same session picks them up.
+`git push` and `gh pr create` ask for approval, which the user answers in the
+tab. And a `claude` session can launch `Agent` sub-agents of its own, which
+an `Agent` sub-agent cannot, so a topic that turns out long splits from there.
 
 The rest of delegating does not change: one agent per worktree, a brief
 written like a peer's.
@@ -79,8 +91,7 @@ written like a peer's.
    sub-agent models: weigh Sonnet against Opus, Opus when in doubt, and state
    the choice in one line before launching. It applies here although no
    `Agent` call carries a `model`: it goes to `claude` as `--model`, never
-   left to its default. Work worth watching in a tab is rarely the
-   well-scoped kind Sonnet is for.
+   left to its default.
 
 4. **Start `claude`** with that `--model`, in the main session's permission
    mode: a session in another mode holds cross-session messages for its
@@ -90,8 +101,9 @@ written like a peer's.
 5. **Type the brief into it**, as a background command that waits for the
    agent to stop. Typed input is what gives the agent the user's go-ahead for
    the task, so the brief goes this way, not through `SendMessage`. It ends by
-   asking the agent to send its final report with `SendMessage` to the main
-   session's name, which `ListAgents` prints as "This session is <name>". A
+   asking the agent to stop every background command and monitor it started,
+   then send its final report with `SendMessage` to the main session's name,
+   which `ListAgents` prints as "This session is <name>". A
    brief too long for a command line goes in a file in the scratchpad, and
    the prompt says to read it.
 
@@ -109,7 +121,11 @@ written like a peer's.
   copying its `from` attribute into `SendMessage`'s `to`.
 - **Follow-ups go through `SendMessage`** to that address, with
   `notify_when_idle: true`, so an agent that goes idle without answering
-  still yields a notice.
+  still yields a notice. Once its tab is closed (below), a follow-up — a
+  review comment, a red CI — reopens it instead: a new tab in the same
+  worktree, running `claude --continue` with the same `--model`, which
+  resumes the last conversation held there, and the follow-up typed in as its
+  brief.
 - **Fallbacks**, when no report arrives: read the agent's screen, or ask it,
   through the same command as the brief, to write the report to a file and
   reply with the path.
@@ -120,12 +136,16 @@ written like a peer's.
 
 ## Leave the layout to the user
 
-- **Close what this flow created only once its PR is merged**
-  (`gh pr view <branch> --json state` says `MERGED`), and on no other
-  condition: not when the agent reports, not when it goes idle. Do it in the
-  post-merge cleanup, before removing the worktree and branch, since the
-  agent's cwd lives in the worktree. With no PR, or one still open or closed
-  unmerged, leave it: the user closes it, or asks you to. The transcript
-  stays resumable with `claude --resume`.
+- **Close what this flow created once it is done**, on either condition:
+  - **its PR is merged** (`gh pr view <branch> --json state` says
+    `MERGED`): in the post-merge cleanup, before removing the worktree and
+    branch, since the agent's cwd lives in the worktree;
+  - **it sits with nothing left to do**: its final report has arrived and
+    reached the user, it is idle — never `blocked`, which waits on the user —
+    and the report leaves no background command or monitor running.
+
+  Nothing else is a reason: not a report while the agent still works, not an
+  idle agent whose report never came. The transcript stays on disk, which is
+  what lets a follow-up reopen it.
 - **Never touch a tab, pane, terminal or agent you did not create.**
 - **Never stop or restart the server**, and never quit herdr-app.

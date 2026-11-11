@@ -8,8 +8,9 @@ description: >-
   touching both the backend and the frontend of a webapp; user asks how to
   split webapp work across agents.
   SKIP when: only one side is touched; already running as a delegated
-  sub-agent (never re-orchestrate from inside one). The launch can go through
-  `herdr-delegation` instead of the `Agent` tool.
+  sub-agent (never re-orchestrate from inside one). A feature is one topic:
+  its agents are `Agent` calls, inside herdr too, unless the user asks for
+  visible sessions (`herdr-delegation`).
 ---
 
 # Delegating full-stack work
@@ -24,13 +25,16 @@ backend directory, and its conventions come with the files.
 
 Every launch follows `CLAUDE.md`'s rules on delegation and sub-agent models;
 the model hints below are where this flow usually lands, not a substitute for
-weighing them. Launching through `herdr-delegation` instead of the `Agent`
-tool changes nothing here.
+weighing them. A feature is one topic under `CLAUDE.md`'s rule, which the
+main session carries: its agents are `Agent` calls, inside herdr too, unless
+the user asks for visible sessions. Nothing else in this flow depends on how
+an agent is launched.
 
-## One agent per vertical slice by default
+## One vertical slice by default
 
-**A feature that touches both sides goes to one agent, back and front, end to
-end**, in one worktree, on one branch, as one PR. It builds the endpoint,
+**A feature that touches both sides is built in one go, back and front, end
+to end**, in one worktree, on one branch, as one PR — by the main session, or
+by one agent when delegating pays under `CLAUDE.md`. It builds the endpoint,
 then the screen against the real endpoint, and is the one place where the
 whole feature is seen working.
 
@@ -85,7 +89,7 @@ flowchart LR
   front --> e2e[e2e journeys]
 ```
 
-## The main session integrates; it does not implement
+## When it splits, the main session integrates
 
 Beyond the contract, the main session writes no feature code. It briefs each
 agent, relays the user's follow-ups, and checks that the pieces fit:
@@ -121,7 +125,7 @@ against the contract, and the feature still broken end to end.
 - Sonnet to run the journeys and report; Opus when the job becomes debugging
   a failure with no obvious cause.
 
-A vertical-slice agent runs those journeys itself: it has the whole feature
+A vertical slice runs those journeys itself: it has the whole feature
 in one checkout.
 
 ## Roles not to create
