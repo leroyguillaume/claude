@@ -70,7 +70,7 @@ flag, an error-handling policy, a library picked over a near-identical one, or
 a deliberate deviation from one of these conventions. Those are real decisions
 and their reasoning is worth keeping — it goes in **`ARCHITECTURE.md` as
 standing rationale, in the present tense**, unless `architecture-conventions`
-sends it elsewhere (CI reasoning, a repository with no code), or in a code
+sends it elsewhere (CI and contributor tooling, a repository with no code), or in a code
 comment where it is genuinely farfelu.
 
 **When it is not clear-cut, ask — and do not write it meanwhile.** How

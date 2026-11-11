@@ -83,9 +83,10 @@ needs before the file holding them is any use to them:
 - a value they type in a procedure (a hostname, a command argument);
 - a README's prerequisites, with the version that matters (`Python ≥ 3.13`):
   the reader installs them before the repository's manifests mean anything;
-- a README's environment-variable table, with defaults: the code reading the
-  variables is no reference for a user, so that table is their home, updated
-  in the change that adds or alters one (`readme-conventions`).
+- the environment-variable table, with defaults, in the README or, with a
+  docs site, on the site: the code reading the variables is no reference for
+  a user, so that table is their home, updated in the change that adds or
+  alters one (`readme-conventions`).
 
 **No state.** "Deployed", "not applied yet", "live", "pending", "done": a
 document describes what the project *is*, in the present tense, never where

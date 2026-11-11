@@ -15,8 +15,8 @@ do I get a working setup and land a green PR?"** It is the *contributor's*
 counterpart to the README's *user* view, and it is linked from the README (see
 `readme-conventions`).
 
-Keep it operational: commands, not philosophy — and in English
-(`documentation-conventions`).
+Keep it operational: commands, not philosophy — a CI or tooling choice gets
+its *why* in one line, no more — and in English (`documentation-conventions`).
 
 ## Mandatory structure
 
