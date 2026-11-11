@@ -189,8 +189,9 @@ site. Link `/llms.txt` from the README next to the documentation link.
   `pass_filenames: false`: `npm --prefix docs run lint` (`biome check .`) and
   `npm --prefix docs run check` (`astro check`). The `quality` job therefore runs
   `npm ci --prefix docs` before `pre-commit`.
-- Exclude `^docs/package-lock\.json$` from `check-added-large-files`
-  (`pre-commit-conventions`).
+- `check-added-large-files` already skips `docs/package-lock.json` through the
+  baseline lockfile `exclude` (`pre-commit-conventions`). A hook takes a single
+  `exclude`: extend that regex, never replace it.
 - The dependency bot tracks `npm` in `/docs`. Pin `typescript` within the
   peer range of `@astrojs/check`; a major it does not accept fails the install.
 - The build logs structured `key=value` lines on stderr, never `console.*`.
