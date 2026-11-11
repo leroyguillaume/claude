@@ -2,11 +2,12 @@
 name: helm-conventions
 description: >-
   Helm charts: values, security context, KSV, templates, helm-docs, resources.
-  TRIGGER when: editing a chart's `templates/`, `values.yaml`,
-  `values-*.yaml`, `Chart.yaml`, `.helmignore` or `README.md`; adding a
-  Kubernetes object to a chart; user asks about Helm values, RBAC, security
-  context, KSV findings or helm-docs.
-  SKIP when: no chart file is touched and the user isn't asking about Helm.
+  TRIGGER when: editing a chart's `templates/`, own values files,
+  `Chart.yaml`, `.helmignore` or `README.md`; adding a Kubernetes object to a
+  chart; user asks about Helm values, RBAC, security context, KSV findings or
+  helm-docs.
+  SKIP when: overriding another chart's values (`argocd-conventions`), or no
+  chart file and no Helm question.
 ---
 
 # Helm chart conventions

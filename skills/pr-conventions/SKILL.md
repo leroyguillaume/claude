@@ -148,6 +148,9 @@ parent merges, so the issue still closes.
 - **The title follows the repo's commit-subject style** (read
   `git log --oneline`): a squash merge makes it the commit subject on the
   default branch.
+- **On GitLab, carry the `Changelog:` trailer** when the project's release
+  notes read it (`gitlab-ci-conventions`): with squash merges, it goes in the
+  MR's squash commit message, or the release notes miss the change.
 - **Link the issue it resolves** with `Closes #123` in the body
   (`Closes group/project#123` for an issue in another GitLab project), so the
   merge into the default branch closes it. Never close an issue by hand on the
