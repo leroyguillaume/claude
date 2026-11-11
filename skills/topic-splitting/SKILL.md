@@ -111,6 +111,11 @@ fit:
 - **A contract change goes through the contract branch**, then both sides
   rebase onto it: the carrying session makes the edit, or briefs the agent that
   owns the contract, and tells the other two.
+- **A branch that moves is announced, never polled for.** The brief of an
+  agent others build on says whom to tell once it pushes, rebases or merges,
+  with the branch and SHA: the carrying session, which relays, or the
+  waiting agents directly when they run as sessions of their own
+  (`herdr-delegation`).
 - **Check the fit, not the code**: the consumer calls only what the contract
   declares, the way it declares it, and the provider still matches the
   contract — for an HTTP API, its generated document still matches the
