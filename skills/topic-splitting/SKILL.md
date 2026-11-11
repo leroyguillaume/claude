@@ -11,7 +11,8 @@ description: >-
   user asks how to split work across agents.
   SKIP when: deciding which session carries a topic (`CLAUDE.md`, and
   `herdr-delegation` inside herdr); the work stays on one side; running as
-  an `Agent` sub-agent, which cannot launch agents of its own.
+  an `Agent` sub-agent, which cannot launch agents of its own. Load
+  `herdr-delegation` alongside when the pieces run as visible sessions.
 ---
 
 # Splitting a topic
@@ -19,9 +20,9 @@ description: >-
 `CLAUDE.md` decides which session carries a topic — the one it started in,
 or a session of its own (`herdr-delegation`) — and splits it across agents
 only when the pieces ship as separate PRs. This skill says how the carrying
-session does that, whichever it is, for the
-case that splits most often: work that spans two sides of an interface, a
-**provider** that declares it and a **consumer** that calls it.
+session does that, whichever it is, for the case that splits most often:
+work that spans two sides of an interface, a **provider** that declares it
+and a **consumer** that calls it.
 
 | Interface | Provider | Consumer | Contract |
 |---|---|---|---|
@@ -66,8 +67,9 @@ at the same interface meet at integration with two different ideas of it.
    declared with handlers that answer `501 Not Implemented`, per
    `api-conventions` and `rest-conventions`; the framework generates the
    OpenAPI document from that code, as `api-conventions` requires, and nobody
-   hand-writes a spec. The carrying session writes it, or an Opus agent: this is
-   the judgement-heavy step, and every later agent builds on its mistakes.
+   hand-writes a spec. The carrying session writes it, or an Opus agent:
+   this is the judgement-heavy step, and every later agent builds on its
+   mistakes.
 2. **The user reviews the contract** before anything starts on top of it.
    Changing a field name now costs one edit; after the split it costs two
    agents and a rebase.
@@ -109,13 +111,11 @@ fit:
 - **Every brief names the contract branch** and says the contract is fixed.
   An agent that needs it changed reports back instead of editing it.
 - **A contract change goes through the contract branch**, then both sides
-  rebase onto it: the carrying session makes the edit, or briefs the agent that
-  owns the contract, and tells the other two.
-- **A branch that moves is announced, never polled for.** The brief of an
-  agent others build on says whom to tell once it pushes, rebases or merges,
-  with the branch and SHA: the carrying session, which relays, or the
-  waiting agents directly when they run as sessions of their own
-  (`herdr-delegation`).
+  rebase onto it: the carrying session makes the edit, or briefs the agent
+  that owns the contract, and tells the other two.
+- **A branch that moves is announced, never polled for**: the carrying
+  session relays it to the agents built on it (`herdr-delegation` when they
+  run as visible sessions).
 - **Check the fit, not the code**: the consumer calls only what the contract
   declares, the way it declares it, and the provider still matches the
   contract — for an HTTP API, its generated document still matches the
@@ -138,7 +138,7 @@ green against the contract, and the feature still broken end to end.
   consumer agent is done by then: still one agent per checkout.
 - Tests it writes land on the consumer branch, since they test what that PR
   adds.
-- It reports failures; it does not fix them across the stack. The main
+- It reports failures; it does not fix them across the stack. The carrying
   session routes each one to the agent that owns that side, through
   `SendMessage`.
 - Sonnet to run the flows and report; Opus when the job becomes debugging a

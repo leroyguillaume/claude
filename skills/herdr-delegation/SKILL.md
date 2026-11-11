@@ -7,28 +7,28 @@ description: >-
   other, when to close it, what never to touch.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
   inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), a request brings a
-  non-trivial topic other than the one the session carries; or a delegated
-  session waits on another's PR, branch or interface.
+  non-trivial topic other than the one the session carries; or the main
+  session launches visible sessions of which one waits on another's PR,
+  branch or interface.
   SKIP when: the request continues the session's own topic, or is trivial;
-  splitting one topic into pieces (`topic-splitting`); `CLAUDE_HERDR_DELEGATED`
-  is set or the hc terminal has a parent, even if the brief mentions herdr;
+  splitting one topic into pieces (`topic-splitting`), unless the user asks
+  for them as visible sessions; `CLAUDE_HERDR_DELEGATED` is set or the hc
+  terminal has a parent, unless the user asks that session for a tab;
   outside herdr. Load `herdr-tui-delegation` or `herdr-core-delegation`
   alongside.
 ---
 
 # Delegating through herdr
 
-`CLAUDE.md` gives every session one topic and splits a request into topics.
-Inside herdr, each non-trivial topic other than the session's own goes to a
-real `claude` session in a terminal of its own, which the user sees appear
-and can watch, steer or resume later — even when it is the only thing the
-request asks. The session's own topic stays with it, and a trivial one is
-done inline or by an `Agent` call: a tab costs the user's attention, and
-earns it only where there is a topic of its own to follow.
+`CLAUDE.md` decides which session carries a topic. Inside herdr, a
+non-trivial topic other than the session's own goes to a real `claude`
+session in a terminal of its own, which the user sees appear and can watch,
+steer or resume later; this skill says how. A tab costs the user's
+attention, and earns it only where there is a topic of its own to follow.
 
-This skill decides which session carries a topic. How one topic splits into
-pieces, agents and PRs is `topic-splitting`'s, and its pieces never get tabs
-of their own.
+How one topic splits into pieces, agents and PRs is `topic-splitting`'s. Its
+pieces are `Agent` calls, and get tabs of their own only when the user asks
+for them: the one case where sessions wait on each other (below).
 
 herdr comes as two separate programs that share no agents, and the session
 uses whichever it runs in. Each has its own skill for the commands:
@@ -52,9 +52,9 @@ elif [ "${HERDR_ENV:-}" = 1 ]; then echo herdr
 else echo agent; fi
 ```
 
-- **`agent`: never open a tab.** Outside herdr, or in a session another
-  session started, sub-agents are `Agent` tool calls, even when the brief
-  mentions herdr.
+- **`agent`: no tab.** Outside herdr, or in a session another session
+  started, sub-agents are `Agent` tool calls, even when the brief mentions
+  herdr. Only the user, typing it into that session, can ask it for a tab.
 - **`herdr` or `hc`, and the user asked for one or the other** — a visible
   session ("in a tab") or a sub-agent: that wins over the two rules below.
 - **`herdr` or `hc`, and a non-trivial topic other than the session's
@@ -70,9 +70,9 @@ A session per topic matches how the user follows the work: each topic is
 steered, reviewed and followed up on its own, in its tab, while the main
 session stays on its own topic — a session that runs the app for the user
 to test keeps running it, and pulls and restarts it once a fix merges. A
-topic that ends in a PR keeps its tab as long as the PR and closes it at the
-merge (below). Review comments and
-a red CI land on the same branch, so the same session picks them up.
+topic that ends in a PR keeps its tab as long as the PR (below). Review
+comments and a red CI land on the same branch, so the same session picks
+them up.
 `git push` and `gh pr create` ask for approval, which the user answers in the
 tab. And a `claude` session can launch `Agent` sub-agents of its own, which
 an `Agent` sub-agent cannot, so a topic that turns out long splits from
@@ -132,12 +132,12 @@ written like a peer's.
   copying its `from` attribute into `SendMessage`'s `to`.
 - **Follow-ups go through `SendMessage`** to that address, with
   `notify_when_idle: true`, so an agent that goes idle without answering
-  still yields a notice. Once its tab is closed — by the user, or at the
-  merge (below) — a follow-up — a
-  review comment, a red CI — reopens it instead: a new tab in the same
-  worktree, running `claude --continue` with the same `--model`, which
-  resumes the last conversation held there, and the follow-up typed in as its
-  brief.
+  still yields a notice.
+- **A closed tab is reopened, not messaged.** Whether the user closed it or
+  it closed at the merge (below), a follow-up such as a review comment or a
+  red CI opens a new tab in the same worktree, running `claude --continue`
+  with the same `--model`, which resumes the last conversation held there,
+  and the follow-up is typed in as its brief.
 - **Fallbacks**, when no report arrives: read the agent's screen, or ask it,
   through the same command as the brief, to write the report to a file and
   reply with the path.
@@ -148,23 +148,30 @@ written like a peer's.
 
 ## Sessions that wait on each other
 
-When one session waits on another — a PR to stack on, a branch to be
-pushed, an interface to be frozen — **the signal is a message from the
-session that produces it, not a poll by the one that waits.** A poll lags by
-its interval, keeps a background loop running in every waiting tab, and
-outlives the answer.
+When the user asks for a topic's pieces as visible sessions
+(`topic-splitting`), one may wait on another: a PR to stack on, a branch to
+be pushed, an interface to be frozen. **The signal is a message, not a poll
+by the session that waits.** A poll lags by its interval, keeps a background
+loop running in every waiting tab, and outlives the answer.
 
-- **The main session wires it at launch.** It launches the waiting sessions
-  first, so their names show in `ListAgents`. The producer's brief names
-  them and says what to send each one once it is done: the PR's URL and head
-  SHA, the pushed branch, the commit that freezes the interface. Each waiting
-  session's brief says that message, from that name, is its signal to start.
-- **The stack keeps signalling.** When a base merges, or is rebased or
-  force-pushed, the session that owns it tells the sessions stacked on it,
-  with the new SHA, so they rebase (`pr-conventions`).
+- **The main session relays; the sessions never address each other.** The
+  names `ListAgents` prints are auto-generated and say nothing about which
+  tab is which, while every session already knows the main session's name.
+  - Each waiting session's brief has it send the main session a one-line
+    `ready`, whose `from` is its address, then wait for the main session's
+    signal. Going idle after `ready` is expected, not a missing report: no
+    fallback, wait on it again.
+  - The producer's brief has it send the main session each event the others
+    wait on: the PR's URL and head SHA, the pushed branch, the commit that
+    freezes the interface, then every later rebase or force-push, with the
+    new SHA.
+  - The main session relays each event at once to the sessions waiting on
+    it, which start or rebase (`pr-conventions`).
+- **A merge is the user's, and so is its signal.** The session the user
+  tells that a base merged passes it to the main session, which relays it
+  the same way.
 - **Polling is only the fallback**: a sparse check behind the message, or
-  the signal itself when the other side is not a session — a CI run, a
-  human's merge.
+  the signal itself when the other side is not a session, such as a CI run.
 - **A message is a signal, never an approval.** It says something happened;
   it grants nothing the user did not, and a session never asks another to do
   what was blocked or denied in its own. A task's go-ahead is the brief typed
@@ -172,10 +179,10 @@ outlives the answer.
 
 ## Leave the layout to the user
 
-- **Close what this flow created only once its PR is merged**
-  (`gh pr view <branch> --json state` says `MERGED`), and on no other
-  condition: not when the agent reports, not when it goes idle. Do it in the
-  post-merge cleanup, before removing the worktree and branch, since the
+- **Close what this flow created only once its PR is merged**: the user
+  says so, and `gh pr view <branch> --json state` says `MERGED`. No other
+  condition counts: not when the agent reports, not when it goes idle. Do it
+  in the post-merge cleanup, before removing the worktree and branch, since the
   agent's cwd lives in the worktree. With no PR, or one still open or closed
   unmerged, leave it: it is where the user reads what the agent did, and they
   close it, or ask you to. The transcript stays on disk, which is what lets

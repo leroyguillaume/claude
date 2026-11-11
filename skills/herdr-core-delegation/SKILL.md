@@ -75,10 +75,9 @@ see the agent as `env`.
 - **Blocked**: a wait returns `blocked`. Never answer it with `hc keys` or
   `hc send --force`. Once the user says it is unblocked, wait again with
   `hc wait <name>`.
-- **End the terminal this flow created only once its PR is merged**, with
-  `hc kill <name>` then `hc rm <name>`, as `herdr-delegation` sets out;
-  whatever `hc --skill` says about cleaning up helpers once they report,
-  nothing else is a reason.
+- **End the terminal this flow created** with `hc kill <name>` then
+  `hc rm <name>` when `herdr-delegation` says to, whatever `hc --skill` says
+  about cleaning up helpers once they report.
 - **Reopen it for a follow-up** with `hc run` in the same worktree, as in the
   launch, ending in `-- claude --model <model> --continue`.
 - **Never touch a terminal it did not create**: `hc ls` lists the user's
