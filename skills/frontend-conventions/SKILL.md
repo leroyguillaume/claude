@@ -4,10 +4,10 @@ description: >-
   Frontend code: TypeScript, React, Biome, mobile-first.
   TRIGGER when: editing `.tsx`, `.ts` in a frontend app, or React components,
   hooks or pages; touching a frontend `package.json`, `tsconfig*.json`,
-  `biome.json`/`.jsonc` or lockfile; styling or laying out UI; user asks about
-  frontend tooling, React or Biome.
-  SKIP when: server-side TypeScript (Node backends, CDK, Pulumi) or no
-  frontend code.
+  `biome.json`/`.jsonc` or lockfile; user asks about frontend tooling, React
+  or Biome.
+  SKIP when: server-side TS (Node, CDK, Pulumi), plain HTML
+  (`web-layout-conventions`), or no frontend code.
 ---
 
 # Frontend conventions

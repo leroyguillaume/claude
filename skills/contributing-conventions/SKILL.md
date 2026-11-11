@@ -5,8 +5,7 @@ description: >-
   TRIGGER when: creating or editing `CONTRIBUTING.md`; scaffolding a project;
   a change adds a dev dependency, pre-commit hook or CI job; user asks how
   contributors set up the repo or where to document the CI.
-  SKIP when: writing `README.md` (`readme-conventions`), or the workflow/hook
-  files themselves (`ci-conventions`, `pre-commit-conventions`).
+  SKIP when: writing `README.md` (`readme-conventions`).
 ---
 
 # CONTRIBUTING conventions
