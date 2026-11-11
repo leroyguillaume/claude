@@ -455,22 +455,29 @@ topics the request did not name: "clear the dependabot PRs" is one trivial
 topic when every PR is green — list them as ready to merge — plus one per PR
 that fails for a cause of its own.
 
-**Every session carries one topic**: the one its first request opened, or
-the one I say it is for ("this session runs the tests"). Topics are counted
-against it, not within the message.
+**A session either carries one topic or pilots**, and keeps that role. Its
+first request decides, unless I say which ("you pilot", "this session runs
+the tests"):
+
+- **One non-trivial topic: it carries it.** Its work going on, a review
+  comment or a red CI on its PR stays here. It hands parts of it to `Agent`
+  calls where that pays (below), and splits it across several agents only
+  when the pieces ship as separate PRs, from the start or as soon as the
+  work shows a split fits better: `topic-splitting` says how. A later
+  non-trivial topic is another topic, delegated as below.
+- **Several non-trivial topics: it pilots.** It delegates every topic and
+  changes no code itself, not even a trivial edit, which goes to an `Agent`
+  call in a worktree of its own. It stays in my main checkout on the default
+  branch, keeps it current after each merge so I can test locally, and
+  keeps its context for coordination: the details stay between me and each
+  delegated session.
+
+Delegating a topic means a visible session of its own when this session
+runs inside herdr, which I steer directly: `herdr-delegation` says how.
+Outside herdr, or in a session another one started, it is an `Agent` call.
 
 - **A trivial topic** — a lookup, a single edit, nothing to investigate — is
   done inline or by an `Agent` call, never in a session of its own.
-- **This session's own topic** — its work going on, a review comment or a
-  red CI on its PR — stays here. It hands parts of it to `Agent` calls where
-  that pays (below), and splits it across several agents only when the
-  pieces ship as separate PRs, from the start or as soon as the work shows a
-  split fits better: `topic-splitting` says how.
-- **Any other non-trivial topic**, even when it is the only thing asked,
-  gets a visible session of its own when this session runs inside herdr,
-  and this session stays on its topic and relays: `herdr-delegation` says
-  how. Outside herdr, or in a session another one started, it is an `Agent`
-  call.
 - **What I ask for explicitly wins**: "in a tab", "in a sub-agent".
 
 An `Agent` call pays when it **isolates context** — a broad search or sweep
