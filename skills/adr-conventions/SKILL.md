@@ -69,8 +69,9 @@ naming or ergonomics choice, a default value, a config or file format, a CLI
 flag, an error-handling policy, a library picked over a near-identical one, or
 a deliberate deviation from one of these conventions. Those are real decisions
 and their reasoning is worth keeping — it goes in **`ARCHITECTURE.md` as
-standing rationale, in the present tense** (see `architecture-conventions`),
-or in a code comment where it is genuinely farfelu.
+standing rationale, in the present tense**, unless `architecture-conventions`
+sends it elsewhere (CI reasoning, a repository with no code), or in a code
+comment where it is genuinely farfelu.
 
 **When it is not clear-cut, ask — and do not write it meanwhile.** How
 load-bearing and how permanent a decision feels is a judgement about *this*

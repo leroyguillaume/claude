@@ -26,7 +26,8 @@ says how.
    `architecture-conventions` and `contributing-conventions` skills' job.
 4. **Only an architectural change gets an ADR, in `docs/adr/`** — one that
    redraws the architecture diagram; any other decision's reasoning belongs in
-   `ARCHITECTURE.md`, created if the project has none yet. **When it is not
+   `ARCHITECTURE.md`, created when `architecture-conventions` calls for one —
+   CI and tooling reasoning goes in `CONTRIBUTING.md`. **When it is not
    clear-cut, ask me instead of writing one**: ADRs are immutable. See
    `adr-conventions`.
 5. **No code duplication beyond the rule of three.** When the same logic

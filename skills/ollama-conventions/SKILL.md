@@ -60,8 +60,7 @@ possibly-stale memory — don't present a remembered model as a current best.
 - **Don't pin `:latest`.** Always use an explicit, reproducible model tag in
   code, compose files, Modelfiles, and docs.
 - **Document the choice.** When you commit a model tag, leave a one-line note
-  (in `ARCHITECTURE.md` or a comment next to the tag) of *why* in terms of the
-  task it serves. The benchmark snapshot and its date go in the commit message
+  in `ARCHITECTURE.md` of *why* in terms of the task it serves. The benchmark snapshot and its date go in the commit message
   or PR description, never in the file — a dated ranking in a doc is stale the
   week it lands.
 - **Embeddings go through `/api/embed`**, which takes a batch `input`;
