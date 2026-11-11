@@ -46,7 +46,6 @@ gets, so it has to mean something. Reserved names, always at the root:
   files because neither author saw the other's.
   ```hcl
   # data.tf
-  # The VPC is shared platform infrastructure -- adopted, never created here.
   data "google_compute_network" "cluster" {
     name    = var.network_name
     project = var.host_project
@@ -57,9 +56,9 @@ gets, so it has to mean something. Reserved names, always at the root:
     project = var.host_project
   }
   ```
-  Group `data.tf` with a blank line and a comment per logical cluster of
-  lookups when it grows; do not split it into `data-network.tf` /
-  `data-dns.tf`. One file, one answer.
+  When `data.tf` grows, keep each cluster of lookups together, a blank line
+  between clusters; do not split it into `data-network.tf` / `data-dns.tf`.
+  One file, one answer.
 - **One `locals` block, in `locals.tf`, and never a second one appended below
   the first.** HCL merges them, so two blocks parse and plan exactly like one —
   which is the problem: nothing fails, and the file now has two places a local
@@ -67,7 +66,7 @@ gets, so it has to mean something. Reserved names, always at the root:
   brace of a block that looked complete, and the next person to add a value
   picks one of the two by coin flip. The split also carries no meaning, because
   HCL gives it none: the blocks are not scopes, not ordering, not visibility.
-  Merge them and group with a blank line and a comment instead.
+  Merge them instead, with a blank line between groups.
 
   This is almost always an editing artefact rather than a decision — appending
   to the file with `cat >>` or an editor's "add to end" is one keystroke and
@@ -283,8 +282,9 @@ gets, so it has to mean something. Reserved names, always at the root:
   injected block between `<!-- BEGIN_TF_DOCS -->` / `<!-- END_TF_DOCS -->`,
   generated from a committed `terraform-docs.yml`.
 - Bootstrap and recovery procedures go in `README.md`, or a runbook it links.
-- The *why* — why this provider, why this floor, why the VPC is adopted rather
-  than created — goes in `ARCHITECTURE.md`.
+- The *why* — why this provider, why the VPC is adopted rather than created —
+  goes in `ARCHITECTURE.md`. Only a version floor's reason stays in its
+  comment, beside the line it explains.
 
 ## pre-commit
 
