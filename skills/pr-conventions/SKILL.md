@@ -134,6 +134,11 @@ glab mr view <iid> -F json --jq .target_branch
 Anything but the default branch stays a draft. Only the bottom PR of a stack,
 the one based on the default branch, is ever ready for review.
 
+**A PR with others stacked on it tells their owners when it moves** —
+merged, rebased or force-pushed — so they rebase in turn. When another
+session owns them, that is a message to it, not a poll on its side
+(`herdr-delegation`).
+
 If a stacked PR merged into its parent anyway, its change now ships with the
 parent: move its closing keyword into the parent's description before the
 parent merges, so the issue still closes.

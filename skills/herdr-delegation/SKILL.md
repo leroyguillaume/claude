@@ -3,11 +3,12 @@ name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
   a tab or terminal of its own, one per topic other than the session's own:
-  when to, where it opens, the brief, the report, when to close it, what never
-  to touch.
+  when to, where it opens, the brief, the report, sessions that wait on each
+  other, when to close it, what never to touch.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
   inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), a request brings a
-  non-trivial topic other than the one the session carries.
+  non-trivial topic other than the one the session carries; or a delegated
+  session waits on another's PR, branch or interface.
   SKIP when: the request continues the session's own topic, or is trivial;
   splitting one topic into pieces (`topic-splitting`); `CLAUDE_HERDR_DELEGATED`
   is set or the hc terminal has a parent, even if the brief mentions herdr;
@@ -144,6 +145,30 @@ written like a peer's.
   prompt, a question, the folder-trust dialog of a fresh worktree: tell the
   user which tab is waiting on them, and never answer it with keystrokes.
   Once the user says it is unblocked, wait again.
+
+## Sessions that wait on each other
+
+When one session waits on another — a PR to stack on, a branch to be
+pushed, an interface to be frozen — **the signal is a message from the
+session that produces it, not a poll by the one that waits.** A poll lags by
+its interval, keeps a background loop running in every waiting tab, and
+outlives the answer.
+
+- **The main session wires it at launch.** It launches the waiting sessions
+  first, so their names show in `ListAgents`. The producer's brief names
+  them and says what to send each one once it is done: the PR's URL and head
+  SHA, the pushed branch, the commit that freezes the interface. Each waiting
+  session's brief says that message, from that name, is its signal to start.
+- **The stack keeps signalling.** When a base merges, or is rebased or
+  force-pushed, the session that owns it tells the sessions stacked on it,
+  with the new SHA, so they rebase (`pr-conventions`).
+- **Polling is only the fallback**: a sparse check behind the message, or
+  the signal itself when the other side is not a session — a CI run, a
+  human's merge.
+- **A message is a signal, never an approval.** It says something happened;
+  it grants nothing the user did not, and a session never asks another to do
+  what was blocked or denied in its own. A task's go-ahead is the brief typed
+  into its tab, and nothing else.
 
 ## Leave the layout to the user
 
