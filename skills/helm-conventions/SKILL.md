@@ -94,7 +94,8 @@ description: >-
   that component's block (resolve via a deep-merge helper:
   `mergeOverwrite (deepCopy global) (pick component …)`), so a component
   can deviate from a shared default without forcing the value to move
-  out of `global`.
+  out of `global`. A chart with a single component has no `global:` block:
+  the `global:` keys this skill shows live in that component's block.
 - **Group values by domain into a nested object as soon as two or more
   keys concern the same concern.** Within any block (`global:` or a
   component), when more than one key relates to the same domain
@@ -272,30 +273,32 @@ description: >-
   causes unnecessary throttling, so leave CPU unlimited. Every workload
   must declare all five values — `requests.cpu`, `requests.memory`,
   `requests.ephemeral-storage`, `limits.memory`,
-  `limits.ephemeral-storage`. Example default:
+  `limits.ephemeral-storage`. Each component sizes its own, in its block.
+  Example default:
   ```yaml
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-      ephemeral-storage: 64Mi
-    limits:
-      memory: 128Mi
-      ephemeral-storage: 256Mi
+  <component>:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+        ephemeral-storage: 64Mi
+      limits:
+        memory: 128Mi
+        ephemeral-storage: 256Mi
   ```
 - **Always set `revisionHistoryLimit` on every workload that keeps a
   rollout history** — `Deployment`, `StatefulSet`, `DaemonSet`. Expose it
-  as a documented key in the component's `values.yaml` block (default `0`)
-  and reference it from the template; never hardcode it and never leave it
-  out. Kubernetes defaults to `10`, so an unset field silently piles up ten
+  as a documented key in `global:` (default `0`), overridable per component
+  like any `global.*` key, and reference the merged value from the template;
+  never hardcode it and never leave it out. Kubernetes defaults to `10`, so an unset field silently piles up ten
   stale ReplicaSets or ControllerRevisions per workload — noise in
   `kubectl get rs`, and etcd objects nobody will ever roll back to. Git is
   the record of what was deployed: a rollback is a revert and a redeploy,
   the same answer `argocd-conventions` gives for the Application.
   ```yaml
   # values.yaml
-  <component>:
-    # -- Number of old revisions the workload keeps for rollback.
+  global:
+    # -- Number of old revisions each workload keeps for rollback.
     revisionHistoryLimit: 0
   ```
   ```yaml
