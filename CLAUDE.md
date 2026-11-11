@@ -399,12 +399,13 @@ skill.
 
 - **Never bump versions on your own.** Do not edit `version` /
   `appVersion` in `Chart.yaml`, `version` in `pyproject.toml` /
-  `Cargo.toml` / `package.json`, or any equivalent application or chart
-  version field, unless I explicitly ask for it. This holds even when you
-  ship a breaking change — releases are my call. If you think a bump is
-  warranted, mention it and wait for confirmation. When the repo has a
-  `scripts/release.sh`, hand me its command instead of editing, even if I ask
-  (see `release-script-conventions`).
+  `Cargo.toml` / `package.json`, or any equivalent field holding the version
+  this project releases, unless I explicitly ask for it. Pinning a chart or
+  package the project consumes is a dependency bump, not a release. This
+  holds even when you ship a breaking change — releases are my call. If you
+  think a bump is warranted, mention it and wait for confirmation. When the
+  repo has a `scripts/release.sh`, hand me its command instead of editing,
+  even if I ask (see `release-script-conventions`).
 
 ## System packages
 
