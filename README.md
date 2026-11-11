@@ -152,6 +152,17 @@ turn:
 Both scripts sit in `~/.claude` when the repository is cloned there; otherwise
 use the path of your copy.
 
+Claude Code lists every skill's name and description to the model within a
+size budget. The descriptions of these skills together exceed the default, and
+past it the least-used skills are listed without their description, so the
+model sees less of when to load them. This value makes room for all of them:
+
+```json
+{
+  "skillListingBudgetFraction": 0.02
+}
+```
+
 ### Usage
 
 The skills take effect the next time a client starts.
