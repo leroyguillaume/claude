@@ -2,26 +2,32 @@
 name: herdr-delegation
 description: >-
   Delegating from a Claude Code session inside herdr to a visible `claude` in
-  a tab or terminal of its own, one per topic when a request holds several:
+  a tab or terminal of its own, one per topic other than the session's own:
   when to, where it opens, the brief, the report, when to close it, what never
   to touch.
   TRIGGER when: the user asks for a visible or herdr sub-agent or session; or,
-  inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), the main session has
-  split a request into several non-trivial topics.
-  SKIP when: a single topic, which the main session carries, or a trivial
-  one; `CLAUDE_HERDR_DELEGATED` is set or the hc terminal has a parent, even
-  if the brief mentions herdr; outside herdr. Load `herdr-tui-delegation` or
-  `herdr-core-delegation` alongside.
+  inside herdr (`HERDR_ENV=1`, or `HC_TERMINAL_ID` set), a request brings a
+  non-trivial topic other than the one the session carries.
+  SKIP when: the request continues the session's own topic, or is trivial;
+  splitting one topic into pieces (`topic-splitting`); `CLAUDE_HERDR_DELEGATED`
+  is set or the hc terminal has a parent, even if the brief mentions herdr;
+  outside herdr. Load `herdr-tui-delegation` or `herdr-core-delegation`
+  alongside.
 ---
 
 # Delegating through herdr
 
-`CLAUDE.md` splits a request into topics. Inside herdr, when a request holds
-several non-trivial ones, each goes to a real `claude` session in a terminal
-of its own, which the user sees appear and can watch, steer or resume later.
-A single topic stays with the main session, and a trivial one is done inline
-or by an `Agent` call: a tab costs the user's attention, and earns it only
-where there is a topic of its own to follow.
+`CLAUDE.md` gives every session one topic and splits a request into topics.
+Inside herdr, each non-trivial topic other than the session's own goes to a
+real `claude` session in a terminal of its own, which the user sees appear
+and can watch, steer or resume later — even when it is the only thing the
+request asks. The session's own topic stays with it, and a trivial one is
+done inline or by an `Agent` call: a tab costs the user's attention, and
+earns it only where there is a topic of its own to follow.
+
+This skill decides which session carries a topic. How one topic splits into
+pieces, agents and PRs is `topic-splitting`'s, and its pieces never get tabs
+of their own.
 
 herdr comes as two separate programs that share no agents, and the session
 uses whichever it runs in. Each has its own skill for the commands:
@@ -50,22 +56,26 @@ else echo agent; fi
   mentions herdr.
 - **`herdr` or `hc`, and the user asked for one or the other** — a visible
   session ("in a tab") or a sub-agent: that wins over the two rules below.
-- **`herdr` or `hc`, and several non-trivial topics** — named by the request
-  or surfaced by the look before deciding, such as a dependabot PR that
-  fails: one visible session per topic, with `herdr-tui-delegation` or
+- **`herdr` or `hc`, and a non-trivial topic other than the session's
+  own** — named by the request or surfaced by the look before deciding, such
+  as a dependabot PR that fails, or a fix asked of a session that runs the
+  tests: one visible session per such topic, with `herdr-tui-delegation` or
   `herdr-core-delegation`, without asking.
-- **`herdr` or `hc`, otherwise**: no tab. The main session carries a single
-  topic itself, with `Agent` calls where they pay, and does a trivial one
-  inline or through an `Agent` call.
+- **`herdr` or `hc`, otherwise**: no tab. The session carries its own topic
+  itself, with `Agent` calls where they pay, and does a trivial one inline or
+  through an `Agent` call.
 
 A session per topic matches how the user follows the work: each topic is
 steered, reviewed and followed up on its own, in its tab, while the main
-session stays free to dispatch the next. A topic that ends in a PR keeps its
-tab as long as the PR and closes it at the merge (below). Review comments and
+session stays on its own topic — a session that runs the app for the user
+to test keeps running it, and pulls and restarts it once a fix merges. A
+topic that ends in a PR keeps its tab as long as the PR and closes it at the
+merge (below). Review comments and
 a red CI land on the same branch, so the same session picks them up.
 `git push` and `gh pr create` ask for approval, which the user answers in the
 tab. And a `claude` session can launch `Agent` sub-agents of its own, which
-an `Agent` sub-agent cannot, so a topic that turns out long splits from there.
+an `Agent` sub-agent cannot, so a topic that turns out long splits from
+there, under `topic-splitting`.
 
 The rest of delegating does not change: one agent per worktree, a brief
 written like a peer's.

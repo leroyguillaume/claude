@@ -6,18 +6,20 @@ description: >-
   interface — an API and its client (web, CLI, mobile), two services, a CRD
   and its controller, a library and its consumers — then one agent per side
   and an integration agent, in worktrees of their own.
-  TRIGGER when: the main session is about to split a single topic across
+  TRIGGER when: the session carrying a topic is about to split it across
   several agents or PRs; a topic touches both sides of such an interface;
   user asks how to split work across agents.
-  SKIP when: the request holds several independent topics (`CLAUDE.md`, and
-  `herdr-delegation` inside herdr); the work stays on one side; already
-  running as a delegated sub-agent (never re-orchestrate from inside one).
+  SKIP when: deciding which session carries a topic (`CLAUDE.md`, and
+  `herdr-delegation` inside herdr); the work stays on one side; running as
+  an `Agent` sub-agent, which cannot launch agents of its own.
 ---
 
 # Splitting a topic
 
-`CLAUDE.md` makes a topic the main session's to carry, and splits it across
-agents only when the pieces ship as separate PRs. This skill says how, for the
+`CLAUDE.md` decides which session carries a topic — the one it started in,
+or a session of its own (`herdr-delegation`) — and splits it across agents
+only when the pieces ship as separate PRs. This skill says how the carrying
+session does that, whichever it is, for the
 case that splits most often: work that spans two sides of an interface, a
 **provider** that declares it and a **consumer** that calls it.
 
@@ -36,13 +38,13 @@ the files.
 
 Every launch follows `CLAUDE.md`'s rules on delegation and sub-agent models;
 the model hints below are where this flow usually lands, not a substitute for
-weighing them. The pieces of one topic are `Agent` calls, inside herdr too,
-unless the user asks for visible sessions.
+weighing them. The pieces of one topic are not topics of their own: they are
+`Agent` calls, inside herdr too, unless the user asks for visible sessions.
 
 ## One vertical slice by default
 
 **Work that touches both sides is built in one go, provider and consumer,
-end to end**, in one worktree, on one branch, as one PR — by the main
+end to end**, in one worktree, on one branch, as one PR — by the carrying
 session, or by one agent when delegating pays under `CLAUDE.md`. It builds
 the provider's side, then the consumer against the real thing, and is the
 one place where the whole feature is seen working.
@@ -64,7 +66,7 @@ at the same interface meet at integration with two different ideas of it.
    declared with handlers that answer `501 Not Implemented`, per
    `api-conventions` and `rest-conventions`; the framework generates the
    OpenAPI document from that code, as `api-conventions` requires, and nobody
-   hand-writes a spec. The main session writes it, or an Opus agent: this is
+   hand-writes a spec. The carrying session writes it, or an Opus agent: this is
    the judgement-heavy step, and every later agent builds on its mistakes.
 2. **The user reviews the contract** before anything starts on top of it.
    Changing a field name now costs one edit; after the split it costs two
@@ -98,16 +100,16 @@ flowchart LR
   consumer --> integration[integration checks]
 ```
 
-## When it splits, the main session integrates
+## When it splits, the carrying session integrates
 
-Beyond the contract, the main session writes no code for the topic. It
+Beyond the contract, the carrying session writes no code for the topic. It
 briefs each agent, relays the user's follow-ups, and checks that the pieces
 fit:
 
 - **Every brief names the contract branch** and says the contract is fixed.
   An agent that needs it changed reports back instead of editing it.
 - **A contract change goes through the contract branch**, then both sides
-  rebase onto it: the main session makes the edit, or briefs the agent that
+  rebase onto it: the carrying session makes the edit, or briefs the agent that
   owns the contract, and tells the other two.
 - **Check the fit, not the code**: the consumer calls only what the contract
   declares, the way it declares it, and the provider still matches the
@@ -142,7 +144,7 @@ checkout.
 
 ## Roles not to create
 
-- **Architect or product manager**: that is the main session and the user.
+- **Architect or product manager**: that is the carrying session and the user.
 - **Documentation writer**: docs ship with the change they describe, under
   `CLAUDE.md`'s documentation rules, so each agent updates its own.
 - **DevOps**: a chart, a Dockerfile or a CI change is a separate change with

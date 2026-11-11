@@ -455,17 +455,22 @@ topics the request did not name: "clear the dependabot PRs" is one trivial
 topic when every PR is green — list them as ready to merge — plus one per PR
 that fails for a cause of its own.
 
+**Every session carries one topic**: the one its first request opened, or
+the one I say it is for ("this session runs the tests"). Topics are counted
+against it, not within the message.
+
 - **A trivial topic** — a lookup, a single edit, nothing to investigate — is
   done inline or by an `Agent` call, never in a session of its own.
-- **A single topic** is carried by this session, which hands parts of it to
-  `Agent` calls where that pays (below). It splits the topic across several
-  agents only when the pieces ship as separate PRs — `topic-splitting` says
-  how — and splits partway as soon as the work shows that a split fits
-  better.
-- **Several non-trivial topics** each get a visible session of their own
-  when this session runs inside herdr, and this session dispatches and
-  relays: `herdr-delegation` says how. Outside herdr, or in a session another
-  one started, each is an `Agent` call.
+- **This session's own topic** — its work going on, a review comment or a
+  red CI on its PR — stays here. It hands parts of it to `Agent` calls where
+  that pays (below), and splits it across several agents only when the
+  pieces ship as separate PRs — `topic-splitting` says how — partway too, as
+  soon as the work shows that a split fits better.
+- **Any other non-trivial topic**, even when it is the only thing asked,
+  gets a visible session of its own when this session runs inside herdr,
+  and this session stays on its topic and relays: `herdr-delegation` says
+  how. Outside herdr, or in a session another one started, it is an `Agent`
+  call.
 - **What I ask for explicitly wins**: "in a tab", "in a sub-agent".
 
 An `Agent` call pays when it **isolates context** — a broad search or sweep
