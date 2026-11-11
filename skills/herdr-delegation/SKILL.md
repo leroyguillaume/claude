@@ -183,7 +183,7 @@ The user tells the main session, not the tab. Once
 
 1. **Close the tab** this flow created for it, before the worktree goes,
    since the agent's cwd lives there.
-2. **Remove its worktree and branch**, under `CLAUDE.md`'s post-merge
+2. **Remove its worktree and branches**, under `CLAUDE.md`'s post-merge
    cleanup; `git worktree list` finds the worktree from the PR's branch.
 3. **Bring the main checkout up to date** (`git pull --ff-only` on the
    default branch), so the user tests what merged, and restart the app if
