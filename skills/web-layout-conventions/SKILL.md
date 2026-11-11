@@ -27,8 +27,9 @@ rendered page.
 ## Nothing leaves its box
 
 - **Text never overflows its block, overlaps another, or scrolls the page
-  sideways**: at the narrowest viewport, the root's `scrollWidth` equals its
-  `clientWidth`.
+  sideways**. Check: each text element's box lies within its parent's, no two
+  siblings' boxes intersect, and at the narrowest viewport the root's
+  `scrollWidth` equals its `clientWidth`.
 - Fix in this order: **wrap** (`overflow-wrap: anywhere` on long unbroken
   strings, `min-width: 0` on flex and grid children, whose default
   `min-width: auto` refuses to shrink and is the usual cause of a page-wide
@@ -74,6 +75,10 @@ rendered page.
 - **Prose capped at `max-width: 75ch`.**
 - **Cards keep their own heights**: `align-items: start` on the grid, not
   every card stretched to the tallest.
+- **Items of one kind in a row or grid align on one edge**, whatever each
+  holds: `align-items: start`, not `center` under captions of different
+  heights, and an empty slot takes the same box as a filled one. Check: every
+  item's visual has the same `getBoundingClientRect().top`.
 
 ## Tables
 
