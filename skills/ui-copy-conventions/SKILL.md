@@ -30,6 +30,8 @@ missing hint surfaces as a question, a needless one only slows every screen.
   constraint, a consequence — never the label again.
 - **A tooltip carries only what is not on screen**: an icon-only control's
   name, or a truncated value in full.
+- **Accessible names are not screen copy**: an icon-only control or a
+  meaningful image always keeps its `aria-label` or `alt`.
 - **No explanation of a standard pattern**: search field, close button,
   toggle, pagination.
 - **No message restating what the screen shows**: no "Item deleted" toast when
