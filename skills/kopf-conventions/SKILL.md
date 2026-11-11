@@ -18,6 +18,14 @@ finalizers, ownerReferences, field manager) live in
 `kubernetes-operator-conventions` — this skill is the kopf wiring that those
 principles compile down to, plus the sharp edges that bite in practice.
 
+## Errors — `TemporaryError`, never `PermanentError`
+
+A failing handler **raises `kopf.TemporaryError`** with the `delay=` that
+`kubernetes-operator-conventions` picks per error class: it logs and
+re-schedules. **Never `kopf.PermanentError`**, which stops the retries. A bare
+`raise` of an arbitrary exception also requeues, but `TemporaryError` controls
+the message and the delay.
+
 ## Events & posting — the model you must get right
 
 kopf has **two completely separate** ways an event reaches the cluster, gated
@@ -153,8 +161,8 @@ resources:
   `kopf.dev/clusterkopfpeerings` (or `zalando.org/clusterkopfpeerings`).
   Disable peering (`settings.peering.standalone = True`) to avoid needing it.
 
-Put these in `values.yaml` as `rbac.rules` (plus `extraRules: []`), never
-hardcoded in the template (see `helm-conventions`). When debugging a
+Put these in the operator's block of `values.yaml` as `rbac.rules` (plus
+`extraRules: []`), never hardcoded in the template (see `helm-conventions`). When debugging a
 crash-looping operator, **read the first lines of the pod log** — an RBAC
 `forbidden` at boot points straight at a missing rule above.
 

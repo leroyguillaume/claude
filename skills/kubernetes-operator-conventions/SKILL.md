@@ -13,9 +13,9 @@ description: >-
 # Kubernetes operator conventions
 
 These rules govern any reconcile path: the handler itself and everything it
-calls (clients, token providers, DB access). The mechanics below are written
-for **kopf**; the same principles map onto controller-runtime and Operator
-SDK: `return ctrl.Result{}, err` (the `Result` is ignored when `err` is
+calls (clients, token providers, DB access), whatever the framework. The kopf
+wiring is `kopf-conventions`; in controller-runtime and Operator SDK, requeue
+with `return ctrl.Result{}, err` (the `Result` is ignored when `err` is
 non-nil), or `ctrl.Result{RequeueAfter: d}, nil` for a chosen delay.
 
 ## Error handling — always requeue, never abandon
@@ -26,11 +26,8 @@ This is the non-negotiable core rule.
   failure must **requeue** the object so it recovers on its own once the cause
   is fixed (an admin grants RBAC, a CRD gets installed, a dependency comes
   back, the user corrects the spec).
-- In kopf this means: **raise `kopf.TemporaryError`** (which logs and
-  re-schedules) and **never `kopf.PermanentError`** — a permanent
-  error stops the retries, which violates this rule. A bare `raise` of an
-  arbitrary exception also requeues, but prefer `TemporaryError` so you control
-  the message and delay.
+- **Never take the framework's give-up path** — kopf's `PermanentError`, for
+  one: it stops the retries, which violates this rule.
 - **Every failure must do three things, uniformly:**
   1. **Log at error level** with the underlying cause as a **structured field**
      — the API `reason` / response `message`, *not* just an HTTP status code,
@@ -41,6 +38,10 @@ This is the non-negotiable core rule.
      raised error into an event; kopf, for one, does not by default. The
      `kopf-conventions` skill has the posting mechanics.
   3. **Requeue** with a sensible delay.
+
+  A periodic status rollup — a kopf timer, a `RequeueAfter` health check —
+  reports a failure it keeps seeing through a status condition, not an event
+  on every tick: the same Warning repeated each interval buries the others.
 - **Tune the requeue delay by error class**, but always requeue:
   - **Transient** (`5xx`, `429`, network/timeout): retry **quickly** (e.g. 30s).
   - **Client / input** errors (`4xx` such as `422` invalid manifest, `403`

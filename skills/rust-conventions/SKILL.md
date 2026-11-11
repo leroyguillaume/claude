@@ -73,12 +73,16 @@ description: >-
   # Resolved against this file's parent directory, not the shell's cwd.
   MIGRATIONS_DIR = { value = "migrations", relative = true }
   ```
-  Four rules keep it from becoming a liability:
+  Five rules keep it from becoming a liability:
   - **Never `force = true`.** Without it, a variable already present in the
     environment wins and the file stays a fallback; with it, CI's own
     `DATABASE_URL` and a container's real configuration are silently replaced
     by a development default. That single word is the difference between a
     convenience and a footgun.
+  - **Never a value the project's config file sets.** `[env]` reaches the
+    binary as environment variables, which beat the config file
+    (`config-conventions`): a default here silently overrides what a
+    contributor wrote there.
   - **Only values that unlock the project's own throwaway stack** — the
     `docker-compose` services and nothing else. A credential that reaches a
     shared or production system never goes in a committed file, whatever the
@@ -92,7 +96,8 @@ description: >-
     exists and that the environment takes precedence; it does not restate the
     values.
 - Use `tokio` as the async runtime.
-- Apply `signal-handling-conventions`. Rust mechanics: enable tokio's
+- In a long-running process, apply `signal-handling-conventions`. Rust
+  mechanics: enable tokio's
   `signal` feature and write one `shutdown_signal()` future that completes on
   `SIGTERM` **or** `SIGINT`, then drive shutdown from it:
   ```rust
