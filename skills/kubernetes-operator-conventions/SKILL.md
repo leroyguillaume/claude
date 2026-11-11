@@ -154,8 +154,9 @@ downstream.
 
 The manager appears in `managedFields` only **after** a successful write to
 the resource — creation by another controller is not enough. When debugging
-*"my manager doesn't show up"*, force at least one reconcile that actually
-writes, then re-check.
+*"my manager doesn't show up"*, it takes one reconcile that actually writes
+before re-checking: on a live cluster, ask the user to trigger it, or for the
+go-ahead to.
 
 ## Observability
 
