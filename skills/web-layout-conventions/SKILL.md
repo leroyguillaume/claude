@@ -71,8 +71,7 @@ rule has a check that holds on the rendered page.
 - **The column the user scans for comes right after the row's identifier**,
   not last off the right edge.
 - **Numbers right-aligned with `font-variant-numeric: tabular-nums`**, the
-  same decimals down a column, the header aligned like its values, the unit in
-  the header.
+  same decimals down a column, the header aligned like its values.
 - **Actions in the last column, right-aligned**, buttons of one width or icons
   of one size, in the same order on every row; an unavailable one leaves its
   slot empty or disabled.

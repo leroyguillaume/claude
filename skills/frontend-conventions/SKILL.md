@@ -49,7 +49,8 @@ description: >-
   params, `localStorage`) with a schema validator (e.g. `zod`) and infer the
   TypeScript type from the schema, so the runtime shape and the static type
   cannot drift.
-- Apply `ui-copy-conventions` to every string the UI shows.
+- Apply `ui-copy-conventions` to every string the UI shows, and
+  `web-layout-conventions` to layout and styling.
 - Apply `logging-conventions`. Frontend mechanics: use one structured logger
   module configured at app startup, and log key-values
   (`logger.debug("fetch.done", { url, status })`), never by interpolating
