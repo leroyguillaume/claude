@@ -182,7 +182,6 @@ description: >-
   ```toml
   # Cargo.toml (workspace root)
   [workspace.lints.rust]
-  missing_docs = "warn"
   unsafe_code = "forbid"
 
   [workspace.lints.clippy]
@@ -201,6 +200,10 @@ description: >-
   `allow` of one of its lints and silently re-enable it. `clippy::all` includes
   `lint_groups_priority`, which catches this and suggests the fix — do not
   ignore that warning.
+- **No `missing_docs`.** It demands a `///` on every public item, which ends
+  up paraphrasing signatures. When `pedantic` asks for `# Errors` or
+  `# Panics`, write only what the signature cannot say: which input fails, and
+  how.
 - **Aim for an empty allow-list.** `pedantic` is worth keeping on: its noisy
   lints still force a decision, and its cast/float lints catch real bugs long
   after the code was written. When a lint fires, the default is to comply.
