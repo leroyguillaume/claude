@@ -43,8 +43,8 @@ Everything else is Markdown that a client reads; there is nothing to build.
 ### Prerequisites
 
 - `git`.
-- [`jq`](https://jqlang.org/download/) and a BSD `date` (macOS), for the status
-  line; `jq` and herdr for the tab-title hook.
+- [`jq`](https://jqlang.org/download/), for the status line; `jq` and herdr
+  for the tab-title hook.
 - An Agent Skills client, such as
   [Claude Code](https://docs.claude.com/en/docs/claude-code).
 - [pollen](https://github.com/groupbees/pollen), to deploy the skills into a

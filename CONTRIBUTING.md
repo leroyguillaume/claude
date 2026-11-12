@@ -111,18 +111,26 @@ can fail on the content of a change rather than its formatting. It asserts
 that a skill is well-formed, not that a client applies it: that feedback only
 exists in the projects using the skills, through their own linters and CI.
 
-The herdr hook has a test suite under [tests/](tests/). It runs the hook
-against a fake `herdr` placed first on `PATH`, which serves canned JSON and
-logs every call, so it needs neither herdr nor a session; only `jq`. Each
-case covers one condition the hook checks, and a change to the hook comes
-with the case that covers it:
+Both scripts have a test suite under [tests/](tests/), and a change to a
+script comes with the case that covers it. Each needs only `jq`.
+
+The herdr hook's suite runs the hook against a fake `herdr` placed first on
+`PATH`, which serves canned JSON and logs every call, so it needs neither
+herdr nor a session; each case covers one condition the hook checks:
 
 ```bash
 tests/herdr-tab-title.sh
 ```
 
-Try the status line script by piping it a sample of what Claude Code sends; it
-needs `jq`, and `date -r` is the BSD form (macOS):
+The status line's suite pipes it sample payloads of what Claude Code sends,
+with the host's `date` and with a fake that only takes the BSD form, and
+under a comma-decimal locale when one is installed:
+
+```bash
+tests/statusline-command.sh
+```
+
+To see the coloured output, pipe it a sample yourself:
 
 ```bash
 echo '{"model":{"display_name":"Opus"},"context_window":{"used_percentage":42},"rate_limits":{"five_hour":{"used_percentage":61,"resets_at":1893456000}}}' | ./statusline-command.sh
@@ -190,7 +198,7 @@ somewhere slower.
 
 | Workflow | What it does | Reproduce locally |
 | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `tests` job: every `tests/*.sh`. `skills` job: checks the external links, with `--emit-annotations` so a dead link lands on its line in the diff | `pre-commit run --all-files`, `tests/herdr-tab-title.sh` and `skill-validator validate links skills/` |
+| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `tests` job: every `tests/*.sh`. `skills` job: checks the external links, with `--emit-annotations` so a dead link lands on its line in the diff | `pre-commit run --all-files`, `tests/herdr-tab-title.sh`, `tests/statusline-command.sh` and `skill-validator validate links skills/` |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The
 weekly run is for the external links: a documentation URL dies without any file
