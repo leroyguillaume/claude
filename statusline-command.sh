@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Claude Code sends percentages with a decimal point, which printf rejects
+# under a comma-decimal locale (fr_FR, de_DE, ...).
+export LC_NUMERIC=C
 input=$(cat)
 model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
 
@@ -21,6 +24,11 @@ progress_bar() {
   printf '\033[%sm%s\033[0m %3s%%' "$(level_color "$pct")" "$bar" "$pct"
 }
 
+# GNU date reads `-r` as a file to stat, BSD date (macOS) as epoch seconds.
+format_epoch() {
+  date -d "@$1" "+$2" 2>/dev/null || date -r "$1" "+$2"
+}
+
 rate_limit_line() {
   local label=$1 key=$2 reset_format=$3 used reset
   used=$(echo "$input" | jq -r ".rate_limits.$key.used_percentage // empty")
@@ -29,7 +37,7 @@ rate_limit_line() {
   progress_bar "$(printf '%.0f' "$used")"
   reset=$(echo "$input" | jq -r ".rate_limits.$key.resets_at // empty")
   if [ -n "$reset" ]; then
-    printf ' (resets %s)' "$(date -r "$reset" "+$reset_format")"
+    printf ' (resets %s)' "$(format_epoch "$reset" "$reset_format")"
   fi
 }
 
