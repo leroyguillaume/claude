@@ -65,7 +65,7 @@ jobs:
           echo "version=${version#frozen: }" >> "$GITHUB_OUTPUT"
 
       - name: validate the skills with skill-validator and pollen
-        uses: groupbees/skill-action@0e139db79d4d635ee7ffc973008e56e0e07da4a1
+        uses: groupbees/skill-action@0e139db79d4d635ee7ffc973008e56e0e07da4a1  # v0.1.0
         with:
           skill-validator-version: ${{ steps.skill-validator.outputs.version }}
 
