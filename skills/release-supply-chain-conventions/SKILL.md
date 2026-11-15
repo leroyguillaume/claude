@@ -110,16 +110,29 @@ asks, and then as their own job, holding their own secrets.
 
 ## An SBOM with every release
 
-Each release that publishes an artifact attaches one SBOM, **CycloneDX or
-SPDX JSON** — the two formats `actions/attest` accepts. Pick one per
-repository and keep it.
+Each release that publishes an artifact attaches one SBOM, in **CycloneDX
+JSON**. It is the format built for security tooling: vulnerability scanners
+read it directly, and the same format carries VEX statements about which
+known CVEs actually affect the artifact. SPDX JSON, the other format
+`actions/attest` accepts, only where the user asks for it, typically for a
+licence-compliance consumer that requires it.
 
 - **Generate it from what was built**: `anchore/sbom-action`, SHA-pinned, on
   the checkout for files built from it (it reads the lockfiles of every
-  ecosystem), on the image for an image.
+  ecosystem), on the image for an image. Its default format is SPDX, so set
+  it:
+
+  ```yaml
+      - name: generate the SBOM
+        uses: anchore/sbom-action@<40-char-sha>  # vX.Y.Z
+        with:
+          format: cyclonedx-json
+          output-file: <project>-<version>.cdx.json
+  ```
+
 - **Attach it to the release** like any other file, named after the release:
-  `<project>-<version>.spdx.json` or `<project>-<version>.cdx.json`, written
-  outside `dist/` so it is never a subject of its own provenance.
+  `<project>-<version>.cdx.json`, written outside `dist/` so it is never a
+  subject of its own provenance.
 - **Attest it against the artifacts it describes**, which binds the
   inventory to those exact bytes:
 
@@ -128,7 +141,7 @@ repository and keep it.
         uses: actions/attest@<40-char-sha>  # vX.Y.Z
         with:
           subject-path: dist/*
-          sbom-path: <project>-<version>.spdx.json
+          sbom-path: <project>-<version>.cdx.json
   ```
 
   An image's SBOM is attested with the image's `subject-name` and
