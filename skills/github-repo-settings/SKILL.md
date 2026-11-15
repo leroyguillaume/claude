@@ -2,11 +2,14 @@
 name: github-repo-settings
 description: >-
   GitHub repo settings via `gh`: labels, merge methods, branch deletion,
-  Pages.
+  Pages, a public repo's security features.
   TRIGGER when: `.github/release.yaml` is created or its labels change; user
-  asks to sync labels or create/delete a single label, change merge methods, toggle head-branch deletion, or
-  enable GitHub Pages; a repo gains an `actions/deploy-pages` workflow; a
-  Pages deploy fails because Pages is off.
+  asks to sync labels or create/delete a single label, change merge methods,
+  toggle head-branch deletion, or enable GitHub Pages; a repo gains an
+  `actions/deploy-pages` workflow; a Pages deploy fails because Pages is off;
+  a repository is or becomes public, or gains a `SECURITY.md`; user asks
+  about secret scanning, push protection, Dependabot alerts or security
+  updates, or private vulnerability reporting.
   SKIP when: workflow YAML with no repo setting involved
   (`github-actions-conventions`).
 ---
@@ -166,3 +169,74 @@ Notes:
   asks for a custom domain — setting one changes every URL of the site.
 - Pages on a private repo needs a paid plan; the POST then fails with a 422.
   Say so rather than making the repo public.
+
+## Turn on a public repository's security features
+
+Every **public** repository has these on: secret scanning with push
+protection, Dependabot vulnerability alerts and security updates, and private
+vulnerability reporting, which the reporting link of its `SECURITY.md`
+(`security-policy-conventions`) points at. They are free on a public
+repository. Turn them on as soon as a repository is public, or when one is
+found off.
+
+Check the visibility first. On a private repository secret scanning needs a
+paid GitHub Advanced Security licence and private vulnerability reporting
+does not exist; say so rather than making the repository public.
+
+```bash
+gh api repos/{owner}/{repo} --jq '{visibility, security_and_analysis}'
+```
+
+Secret scanning and push protection:
+
+```bash
+gh api -X PATCH repos/{owner}/{repo} --input - <<'EOF'
+{"security_and_analysis": {"secret_scanning": {"status": "enabled"}, "secret_scanning_push_protection": {"status": "enabled"}}}
+EOF
+```
+
+Vulnerability alerts **before** security updates, which need them:
+
+```bash
+gh api -X PUT repos/{owner}/{repo}/vulnerability-alerts
+```
+
+```bash
+gh api -X PUT repos/{owner}/{repo}/automated-security-fixes
+```
+
+Private vulnerability reporting:
+
+```bash
+gh api -X PUT repos/{owner}/{repo}/private-vulnerability-reporting
+```
+
+Verify: both `status` fields read `enabled`, the alerts call succeeds (it
+answers 404 when they are off), and both `enabled` read `true`.
+
+```bash
+gh api repos/{owner}/{repo} --jq .security_and_analysis
+```
+
+```bash
+gh api --silent repos/{owner}/{repo}/vulnerability-alerts && echo enabled
+```
+
+```bash
+gh api repos/{owner}/{repo}/automated-security-fixes --jq .enabled
+```
+
+```bash
+gh api repos/{owner}/{repo}/private-vulnerability-reporting --jq .enabled
+```
+
+Notes:
+
+- Every call is idempotent: re-running it where the feature is already on
+  changes nothing.
+- Security updates open pull requests outside the version-update schedule of
+  `.github/dependabot.yaml`; the rest of that file is
+  `dependency-update-conventions`.
+- Turning one of these off is the user's decision, never the fix for a
+  blocked push or a noisy alert: a push that push protection blocks holds a
+  secret, and the secret is what gets fixed.

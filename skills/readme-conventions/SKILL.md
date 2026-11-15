@@ -76,8 +76,9 @@ the end of the description. (And when one is drawn there, it is Mermaid — see
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and the reasoning behind it.
 ```
 
-Badges (CI status, licence, version) go on a single line under the title, or
-not at all. A wall of badges is decoration, not documentation.
+Badges (CI status, licence, version, OpenSSF Scorecard) go on a single line
+under the title, or not at all. A wall of badges is decoration, not
+documentation.
 
 **A project with a logo shows it in the README**, at the very top, above the
 `# <project-name>` heading. Point at the file in the repo with a relative path,
@@ -141,7 +142,9 @@ configuration table and full usage live on the site, linked from here.
 - **Every install command covers macOS *and* Linux** — see below.
 - **Installation** — clone + install, or the package-manager one-liner.
   Derive the clone URL from `git config --get remote.origin.url`
-  (see `project-metadata-conventions`), never invent it.
+  (see `project-metadata-conventions`), never invent it. A downloaded
+  release artifact is followed by the command that verifies its attestation
+  (`release-supply-chain-conventions`).
 - **Configuration** — a table of environment variables, with defaults and
   whether they're required:
 
