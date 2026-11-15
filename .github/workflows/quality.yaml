@@ -55,24 +55,22 @@ jobs:
       - name: check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: set up Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
-        with:
-          # Floats on purpose: Dependabot has no ecosystem that bumps a Go
-          # version in a workflow, so a pin here would only go stale.
-          go-version: stable
-          # The default cache keys on go.sum, which this repository has none of:
-          # every run warns and restores nothing.
-          cache: false
-
       # Dependabot cannot bump a version inside a `run:` line, so read the one it
-      # does bump: the hook's `rev` in .pre-commit-config.yaml.
-      - name: install skill-validator
+      # does bump: the release in the `# frozen: vX.Y.Z` comment of the hook's
+      # `rev` in .pre-commit-config.yaml.
+      - name: read the pinned skill-validator release
+        id: skill-validator
         run: |
-          version="$(yq '.repos[] | select(.repo == "https://github.com/agent-ecosystem/skill-validator") | .rev' .pre-commit-config.yaml)"
-          go install "github.com/agent-ecosystem/skill-validator/cmd/skill-validator@${version}"
+          version="$(yq '.repos[] | select(.repo == "https://github.com/agent-ecosystem/skill-validator") | .rev | line_comment' .pre-commit-config.yaml)"
+          echo "version=${version#frozen: }" >> "$GITHUB_OUTPUT"
+
+      - name: validate the skills with skill-validator and pollen
+        uses: groupbees/skill-action@0e139db79d4d635ee7ffc973008e56e0e07da4a1
+        with:
+          skill-validator-version: ${{ steps.skill-validator.outputs.version }}
 
       # `check` only resolves relative links. This one hits the network, which
       # is why it lives here and not in a pre-commit hook.
       - name: check the external links
+        if: ${{ !cancelled() }}
         run: skill-validator validate links --emit-annotations skills/
