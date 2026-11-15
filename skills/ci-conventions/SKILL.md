@@ -54,7 +54,9 @@ skill says how each one maps onto files and triggers.
   disagrees** (the drift guard in `release-script-conventions`), runs `build`
   with push enabled, then creates the platform's release page with generated
   notes. It does **not** publish the chart. When a documentation site exists,
-  it also redeploys it once the release page is created. A repo of docs,
+  it also redeploys it once the release page is created. On a public
+  repository it attests what it publishes and attaches an SBOM
+  (`release-supply-chain-conventions`). A repo of docs,
   configuration or skills has no `release` pipeline.
 - **`docs`**: when the repo has a documentation site. It builds the site on
   every change proposal that touches it, and deploys it from the default

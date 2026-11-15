@@ -281,6 +281,8 @@ Before writing feature code, check that these exist:
 - [ ] a `.gitignore` for the stack
 - [ ] `README.md`, `CONTRIBUTING.md`, and `ARCHITECTURE.md` when warranted
       (rule 3)
+- [ ] `SECURITY.md` when the repository is public
+      (`security-policy-conventions`)
 - [ ] the scaffolding the matching skill requires for each technology in use
 - [ ] CI running `pre-commit` and the tests (`ci-conventions` and the
       platform's skill)
@@ -431,8 +433,9 @@ skill.
   needs no ask: `plan`, `helm template`, `helm diff`, `kubectl diff`,
   `--dry-run`, `get`/`describe`.
 - **My own GitHub repositories' settings are the exception**: labels,
-  merge methods, head-branch deletion and Pages follow `github-repo-settings`
-  and `github-actions-conventions` with no ask.
+  merge methods, head-branch deletion, Pages and a public repository's
+  security features follow `github-repo-settings` and
+  `github-actions-conventions` with no ask.
 
 ## Repositories that aren't mine
 

@@ -6,7 +6,7 @@ description: >-
   TRIGGER when: editing anything under `.github/workflows/` or
   `.github/actions/`, `.github/release.yaml`, or an `action.yaml`/`.yml`;
   setting up CI on GitHub; user asks about Actions, runners, SARIF, GitHub
-  Releases or Pages.
+  Releases, Pages or OpenSSF Scorecard.
   SKIP when: the repo is not on GitHub (`gitlab-ci-conventions`). Load
   `ci-conventions` alongside.
 ---
@@ -17,7 +17,8 @@ How the pipelines from `ci-conventions` are written on GitHub. One workflow
 file per canonical pipeline the repo needs: `.github/workflows/quality.yaml`,
 `build.yaml`, `security.yaml`, `chart.yaml`, `release.yaml`, `docs.yaml`.
 `ci-conventions` says which ones a repo has; a repo with no lockfile and no
-published image has no `security.yaml`.
+published image has no `security.yaml`. A public repository also has
+`scorecard.yaml` (below).
 
 ## YAML style
 
@@ -52,7 +53,9 @@ is `yaml-conventions`.
 Top-level `permissions: contents: read`. Widen only in the job that needs
 it: `packages: write` to push to GHCR, `security-events: write` for the SARIF
 upload, `contents: write` for `gh release create`, `packages: read` to pull a
-private image on the scheduled scan.
+private image on the scheduled scan, `id-token: write` to attest a release
+(with `attestations: write`) or to publish through a registry's trusted
+publishing (`release-supply-chain-conventions`).
 
 A called workflow can only keep or narrow the `GITHUB_TOKEN` scope of the job
 that calls it, never widen it. The `release` job that runs `uses:
@@ -70,6 +73,7 @@ permissions.
 | `chart` | `push` of tags `chart-*`, `workflow_dispatch` |
 | `release` | `push` of tags `v*` |
 | `docs` | `push` to the default branch and `pull_request` with `paths`, `workflow_dispatch` |
+| `scorecard` | `push` to the default branch, weekly `schedule`, `branch_protection_rule` |
 
 Path filters do not apply to tag, `schedule`, `workflow_dispatch` or
 `workflow_call` events, so don't write them there.
@@ -99,6 +103,9 @@ branch protection.
   `gh release create "$TAG" --generate-notes` gated on the tag containing no
   `-`. For a stable tag, pass `--notes-start-tag` with the previous stable
   tag.
+- On a public repository, `manifest` attests the image it tagged, and
+  `release` attests and uploads its files and SBOM
+  (`release-supply-chain-conventions`).
 
 ## `docs` and GitHub Pages
 
@@ -219,6 +226,80 @@ fails on a label the repo lacks.
   **disables them after 60 days without activity** on a public repo, without
   telling anyone. A dormant repo that still ships an image needs it
   re-enabled from the Actions tab.
+
+## `scorecard`
+
+A public repository runs OpenSSF Scorecard, which grades its supply-chain
+practices (pinned actions, token permissions, branch protection, a security
+policy, signed releases, …) and publishes the result. It is free on a public
+repository only; a private one has no `scorecard.yaml`.
+
+```yaml
+name: scorecard
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "37 5 * * 1"
+  branch_protection_rule:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analysis:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    steps:
+      - name: check out the repository
+        uses: actions/checkout@<40-char-sha>  # vX.Y.Z
+        with:
+          persist-credentials: false
+
+      - name: run the Scorecard analysis
+        uses: ossf/scorecard-action@<40-char-sha>  # vX.Y.Z
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: upload the results to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@<40-char-sha>  # vX.Y.Z
+        with:
+          sarif_file: results.sarif
+          category: scorecard
+```
+
+- **`branch_protection_rule`** re-grades as soon as a rule changes, and the
+  weekly schedule keeps the activity-based checks current on a quiet repo.
+  The 60-day rule for scheduled workflows (Trivy, above) applies.
+- **`publish_results: true`** sends the signed result to the Scorecard API,
+  which is what the badge reads. The API then rejects a run whose workflow
+  breaks its rules, so this file never gains: a top-level `env` or
+  `defaults`, a write permission at workflow level, `id-token: write` on
+  another job, and, in the `analysis` job, an `env`, a `container`,
+  `services`, a runner other than a GitHub-hosted Ubuntu one, a `run:` step,
+  or an action outside `actions/checkout`, `actions/upload-artifact`,
+  `github/codeql-action/upload-sarif`, `ossf/scorecard-action` and
+  `step-security/harden-runner`.
+- It never runs on a pull request, so it is never a required check.
+- The README carries its badge, on the badge line (`readme-conventions`):
+  ```markdown
+  [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/<owner>/<repo>/badge)](https://scorecard.dev/viewer/?uri=github.com/<owner>/<repo>)
+  ```
+- A finding is fixed in the repository — pin the action, narrow the token,
+  add the `SECURITY.md` — never dismissed in code scanning to lift the
+  score.
 
 ## Concurrency
 
