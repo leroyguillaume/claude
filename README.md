@@ -163,6 +163,19 @@ model sees less of when to load them. This value makes room for all of them:
 }
 ```
 
+Claude Code ends commit messages with a co-author trailer and pull request
+descriptions with a "Generated with" line; `CLAUDE.md` forbids both. An
+instruction can lose to the harness's own, so turn them off at the source:
+
+```json
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}
+```
+
 ### Usage
 
 The skills take effect the next time a client starts.
