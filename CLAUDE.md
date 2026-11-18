@@ -422,6 +422,13 @@ skill.
   (`uv add`, `cargo add`, `npm install` inside the project) are not
   affected by this rule.
 
+## Large downloads
+
+- **Ask before anything on my machine that downloads more than 30 GB**:
+  image pulls or scans, model weights, a dataset, a full catalogue build.
+  I may be on a metered connection. Say the expected volume and wait for a
+  yes; when the volume is unknown and could exceed it, ask too.
+
 ## Real infrastructure
 
 - **Never change real infrastructure without an explicit ask in the current
