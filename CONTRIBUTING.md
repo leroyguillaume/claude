@@ -117,6 +117,10 @@ exists in the projects using the skills, through their own linters and CI.
 Both scripts have a test suite under [tests/](tests/), and a change to a
 script comes with the case that covers it. Each needs only `jq`.
 
+[.gitattributes](.gitattributes) checks shell scripts out with LF line
+endings everywhere: Git for Windows converts to CRLF by default, and bash
+then fails on the trailing `\r` of every line.
+
 The herdr hook's suite runs the hook against a fake `herdr` placed first on
 `PATH`, which serves canned JSON and logs every call, so it needs neither
 herdr nor a session; each case covers one condition the hook checks:
@@ -201,7 +205,7 @@ somewhere slower.
 
 | Workflow | What it does | Reproduce locally |
 | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `tests` job: every `tests/*.sh`. `skills` job: [groupbees/skill-action](https://github.com/groupbees/skill-action) runs `skill-validator check` and `pollen validate` on every skill, then the job checks the external links; skill-validator runs with `--emit-annotations`, so its findings land on their line in the diff | `pre-commit run --all-files`, `tests/herdr-tab-title.sh`, `tests/statusline-command.sh`, `skill-validator check --strict skills/`, `skill-validator validate links skills/` and `pollen validate` on a `pollen.yaml` selecting `skills` (`repo: local`, `recurse: true`) |
+| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `tests` job: every `tests/*.sh`, on Linux and on Windows under Git Bash, where Claude Code and OpenCode run the scripts. `skills` job: [groupbees/skill-action](https://github.com/groupbees/skill-action) runs `skill-validator check` and `pollen validate` on every skill, then the job checks the external links; skill-validator runs with `--emit-annotations`, so its findings land on their line in the diff | `pre-commit run --all-files`, `tests/herdr-tab-title.sh`, `tests/statusline-command.sh`, `skill-validator check --strict skills/`, `skill-validator validate links skills/` and `pollen validate` on a `pollen.yaml` selecting `skills` (`repo: local`, `recurse: true`) |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The
 weekly run is for the external links: a documentation URL dies without any file

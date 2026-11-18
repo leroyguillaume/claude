@@ -11,7 +11,7 @@ description: >-
   user asks how to split work across agents.
   SKIP when: deciding which session carries a topic (`CLAUDE.md`, and
   `herdr-delegation` inside herdr); the work stays on one side; running as
-  an `Agent` sub-agent, which cannot launch agents of its own. Load
+  a sub-agent, which cannot launch agents of its own. Load
   `herdr-delegation` alongside when the pieces run as visible sessions.
 ---
 
@@ -40,7 +40,8 @@ the files.
 Every launch follows `CLAUDE.md`'s rules on delegation and sub-agent models;
 the model hints below are where this flow usually lands, not a substitute for
 weighing them. The pieces of one topic are not topics of their own: they are
-`Agent` calls, inside herdr too, unless the user asks for visible sessions.
+sub-agent calls (`Agent` in Claude Code, `task` in OpenCode), inside herdr
+too, unless the user asks for visible sessions.
 
 ## One vertical slice by default
 
@@ -119,7 +120,8 @@ fit:
 - **Check the fit, not the code**: the consumer calls only what the contract
   declares, the way it declares it, and the provider still matches the
   contract — for an HTTP API, its generated document still matches the
-  contract's. Review is `/code-review`, on each PR.
+  contract's. Review is the client's review command on each PR:
+  `/code-review` in Claude Code, `/review` in OpenCode.
 
 Implementation models are a judgement call per side: Sonnet fits a side that
 is mostly applying the contract and known conventions, Opus a side with real
@@ -139,8 +141,8 @@ green against the contract, and the feature still broken end to end.
 - Tests it writes land on the consumer branch, since they test what that PR
   adds.
 - It reports failures; it does not fix them across the stack. The carrying
-  session routes each one to the agent that owns that side, through
-  `SendMessage`.
+  session routes each one to the agent that owns that side: `SendMessage`
+  in Claude Code, a `task` call resuming its `task_id` in OpenCode.
 - Sonnet to run the flows and report; Opus when the job becomes debugging a
   failure with no obvious cause.
 
@@ -156,4 +158,4 @@ checkout.
   its own skills, not a role in this topic.
 - **Database administrator**: migrations belong to the provider agent, which
   owns the schema its code reads.
-- **Reviewer**: `/code-review` on each PR covers it.
+- **Reviewer**: the client's review command on each PR covers it.

@@ -2,8 +2,8 @@
 name: herdr-core-delegation
 description: >-
   herdr-core commands (`hc run`, `hc send`, `hc wait`) to launch, brief, wait
-  on and read a visible `claude` in a terminal of its own, shown as a tab by
-  herdr-app.
+  on and read a visible `claude` or `opencode` in a terminal of its own,
+  shown as a tab by herdr-app.
   TRIGGER when: `herdr-delegation` detected `hc` (`HC_TERMINAL_ID` set, the
   terminal has no parent) and a visible session is being launched, briefed,
   waited on, read or unblocked.
@@ -26,17 +26,18 @@ command.
 
 hc records the terminal a terminal was started from as its `parent`, which
 the detection in `herdr-delegation` reads: a session whose terminal has one
-delegates through the `Agent` tool. Herdr TUI's environment marker does not
-work here: `hc run` has no `--env`, and wrapping `claude` in `env` makes hc
-see the agent as `env`.
+delegates through its sub-agent tool. Herdr TUI's environment marker does not
+work here: `hc run` has no `--env`, and wrapping the client in `env` makes
+hc see the agent as `env`.
 
 ## Launch
 
 1. **Pick a name** that `hc ls` does not already show.
 
-2. **Start `claude`** with `hc run`, in the directory and space
-   `herdr-delegation` picks, and wait until it is ready for input, since a
-   brief sent earlier can be dropped. Flags after `claude` go to it:
+2. **Start the client**, `claude` or `opencode` as `herdr-delegation`
+   picks, with `hc run`, in the directory and space it picks, and wait until
+   it is ready for input, since a brief sent earlier can be dropped. Flags
+   after the client go to it:
 
    ```bash
    hc get "$HC_TERMINAL_ID" --json | jq -r '.labels["herdr.space"] // empty'
@@ -69,9 +70,17 @@ see the agent as `env`.
    `hc wait <name>`. A `not_started` means read the screen before deciding: a
    resent brief may arrive twice.
 
+4. **Under OpenCode, read the report** once it returns:
+
+   ```bash
+   hc read fix-login-timeout --lines 200 | grep -o 'REPORT: .*' | tail -n 1
+   ```
+
 ## While it runs
 
 - **Read its screen** with `hc read <name> --lines 200`.
+- **Relay into it**, under OpenCode, as a background command:
+  `hc send --wait --timeout 3600 <name> "[relay] <text>"`.
 - **Blocked**: a wait returns `blocked`. Never answer it with `hc keys` or
   `hc send --force`. Once the user says it is unblocked, wait again with
   `hc wait <name>`.
@@ -79,7 +88,8 @@ see the agent as `env`.
   `hc rm <name>` when `herdr-delegation` says to, whatever `hc --skill` says
   about cleaning up helpers once they report.
 - **Reopen it for a follow-up** with `hc run` in the same worktree, as in the
-  launch, ending in `-- claude --model <model> --continue`.
+  launch, ending in `-- claude --model <model> --continue`, or
+  `-- opencode --model <model> --session <id>`.
 - **Never touch a terminal it did not create**: `hc ls` lists the user's
   other live work too.
 - **Never** `hc server stop` or `restart`, which hit every terminal and park

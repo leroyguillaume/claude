@@ -3,12 +3,12 @@ name: herdr-tui-delegation
 description: >-
   Herdr TUI commands (`herdr pane`, `herdr workspace`, `herdr tab`,
   `herdr agent`) to find the target repo's workspace, then launch, brief,
-  wait on and read a visible `claude` in a tab of its own.
+  wait on and read a visible `claude` or `opencode` in a tab of its own.
   TRIGGER when: `herdr-delegation` detected `herdr` (`HERDR_ENV=1`, no
   `HC_TERMINAL_ID`) and a visible session is being launched, briefed, waited
   on, read or unblocked.
   SKIP when: `HC_TERMINAL_ID` is set (`herdr-core-delegation`);
-  `CLAUDE_HERDR_DELEGATED` is set; outside herdr. Load `herdr-delegation`
+  `DELEGATED_AGENT` is set; outside herdr. Load `herdr-delegation`
   alongside.
 ---
 
@@ -24,8 +24,8 @@ for one command.
 
 ## Loop guard
 
-A tab this flow opens carries `CLAUDE_HERDR_DELEGATED=1`, which the detection
-in `herdr-delegation` reads: the session in it delegates through the `Agent`
+A tab this flow opens carries `DELEGATED_AGENT=1`, which the detection
+in `herdr-delegation` reads: the session in it delegates through its sub-agent
 tool, never through another tab.
 
 ## Launch
@@ -54,7 +54,7 @@ tool, never through another tab.
 
    ```bash
    herdr tab create --workspace <workspace-id> --cwd "$dir" \
-     --label fix-login-timeout --env CLAUDE_HERDR_DELEGATED=1 --no-focus
+     --label fix-login-timeout --env DELEGATED_AGENT=1 --no-focus
    ```
 
    When no workspace holds the repo, create one instead, which comes with
@@ -62,12 +62,13 @@ tool, never through another tab.
 
    ```bash
    herdr workspace create --cwd "$dir" --label "$repo" \
-     --env CLAUDE_HERDR_DELEGATED=1 --no-focus
+     --env DELEGATED_AGENT=1 --no-focus
    herdr tab rename <tab-id> fix-login-timeout
    ```
 
-4. **Start `claude`** in the tab's pane (`.result.root_pane.pane_id`, from
-   either command). Flags after `--` go to `claude`:
+4. **Start the client** in the tab's pane (`.result.root_pane.pane_id`,
+   from either command), `--kind claude` or `--kind opencode` as
+   `herdr-delegation` picks. Flags after `--` go to the client:
 
    ```bash
    herdr agent start fix-login-timeout --kind claude --pane <pane-id> -- --model <model>
@@ -82,10 +83,19 @@ tool, never through another tab.
    `--wait` matches the first state observed after submission, so it cannot
    match the idle state the agent has not left yet.
 
+6. **Under OpenCode, read the report** once it returns:
+
+   ```bash
+   herdr agent read fix-login-timeout --source recent-unwrapped --lines 200 |
+     grep -o 'REPORT: .*' | tail -n 1
+   ```
+
 ## While it runs
 
 - **Read its screen** with `herdr agent read <name> --source
   recent-unwrapped`.
+- **Relay into it**, under OpenCode, as a background command:
+  `herdr agent prompt <name> "[relay] <text>" --wait`.
 - **Blocked**: `agent start` returns `agent_not_ready`, or a wait returns
   `blocked`. Never answer it with `herdr pane send-keys` or `send-text`.
   Once the user says it is unblocked, wait again with
@@ -94,4 +104,5 @@ tool, never through another tab.
   `herdr-delegation` says to. Never close a pane on its own, never touch a
   tab, pane or agent it did not create, and never `herdr server stop`.
 - **Reopen it for a follow-up** with a new tab in the same worktree, as in
-  the launch, and `-- --model <model> --continue` to `herdr agent start`.
+  the launch, and `-- --model <model> --continue` to `herdr agent start`,
+  or `--session <id>` in place of `--continue` under OpenCode.
