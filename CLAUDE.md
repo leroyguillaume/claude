@@ -491,7 +491,9 @@ the tests"):
 
 Delegating a topic means a visible session of its own when this session
 runs inside herdr, which I steer directly: `herdr-delegation` says how.
-Outside herdr, or in a session another one started, it is an `Agent` call.
+Outside herdr, or in a session another one started, it is an `Agent` call
+— under OpenCode, which reads this file too, a `task` call: wherever these
+rules say `Agent`.
 
 - **A trivial topic** — a lookup, a single edit, nothing to investigate — is
   done inline or by an `Agent` call, never in a session of its own.
@@ -532,6 +534,8 @@ one line of the message that launches it ("Sonnet: well-scoped search").
 
 A custom agent whose frontmatter already sets `model` keeps it unless the
 task clearly calls for the other one — then override it and say why.
+OpenCode's `task` takes no `model`: the choice is the `subagent_type`, the
+`sonnet` or `opus` sub-agent, and say so when neither is configured.
 
 ## Interaction defaults
 

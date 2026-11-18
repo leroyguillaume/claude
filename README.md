@@ -1,7 +1,8 @@
 # Agent skills and Claude Code configuration
 
 Personal engineering conventions, packaged as [Agent Skills](https://agentskills.io),
-plus the global instructions for [Claude Code](https://claude.com/claude-code).
+plus the global instructions for [Claude Code](https://claude.com/claude-code)
+and [OpenCode](https://opencode.ai).
 
 ## Description
 
@@ -14,11 +15,14 @@ verdict. The skills follow the open specification, so any client that reads
 it — Claude Code, Cursor, Codex, Gemini CLI, Copilot, OpenCode, … — can use
 them.
 
-[`CLAUDE.md`](CLAUDE.md) holds the rules Claude Code applies to every project
-unless a project-level `CLAUDE.md` overrides one. It is specific to Claude Code,
-and the repository doubles as that tool's `~/.claude` directory. It is written
-for one person's machines and addresses that person directly, so adopting it
-means rewriting it; the skills are self-contained and install on their own.
+[`CLAUDE.md`](CLAUDE.md) holds the rules Claude Code and OpenCode apply to
+every project unless a project's own instructions override one. The repository
+doubles as Claude Code's `~/.claude` directory, which OpenCode reads too. It is
+written for one person's machines and addresses that person directly, so
+adopting it means rewriting it; the skills are self-contained and install on
+their own. The skills that drive the client itself — delegating to a session
+in a herdr tab, splitting a topic across sub-agents — launch the client they
+run in: `claude` from Claude Code, `opencode` from OpenCode.
 
 Two shell scripts complete the Claude Code setup:
 
@@ -46,7 +50,11 @@ Everything else is Markdown that a client reads; there is nothing to build.
 - [`jq`](https://jqlang.org/download/), for the status line; `jq` and herdr
   for the tab-title hook.
 - An Agent Skills client, such as
-  [Claude Code](https://docs.claude.com/en/docs/claude-code).
+  [Claude Code](https://docs.claude.com/en/docs/claude-code) or
+  [OpenCode](https://opencode.ai/docs/).
+- On Windows, [Git for Windows](https://gitforwindows.org): the scripts and
+  the commands in the skills are bash, and run in its Git Bash, with `jq` on
+  its `PATH`.
 - [pollen](https://github.com/groupbees/pollen), to deploy the skills into a
   client's directories. Not needed to use the repository as `~/.claude`.
 
@@ -107,13 +115,51 @@ git fetch origin
 git checkout -f main
 ```
 
+#### OpenCode
+
+OpenCode reads `~/.claude/CLAUDE.md` as its global rules when there is no
+`~/.config/opencode/AGENTS.md`, and the skills in `~/.claude/skills/`. Clone
+the repository as `~/.claude`, as above, and both apply.
+`OPENCODE_DISABLE_CLAUDE_CODE=1` turns that off.
+
+OpenCode's `task` tool takes no model: a sub-agent runs on the model of the
+agent it is launched as. For the choice between Sonnet and Opus that
+`CLAUDE.md` asks for at every launch, define one sub-agent per model in
+`~/.config/opencode/opencode.json`, with ids from `opencode models`:
+
+```json
+{
+  "agent": {
+    "sonnet": {
+      "mode": "subagent",
+      "description": "Well-scoped work whose outcome is easy to check: search, mechanical edits, applying a known convention.",
+      "model": "anthropic/claude-sonnet-5"
+    },
+    "opus": {
+      "mode": "subagent",
+      "description": "Work that needs judgement: design, debugging with no lead, review, trade-offs.",
+      "model": "anthropic/claude-opus-5"
+    }
+  }
+}
+```
+
+On Windows, OpenCode runs commands in PowerShell when it finds one. Point it
+at Git Bash in the same file, so the skills' commands run:
+
+```json
+{
+  "shell": "C:\\Program Files\\Git\\bin\\bash.exe"
+}
+```
+
 ### Configuration
 
 - **pollen targets**: drop the `targets` block to install into the current
   project instead (`.claude/skills/` and `.agents/skills/`).
-- **Another client's global rules**: `CLAUDE.md` is only read by Claude Code.
-  Copy the rules you want into that client's own instructions file (such as
-  `AGENTS.md`).
+- **Another client's global rules**: `CLAUDE.md` is read by Claude Code, and
+  by OpenCode from `~/.claude`. For any other client, copy the rules you want
+  into its own instructions file (such as `AGENTS.md`).
 
 To show the status line, point Claude Code at the script in `settings.json`,
 which the repository does not version:
@@ -184,7 +230,7 @@ The skills take effect the next time a client starts.
   frontmatter says when to load (`TRIGGER`) and when to skip (`SKIP`). Most
   clients also let you invoke one explicitly — `/<skill-name>` in Claude Code.
 - **Global rules** in [`CLAUDE.md`](CLAUDE.md) apply unconditionally in Claude
-  Code.
+  Code and OpenCode.
 
 To pull new revisions with pollen — skills removed here are removed from the
 targets too:
