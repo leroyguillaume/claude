@@ -36,9 +36,13 @@ Two shell scripts complete the Claude Code setup:
   sessions run in [herdr](https://herdr.dev): it renames the tab after the
   terminal title Claude Code gives the session, so a tab reads "Fix the flaky CI job"
   instead of "2". It only renames a tab that holds that one pane and
-  still has herdr's default numeric label, so a label someone chose is never
-  overwritten, and a renamed tab keeps its first title. It does nothing in a
-  subagent, outside herdr, or before the session has a title of its own.
+  still has herdr's default numeric label or the label the hook gave it for
+  another session, so a label someone chose is never overwritten. A tab keeps
+  the first title of each session and takes the next one's after a `/clear`:
+  the hook records the label it sets and the session it set it for under
+  `$XDG_STATE_HOME/claude/herdr-tab-title/` (`~/.local/state` by default). It
+  does nothing in a subagent, outside herdr, or before the session has a title
+  of its own.
 
 Everything else is Markdown that a client reads; there is nothing to build.
 
