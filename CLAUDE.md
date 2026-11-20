@@ -279,13 +279,17 @@ Before writing feature code, check that these exist:
 - [ ] `.pre-commit-config.yaml` (rule 2)
 - [ ] a test framework and at least one passing test
 - [ ] a `.gitignore` for the stack
+- [ ] a `mise.toml` pinning every dev tool, toolchains included
+      (`mise-conventions`)
+- [ ] a `Taskfile.yml` holding the commands contributors and CI run
+      (`task-conventions`)
 - [ ] `README.md`, `CONTRIBUTING.md`, and `ARCHITECTURE.md` when warranted
       (rule 3)
 - [ ] `SECURITY.md` when the repository is public
       (`security-policy-conventions`)
 - [ ] the scaffolding the matching skill requires for each technology in use
-- [ ] CI running `pre-commit` and the tests (`ci-conventions` and the
-      platform's skill)
+- [ ] CI running `pre-commit` and the tests, through `task` when a
+      `Taskfile.yml` exists (`ci-conventions` and the platform's skill)
 
 **Propose, never create unasked**, on any repository: list what is missing
 and what you would add, then wait for a yes. Once approved, the missing
@@ -410,7 +414,8 @@ skill.
   holds even when you ship a breaking change — releases are my call. If you
   think a bump is warranted, mention it and wait for confirmation. When the
   repo has a `scripts/release.sh`, hand me its command instead of editing,
-  even if I ask (see `release-script-conventions`).
+  even if I ask — `task release -- <version>` when a `Taskfile.yml` wraps it
+  (see `release-script-conventions`).
 
 ## System packages
 

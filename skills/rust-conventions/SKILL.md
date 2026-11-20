@@ -219,7 +219,7 @@ description: >-
   the scoped form every time. Beware of writing the allow-list *before* the
   code: allows added at bootstrap "because everyone disables those" are
   cargo-cult, and some will not even be in the group any more.
-- Toolchain pin (`rust-toolchain.toml`), `sqlx` database tests, `build.rs` for
+- Toolchain pin (in `mise.toml`), `sqlx` database tests, `build.rs` for
   `sqlx::migrate!` and `cargo-chef` Docker builds live in
   `rust-build-conventions`; load it alongside for those.
 - Use `mockall` for test doubles. Define collaborators as traits, annotate

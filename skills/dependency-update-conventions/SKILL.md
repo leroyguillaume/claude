@@ -30,6 +30,8 @@ configure, debug and explain.
     script or a `Dockerfile` `ARG`. That is a custom manager, and Dependabot
     has no equivalent.
   - grouping or scheduling rules Dependabot cannot express.
+  - `mise.toml` and `mise.lock`: Dependabot has no mise ecosystem, Renovate's
+    `mise` manager bumps both.
 - **Off GitHub — GitLab, Gitea, self-hosted — Renovate does the whole job.**
   There is no Dependabot to prefer.
 - **"Dependabot first" is not "Dependabot for as much as possible".** In a repo

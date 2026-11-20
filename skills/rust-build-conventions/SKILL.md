@@ -3,8 +3,9 @@ name: rust-build-conventions
 description: >-
   Rust build and test infrastructure: toolchain pin, sqlx database tests,
   `build.rs`, cargo-chef.
-  TRIGGER when: scaffolding a Rust project; editing `rust-toolchain.toml` (or
-  `rust-toolchain`) or a `build.rs`; calling `sqlx::migrate!` or writing a
+  TRIGGER when: scaffolding a Rust project; pinning the Rust toolchain; a
+  `rust-toolchain.toml` (or `rust-toolchain`) in the repo; editing a
+  `build.rs`; calling `sqlx::migrate!` or writing a
   `#[sqlx::test]`; "relation does not exist" after adding a migration;
   building a Rust `Dockerfile` or touching `cargo chef`; CI red after a clippy
   release.
@@ -16,21 +17,19 @@ description: >-
 
 **Always:**
 
-- **Pin the toolchain with a `rust-toolchain.toml`** at the repository root, on
-  an exact patch version, as soon as the project lints with `pedantic` and
-  fails the build on warnings. Without a pin, a clippy release turns CI red on
+- **Pin the toolchain in `mise.toml`** (`mise-conventions`), on an exact
+  patch version, never in a `rust-toolchain.toml`: an existing one moves into
+  `mise.toml` and is deleted. Without a pin, a clippy release turns CI red on
   code nobody touched; with one, a toolchain bump is a reviewable diff.
   ```toml
-  [toolchain]
-  channel = "<current stable release>"
-  components = ["rustfmt", "clippy"]
-  profile = "minimal"
+  [tools]
+  rust = { version = "<current stable release>", components = ["rustfmt", "clippy"], profile = "minimal" }
   ```
-  Resolve `<current stable release>` when you write the file, from `rustup
-  check` or <https://releases.rs>, never from memory.
+  Resolve `<current stable release>` when you write the file, from `mise
+  latest rust` or <https://releases.rs>, never from memory.
   This pin is **not** the MSRV. `rust-version` in `Cargo.toml` is what
   consumers must have and should stay as low as the code allows; the toolchain
-  file is what contributors and CI build with and should stay current. Never
+  pin is what contributors and CI build with and should stay current. Never
   collapse the two.
 - For database integration tests, run against a **real Postgres** (the
   project's `docker-compose` service) and isolate with **`#[sqlx::test]`** —

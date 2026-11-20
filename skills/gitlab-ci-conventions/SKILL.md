@@ -231,7 +231,7 @@ What the pipeline does is in `starlight-conventions`. On GitLab:
   ```yaml
   pages:
     stage: deploy
-    image: node:<docs/.nvmrc version>-bookworm  # -slim has no git
+    image: ghcr.io/jdx/mise:<mise version>-debian
     variables:
       GIT_DEPTH: 0
     rules:
@@ -246,8 +246,9 @@ What the pipeline does is in `starlight-conventions`. On GitLab:
             - .gitlab/ci/docs.yml
     script:
       - git fetch --tags --force origin
-      - npm ci --prefix docs
-      - npm --prefix docs run build:versions
+      - mise install --locked
+      - mise exec -- npm ci --prefix docs
+      - mise exec -- npm --prefix docs run build:versions
       - mv docs/dist public
     pages:
       publish: public
