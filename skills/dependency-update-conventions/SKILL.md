@@ -130,34 +130,40 @@ failing PRs above are the real signal:
 | pip | `boto3` with `botocore` |
 | Helm / Argo CD | a chart and its separately-sourced CRDs |
 
-## No dependency dashboard
+## Dependency dashboard on
 
-**`dependencyDashboard: false`, always.** `config:recommended` turns the
-dashboard on, so the key is set explicitly. The dashboard is an issue that
-stays open for good and is rewritten on every run; the repository's issues
-are for work someone will pick up, not for a bot's status page.
+**`dependencyDashboard: true`, always.** It is the only place that shows what
+Renovate decided *not* to open a PR for — rate-limited, blocked by a failed
+lookup, awaiting approval, deprecated datasource, explicitly ignored.
 
-What it used to surface lives elsewhere:
+Without it, **silence is ambiguous**: no PR for three months reads as "nothing
+to update" and means "the manager stopped matching after a refactor" just as
+often. The dashboard is what turns that into a visible list.
 
-- **Why no PR was opened** — rate-limited, failed lookup, deprecated
-  datasource — is in the log of the Renovate run (`logLevel: debug` on a
-  `workflow_dispatch`, see "Running Renovate").
-- **A manager that stopped matching** after a refactor is caught by the dry
-  run every new or changed custom manager gets before it merges.
-- **Majors** arrive as their own PRs. `dependencyDashboardApproval` needs the
-  dashboard and is never set.
+```json
+{
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency dashboard"
+}
+```
 
-Turning it off in a repository that had it: Renovate closes the existing
-issue on its next run, finding it **by title**. When the config set a
-`dependencyDashboardTitle`, keep that key until the issue is closed, or close
-the issue by hand.
+- **Automerge breaks the dashboard, which is the second reason not to use
+  it.** Renovate writes the dashboard only on a pass that does not end in an
+  automerge, and gives up after one retry — so a run that merges anything
+  leaves the dashboard stale, and a repo that merges most days leaves it stale
+  for months. The known workaround is a second Renovate pass forced with
+  `RENOVATE_FORCE: '{"automerge":false}'` purely to reach the dashboard write.
+  Not automerging removes both the staleness and the workaround.
+- `dependencyDashboardApproval: true` for majors is a good pairing with
+  no-automerge on a busy repo: the major waits on the dashboard until someone
+  ticks it, instead of sitting open as a stale PR.
 
 ## Renovate configuration
 
 **Document rules with Renovate's own `description` field, not with comments.**
 Every `packageRules` entry, `customManagers` entry and custom datasource takes
-a `description`, and Renovate surfaces it — in the PR body and the run log —
-where a JSON5 comment is visible only to whoever opens the file.
+a `description`, and Renovate surfaces it — in the dependency dashboard and in
+the PR body — where a JSON5 comment is visible only to whoever opens the file.
 A rule whose match is not self-evident, a pin with a reason, an `ignoreDeps`
 entry: `description`, every time.
 
@@ -173,7 +179,7 @@ Baseline:
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "timezone": "Europe/Paris",
-  "dependencyDashboard": false,
+  "dependencyDashboard": true,
   "prConcurrentLimit": 5,
   "minimumReleaseAge": "3 days"
 }
@@ -269,13 +275,13 @@ someone else's format is unreadable six months later:
 
 **Dry-run a custom manager before merging it** (`renovate --dry-run`, or the
 debug log of the next run). A regex that matches nothing fails silently — it
-just never opens a PR, which looks exactly like being up to date.
+just never opens a PR, which looks exactly like being up to date. That is also
+what the dashboard is for.
 
 ## Running Renovate
 
 **Self-hosted, from the repository's own CI**, not the hosted Mend app: the
-config, the schedule and the logs stay in the repository — and with no
-dashboard, those logs are where a skipped update is explained. It is also the
+config, the schedule and the logs stay in the repository. It is also the
 only option that lets you dry-run on demand.
 
 A workflow that follows `github-actions-conventions` — SHA-pinned action,
@@ -304,8 +310,7 @@ CI/CD variable (`gitlab-ci-conventions`).
   PRs for you.
 - Never add a `.github/dependabot.yaml`, and never leave Dependabot security
   updates on beside Renovate.
-- Never turn the dependency dashboard on, nor set
-  `dependencyDashboardApproval`.
+- Never turn the dependency dashboard off.
 - Never add a custom manager without a `description` quoting the line it
   matches, and never merge one without a dry run.
 - Never leave the `pre-commit` manager off in a repo with a

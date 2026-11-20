@@ -240,8 +240,7 @@ Renovate keeps every pin current: the action SHA pins, the pre-commit hook
 revisions, and the tool versions in `mise.toml` and `mise.lock`. Pins are SHAs
 and tags can move, so a bot bumps them rather than a person remembering to;
 grouping folds the minor and patch bumps into one pull request per ecosystem,
-each major gets its own, and nothing is automerged. There is no dependency
-dashboard issue: a run's log says why an update got no pull request.
+each major gets its own, and nothing is automerged.
 
 ## Submitting a change
 
