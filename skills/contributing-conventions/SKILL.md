@@ -53,7 +53,9 @@ running the project; this covers building on it.
   discovers it as a cryptic failure — list it here instead. **Link the file
   that pins a version** (`rust-toolchain.toml`, `.python-version`, a hook's
   `rev`) rather than copying the number; write one only when nothing in the
-  repo pins it (`pre-commit` 4.x).
+  repo pins it (`pre-commit` 4.x). With a `mise.toml`, that file is the list
+  and the bootstrap is `mise install` then `task setup`
+  (`mise-task-conventions`).
 - **Give the bootstrap as a copy-pasteable sequence**, in order, from a fresh
   clone:
 

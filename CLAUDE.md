@@ -279,12 +279,14 @@ Before writing feature code, check that these exist:
 - [ ] `.pre-commit-config.yaml` (rule 2)
 - [ ] a test framework and at least one passing test
 - [ ] a `.gitignore` for the stack
+- [ ] a `mise.toml` pinning the dev tools and a `Taskfile.yml` holding the
+      commands contributors and CI run (`mise-task-conventions`)
 - [ ] `README.md`, `CONTRIBUTING.md`, and `ARCHITECTURE.md` when warranted
       (rule 3)
 - [ ] `SECURITY.md` when the repository is public
       (`security-policy-conventions`)
 - [ ] the scaffolding the matching skill requires for each technology in use
-- [ ] CI running `pre-commit` and the tests (`ci-conventions` and the
+- [ ] CI running `task lint` and `task test` (`ci-conventions` and the
       platform's skill)
 
 **Propose, never create unasked**, on any repository: list what is missing
