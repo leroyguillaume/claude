@@ -1,12 +1,9 @@
 # Contributing
 
-This repository holds personal Claude Code configuration: the global
-instructions in `CLAUDE.md` and the convention skills under `skills/`. A change
-here is almost always a Markdown edit; the exceptions are the status line script
-[statusline-command.sh](statusline-command.sh) and the herdr hook
-[hooks/herdr-tab-title.sh](hooks/herdr-tab-title.sh). Open an issue or a pull request on
-<https://github.com/leroyguillaume/claude>; the short version is
-`task lint` must be green before you push.
+This repository holds Agent Skills, one per directory: a change here is almost
+always a Markdown edit. Open an issue or a pull request on
+<https://github.com/leroyguillaume/skills>; the short version is `task lint`
+must be green before you push.
 
 See [README.md](README.md#getting-started) for installing and using the skills.
 
@@ -29,14 +26,13 @@ their checksums in [mise.lock](mise.lock):
 - [pre-commit](https://pre-commit.com) runs the gate, and the Python it
   builds its hook environments with.
 - [skill-validator](https://github.com/agent-ecosystem/skill-validator)
-  validates `skills/*/SKILL.md` structure, links, content and cross-language
+  validates every `SKILL.md`'s structure, links, content and cross-language
   contamination. The hook runs it too, but running it directly gives faster
   feedback and is the only way to check external links (see
   [Running the tests](#running-the-tests)).
 - [pollen](https://github.com/groupbees/pollen): `pollen validate` checks
   that it can deploy every skill, as the CI does (see
   [Continuous integration](#continuous-integration)).
-- [jq](https://jqlang.org): the hook tests and the status line call it.
 - [Task](https://taskfile.dev) runs the commands below, defined in
   [Taskfile.yml](Taskfile.yml); `task --list` shows them.
 
@@ -58,8 +54,7 @@ task setup
 ```
 
 `task setup` installs both the `pre-commit` and the `commit-msg` hook types, as
-`default_install_hook_types` in the config asks. In an existing clone, re-run
-it so the `commit-msg` hook type is installed too.
+`default_install_hook_types` in the config asks.
 
 The setup is good when this is green:
 
@@ -69,10 +64,7 @@ task lint
 
 ## Adding or editing a skill
 
-1. Create `skills/<my-skill>/SKILL.md`. The whole `skills/` directory is
-   re-included by the allow-list [.gitignore](.gitignore), so a new skill is
-   tracked as is; a new file at the repository root is ignored until it gets
-   its own `!/<name>` line there.
+1. Create `<my-skill>/SKILL.md` at the repository root.
 2. Start it with YAML frontmatter: a `name`, and a `description` that says when
    to load the skill (`TRIGGER when:`) and when to skip it (`SKIP when:`).
 
@@ -107,68 +99,34 @@ task lint
    `rust-conventions` — not into `references/`, since a sibling skill loads
    automatically when its triggers match, whereas a `references/` file is only
    read if something opens it.
-4. Do not list the skill in [CLAUDE.md](CLAUDE.md): clients list the available
-   skills themselves, and a copy there only goes stale.
-5. Give each rule one home. `CLAUDE.md` holds what applies to every change
-   whatever the technology — meta-rules and guardrails — and never restates a
-   skill's convention: where it touches a skill's topic, it says so in one
-   line and names the skill. A skill may recall a `CLAUDE.md` rule that bears
-   on it, in one line, never in detail: the skills also deploy to clients that
-   never read `CLAUDE.md` (`~/.agents/skills`), so they cannot drop the
-   reminder, but the detail stays in `CLAUDE.md`.
+4. Give each rule one home. A rule that applies to every change whatever the
+   technology — a meta-rule or a guardrail — belongs in the client's global
+   instructions ([claude-config](https://github.com/leroyguillaume/claude-config)),
+   and a skill never restates it in detail. A skill may recall such a rule in
+   one line where it bears on it: the skills also deploy to clients that never
+   read those instructions, so they cannot drop the reminder.
 
 ## Running the tests
 
-The "code" is mostly Markdown, and its correctness is what the linters
-assert. `skill-validator` is what plays that role — it is the only check that
-can fail on the content of a change rather than its formatting. It asserts
-that a skill is well-formed, not that a client applies it: that feedback only
-exists in the projects using the skills, through their own linters and CI.
-
-Both scripts have a test suite under [tests/](tests/), and a change to a
-script comes with the case that covers it. Each needs only `jq`. Run both:
-
-```bash
-task test
-```
-
-[.gitattributes](.gitattributes) checks shell scripts out with LF line
-endings everywhere: Git for Windows converts to CRLF by default, and bash
-then fails on the trailing `\r` of every line.
-
-The herdr hook's suite runs the hook against a fake `herdr` placed first on
-`PATH`, which serves canned JSON and logs every call, so it needs neither
-herdr nor a session; each case covers one condition the hook checks. Run it
-alone with:
-
-```bash
-tests/herdr-tab-title.sh
-```
-
-The status line's suite pipes it sample payloads of what Claude Code sends,
-with the host's `date` and with a fake that only takes the BSD form, and
-under a comma-decimal locale when one is installed. Run it alone with:
-
-```bash
-tests/statusline-command.sh
-```
-
-To see the coloured output, pipe it a sample yourself:
-
-```bash
-echo '{"model":{"display_name":"Opus"},"context_window":{"used_percentage":42},"rate_limits":{"five_hour":{"used_percentage":61,"resets_at":1893456000}}}' | ./statusline-command.sh
-```
+The "code" is Markdown, and its correctness is what the linters assert.
+`skill-validator` is what plays that role — it is the only check that can fail
+on the content of a change rather than its formatting. It asserts that a skill
+is well-formed, not that a client applies it: that feedback only exists in the
+projects using the skills, through their own linters and CI.
 
 Validate every skill:
 
 ```bash
-skill-validator check --strict skills/
+skill-validator check --strict --max-depth 1 .
 ```
+
+`--max-depth 1` keeps it to the repository's skills: in a clone at
+`~/.claude/skills`, Claude Code's `synced/` directory holds more, deeper down.
 
 Validate a single skill while iterating:
 
 ```bash
-skill-validator check --strict skills/rust-conventions
+skill-validator check --strict rust-conventions
 ```
 
 Check the external links, which needs the network:
@@ -206,7 +164,6 @@ most are formatters or checks that name the file to fix. These need more:
 | Hook | What it checks | How to fix |
 | --- | --- | --- |
 | `yamllint` | YAML style, per [.yamllint.yaml](.yamllint.yaml), with `--strict` so warning-level rules fail too | Fix the finding; block style only, no `---` opening a file |
-| `shellcheck` | Shell scripts, with [shellcheck](https://www.shellcheck.net) bundled by the hook, nothing to install | Fix the finding it names |
 | `actionlint` | Workflow files are valid | Fix the expression or key it names |
 | `skill-validator` | Skill structure, relative links, content, contamination, with the `skill-validator` mise installs | See [Running the tests](#running-the-tests) |
 | `mise-fmt` | `mise.toml` is formatted, with the `mise` on `PATH` | Re-run: it rewrites the file |
@@ -221,7 +178,7 @@ somewhere slower.
 
 | Workflow | What it does | Reproduce locally |
 | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | Every job installs its tools with mise. `pre-commit` job: `task lint`. `tests` job: `task test`, on Linux and on Windows under Git Bash, where Claude Code and OpenCode run the scripts. `skills` job: [groupbees/skill-action](https://github.com/groupbees/skill-action) runs `skill-validator check` and `pollen validate` on every skill, at the skill-validator version `mise.toml` pins, then `task links`; skill-validator runs with `--emit-annotations`, so its findings land on their line in the diff | `task lint`, `task test`, `skill-validator check --strict skills/`, `task links` and `pollen validate` on a `pollen.yaml` selecting `skills` (`repo: local`, `recurse: true`) |
+| [`quality.yaml`](.github/workflows/quality.yaml) | Every job installs its tools with mise. `pre-commit` job: `task lint`. `skills` job: [groupbees/skill-action](https://github.com/groupbees/skill-action) runs `skill-validator check` and `pollen validate` on every skill, at the skill-validator version `mise.toml` pins, then `task links`; skill-validator runs with `--emit-annotations`, so its findings land on their line in the diff | `task lint`, `skill-validator check --strict --max-depth 1 .`, `task links` and `pollen validate` on a `pollen.yaml` selecting `.` (`repo: local`) |
 | [`renovate.yaml`](.github/workflows/renovate.yaml) | Weekly self-hosted Renovate run on [renovate.json](renovate.json); `workflow_dispatch` takes a `dryRun` and a `logLevel` | `workflow_dispatch` with `dryRun` |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The

@@ -26,11 +26,6 @@ repos:
         args:
           - --strict
 
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: a6564f5d57444e123433a5c9af733e3975c77229  # frozen: v0.11.0.1-1
-    hooks:
-      - id: shellcheck
-
   - repo: https://github.com/rhysd/actionlint
     rev: 914e7df21a07ef503a81201c76d2b11c789d3fca  # frozen: v1.7.12
     hooks:
@@ -47,9 +42,11 @@ repos:
       # mise.toml like every other tool instead of a second pin in `rev`.
       - id: skill-validator
         name: skill-validator
-        entry: skill-validator check --strict skills/
+        # Depth 1: the repo's own skills. Deeper sits Claude Code's synced/
+        # mirror of the claude.ai skills, in the ~/.claude/skills checkout.
+        entry: skill-validator check --strict --max-depth 1 .
         language: system
-        files: ^skills/
+        files: ^(?!\.github/)[^/]+/
         pass_filenames: false
       - id: mise-fmt
         name: mise fmt
