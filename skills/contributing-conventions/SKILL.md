@@ -48,7 +48,7 @@ running the project; this covers building on it.
 
 - **List the tooling**, and how to get it: mise, which installs everything
   else — the toolchain, `pre-commit`, and any binary the hooks or tests shell
-  out to (`mise-task-conventions`). **Link `mise.toml`** rather than copying
+  out to (`mise-conventions`). **Link `mise.toml`** rather than copying
   its versions. If a hook needs a binary `mise.toml` does not list, the
   contributor discovers it as a cryptic failure: add it there. A repo without
   a `mise.toml` yet lists each tool, links the file that pins it, and gets a

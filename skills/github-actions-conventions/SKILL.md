@@ -116,7 +116,7 @@ What the pipeline does is in `starlight-conventions`. On GitHub:
   Pages settings, and the site's `site`/`base` follow it. No `CNAME` file is
   needed with an Actions deployment.
 - Two jobs. `build` checks out with `fetch-depth: 0` (the release tags), runs
-  `jdx/mise-action` for Node.js (`mise-task-conventions`), `npm ci`, and the
+  `jdx/mise-action` for Node.js (`mise-conventions`), `npm ci`, and the
   versioned build, then `actions/upload-pages-artifact` with `path: docs/dist`
   on non-PR runs of the default branch only. `deploy` (`needs: build`, same
   condition) runs `actions/deploy-pages` in `environment: github-pages` with

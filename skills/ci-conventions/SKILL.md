@@ -26,7 +26,7 @@ skill says how each one maps onto files and triggers.
   installs **every** tool the hooks need (toolchain + `helm`, `helm-docs`,
   `hadolint`, `trivy`, …) before running `pre-commit`, all through mise; when
   a `Taskfile.yml` exists, it runs `task lint` and `task test` rather than
-  the commands behind them (`mise-task-conventions`). This is the single
+  the commands behind them (`mise-conventions`, `task-conventions`). This is the single
   quality gate. Don't scatter fmt/lint/test across ad-hoc pipelines.
 - **`build`**: when a `Dockerfile` exists. It builds the image, scans it, and
   **pushes only when asked**, meaning a manual run with a `push` input or the

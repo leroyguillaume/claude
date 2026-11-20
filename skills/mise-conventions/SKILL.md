@@ -1,40 +1,31 @@
 ---
-name: mise-task-conventions
+name: mise-conventions
 description: >-
-  Dev tooling with mise (tool versions, dev env) and Task (`Taskfile.yml`
-  entry points).
-  TRIGGER when: creating or editing `mise.toml`, `.mise.toml`, `mise.lock`
-  or `Taskfile.yml`/`.yaml`; a `rust-toolchain.toml`, `.python-version`,
-  `.nvmrc`, `.node-version` or `.tool-versions` (they move into `mise.toml`);
-  scaffolding a project; adding a tool or toolchain a contributor or CI must
-  install; a CI step installing one (`setup-node`, `setup-python`, rustup);
-  adding a command contributors run (setup, lint, test, build); a `Makefile`
-  or `justfile` used as a task runner; user asks about mise, Task, pinning
-  dev tools or a task runner.
+  mise: every dev tool and toolchain version in `mise.toml`, the lockfile,
+  the dev environment, installing tools in CI.
+  TRIGGER when: creating or editing `mise.toml`, `.mise.toml` or `mise.lock`;
+  a `rust-toolchain.toml`, `.python-version`, `.nvmrc`, `.node-version` or
+  `.tool-versions` (they move into `mise.toml`); scaffolding a project;
+  adding a tool or toolchain a contributor or CI must install; a CI step
+  installing one (`setup-node`, `setup-python`, rustup); user asks about
+  mise or pinning dev tools.
   SKIP when: the app's runtime dependencies (`pyproject.toml`, `Cargo.toml`,
-  `package.json`).
+  `package.json`); the commands contributors run (`task-conventions`).
 ---
 
-# mise and Task conventions
+# mise conventions
 
-Two files, one job each:
+`mise.toml` says *which tools, at which version*, toolchains included, and the
+development environment. `mise install` from a fresh clone gives a
+contributor and CI the same binaries; mise is the only thing either installs
+by hand.
 
-- **`mise.toml`** says *which tools, at which version*, toolchains included,
-  and the development environment. `mise install` from a fresh clone gives a
-  contributor and CI the same binaries; mise is the only thing either installs
-  by hand.
-- **`Taskfile.yml`** says *what you run*: `task setup`, `task lint`,
-  `task test`. CI calls the same tasks, so "reproduce locally" is always the
-  command the pipeline ran.
+It holds no `[tasks]`: the commands contributors and CI run live in
+`Taskfile.yml` (`task-conventions`), so a version bump lands here and nowhere
+else, and a command changes there and nowhere else.
 
-Never cross the line: no `[tasks]` in `mise.toml`, and no tool installation in
-the Taskfile. Commands in the Taskfile still work for someone who installed
-Task another way; versions in `mise.toml` stay the only place a bump lands.
-
-Both files go in every repository a contributor builds or checks, as part of
-the bootstrap. A repository with a working `Makefile` or `justfile` keeps it
-until the migration is asked for, and the migration replaces it in the same
-change: never two task runners side by side.
+`mise.toml` goes in every repository a contributor builds or checks, as part
+of the bootstrap.
 
 ## `mise.toml`
 
@@ -120,9 +111,9 @@ committed.
 ### `[env]`
 
 Only non-secret development defaults: a log level, a local URL, `_.path` for
-a `bin/` of project scripts. The environment is loaded by mise, never also by
-the Taskfile (`dotenv:`), so `task test`, a bare `pytest` and the IDE see the
-same variables.
+a `bin/` of project scripts. mise is the one thing that loads the
+environment, never a task runner beside it (`task-conventions`), so a task, a
+bare `pytest` and the IDE see the same variables.
 
 Secrets never go in `mise.toml`. They come from `mise.local.toml` or a `.env`
 loaded with `_.file = ".env"`, both gitignored, with a committed
@@ -135,96 +126,19 @@ trusted. A contributor runs `mise trust` once after cloning; CI trusts
 configs on its own (`CI` is set). Never set `trusted_config_paths` to a
 parent directory of all checkouts to make the prompt go away.
 
-## `Taskfile.yml`
-
-At the repository root, named `Taskfile.yml`.
-
-```yaml
-# yaml-language-server: $schema=https://taskfile.dev/schema.json
-version: '3'
-
-set:
-  - errexit
-  - nounset
-  - pipefail
-
-tasks:
-  default:
-    cmds:
-      - task --list
-    silent: true
-
-  setup:
-    desc: Install the project dependencies and the git hooks
-    cmds:
-      - uv sync --all-extras
-      - pre-commit install
-
-  lint:
-    desc: Run every pre-commit hook on the whole repository
-    cmds:
-      - pre-commit run --all-files
-
-  test:
-    desc: Run the test suite
-    cmds:
-      - uv run pytest {{.CLI_ARGS}}
-```
-
-- **The standard names**: `setup` (project dependencies and `pre-commit
-  install`, never the tools, which are `mise install`'s), `lint` (exactly
-  `pre-commit run --all-files`, the gate CI runs), `test` (the whole suite),
-  then `build`, `run`, `docs` when the project has them, and `release` around
-  `scripts/release.sh` (`release-script-conventions`). A bare `task` lists
-  them. Namespaces with `:` (`docs:build`) through `includes` when a
-  component has a Taskfile of its own.
-- **Every public task has a `desc`**, one line, imperative: `task --list`
-  only shows those. A helper that is not an entry point is `internal: true`.
-- **Thin tasks.** A task is the command a contributor would type, one to
-  three lines. Logic that needs a loop or a condition goes in a script under
-  `scripts/`, which the task calls: YAML is a poor place to read or debug
-  shell, and the script keeps its `shellcheck` hook.
-- **`{{.CLI_ARGS}}`** on `test` and the like, so `task test -- -k parser`
-  narrows the run without a second task.
-- **`set: [errexit, nounset, pipefail]`** at the top: without `pipefail`, a
-  failing command piped into another reports success.
-- **`deps` run in parallel.** Use them for independent prerequisites; for a
-  sequence, list the steps in `cmds` (`- task: build`).
-- **`sources` / `generates` only on expensive steps** (a build, a code
-  generation), so they are skipped when nothing changed. A lint or a test
-  never: they must run every time.
-- **`requires: vars:`** for an input a task cannot run without, and
-  **`preconditions`** with a `msg` for a state it needs (a running cluster, a
-  file present), so the failure says what to do.
-- **Never a secret** in the Taskfile, literal or default value.
-- **Never `prompt:` to guard something irreversible**: `task --yes` answers
-  every prompt. The confirmation lives in the script the task calls.
-- Task runs `cmds` through its own embedded POSIX shell interpreter on every
-  OS, Windows included. Keep commands to what that shell and the listed tools
-  provide; a step that needs `bash` or `pwsh` calls it explicitly, restricted
-  with `platforms`.
-
 ## `.gitignore`
 
 ```gitignore
-.task/
 mise.local.toml
 mise.local.lock
 .env
 ```
-
-`.task/` holds Task's checksums for `sources`.
 
 ## pre-commit
 
 Add to `.pre-commit-config.yaml` (`pre-commit-conventions`):
 
 ```yaml
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: <latest tag SHA>  # frozen: <latest tag>
-    hooks:
-      - id: check-taskfile
-
   - repo: local
     hooks:
       - id: mise-fmt
@@ -242,12 +156,8 @@ install.
 
 Every job that needs a tool installs it with mise: never `setup-node`,
 `setup-python`, a rustup action, `setup-task` or an `apt-get install` of a
-dev tool beside it, which is a second pin of the same version.
-
-**When `Taskfile.yml` exists, CI calls its tasks**, never the commands behind
-them: `task lint`, not `pre-commit run --all-files`. A command changed in the
-Taskfile then changes in CI too. Without a Taskfile, CI runs the commands
-themselves, with the tools mise installed.
+dev tool beside it, which is a second pin of the same version. What the job
+runs next is `task-conventions`' rule.
 
 GitHub Actions, SHA-pinned (`github-actions-conventions`):
 
@@ -258,8 +168,6 @@ GitHub Actions, SHA-pinned (`github-actions-conventions`):
           cache: false
       - name: lint
         run: task lint
-      - name: test
-        run: task test
 ```
 
 With `mise.lock` committed, the action installs with `--locked`. `cache:
@@ -268,7 +176,7 @@ when an install builds from source (`cargo:`, `go:`), and never in a job that
 publishes.
 
 GitLab CI, on the official image pinned to an exact version
-(`gitlab-ci-conventions`):
+(`gitlab-ci-conventions`); tools run through `mise exec`:
 
 ```yaml
 quality:
@@ -276,7 +184,6 @@ quality:
   script:
     - mise install --locked
     - mise exec -- task lint
-    - mise exec -- task test
 ```
 
 ## Dependency updates
@@ -289,6 +196,6 @@ Renovate's, through its `mise` manager, which bumps both, toolchains included
 
 ## CONTRIBUTING
 
-The setup is `mise trust`, `mise install`, `task setup`, and the tooling list
-is a link to `mise.toml` (`contributing-conventions`). The tests and CI
-sections give `task test` and `task lint`, and `task --list` for the rest.
+The setup starts with installing mise (link its install page), then `mise
+trust` and `mise install`; the tooling list is a link to `mise.toml`, not a
+copy of it (`contributing-conventions`).

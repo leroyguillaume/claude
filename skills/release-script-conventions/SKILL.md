@@ -39,7 +39,7 @@ run.
 
 ## `task release` is the front door
 
-When the repo has a `Taskfile.yml` (`mise-task-conventions`), a `release` task
+When the repo has a `Taskfile.yml` (`task-conventions`), a `release` task
 calls the script and adds nothing to it; `CONTRIBUTING.md` and the command
 handed to the user say `task release -- <version>`.
 

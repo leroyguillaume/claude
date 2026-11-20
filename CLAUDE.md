@@ -279,9 +279,10 @@ Before writing feature code, check that these exist:
 - [ ] `.pre-commit-config.yaml` (rule 2)
 - [ ] a test framework and at least one passing test
 - [ ] a `.gitignore` for the stack
-- [ ] a `mise.toml` pinning every dev tool, toolchains included, and a
-      `Taskfile.yml` holding the commands contributors and CI run
-      (`mise-task-conventions`)
+- [ ] a `mise.toml` pinning every dev tool, toolchains included
+      (`mise-conventions`)
+- [ ] a `Taskfile.yml` holding the commands contributors and CI run
+      (`task-conventions`)
 - [ ] `README.md`, `CONTRIBUTING.md`, and `ARCHITECTURE.md` when warranted
       (rule 3)
 - [ ] `SECURITY.md` when the repository is public

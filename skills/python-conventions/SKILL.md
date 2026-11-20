@@ -32,7 +32,7 @@ description: >-
 - Use `uv` for dependency and environment management: `uv init`, `uv add`,
   `uv sync`, `uv run`, `uv lock`. Commit `uv.lock`.
 - Pin Python and uv in `mise.toml`, never in a `.python-version`
-  (`mise-task-conventions`).
+  (`mise-conventions`).
 - Format and lint with `ruff` (`ruff format` + `ruff check --fix`).
   Configure in `pyproject.toml`.
 - Add `astral-sh/ruff-pre-commit` to `.pre-commit-config.yaml` with both

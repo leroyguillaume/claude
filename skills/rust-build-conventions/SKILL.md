@@ -17,7 +17,7 @@ description: >-
 
 **Always:**
 
-- **Pin the toolchain in `mise.toml`** (`mise-task-conventions`), on an exact
+- **Pin the toolchain in `mise.toml`** (`mise-conventions`), on an exact
   patch version, never in a `rust-toolchain.toml`: an existing one moves into
   `mise.toml` and is deleted. Without a pin, a clippy release turns CI red on
   code nobody touched; with one, a toolchain bump is a reviewable diff.
