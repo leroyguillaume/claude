@@ -203,15 +203,20 @@ Both scripts sit in `~/.claude` when the repository is cloned there; otherwise
 use the path of your copy.
 
 Claude Code lists every skill's name and description to the model within a
-size budget. The descriptions of these skills together exceed the default, and
-past it the least-used skills are listed without their description, so the
-model sees less of when to load them. This value makes room for all of them:
+size budget, a fraction of the model's context window. The descriptions of
+these skills together exceed the default, and past it the least-used skills
+are listed without their description, so the model sees less of when to load
+them. Raise the fraction in `~/.claude/settings.json`:
 
 ```json
 {
   "skillListingBudgetFraction": 0.02
 }
 ```
+
+The budget scales with the context window, so the fraction that fits depends
+on the model. Run `/skill-doctor` in Claude Code to see what each skill costs
+in the listing, and raise the fraction until it fits.
 
 Claude Code ends commit messages with a co-author trailer and pull request
 descriptions with a "Generated with" line; `CLAUDE.md` forbids both. An
