@@ -222,7 +222,7 @@ somewhere slower.
 | Workflow | What it does | Reproduce locally |
 | --- | --- | --- |
 | [`quality.yaml`](.github/workflows/quality.yaml) | Every job installs its tools with mise. `pre-commit` job: `task lint`. `tests` job: `task test`, on Linux and on Windows under Git Bash, where Claude Code and OpenCode run the scripts. `skills` job: [groupbees/skill-action](https://github.com/groupbees/skill-action) runs `skill-validator check` and `pollen validate` on every skill, at the skill-validator version `mise.toml` pins, then `task links`; skill-validator runs with `--emit-annotations`, so its findings land on their line in the diff | `task lint`, `task test`, `skill-validator check --strict skills/`, `task links` and `pollen validate` on a `pollen.yaml` selecting `skills` (`repo: local`, `recurse: true`) |
-| [`renovate.yaml`](.github/workflows/renovate.yaml) | Weekly self-hosted Renovate run on [renovate.json](renovate.json), for `mise.toml` and `mise.lock` only; `workflow_dispatch` takes a `dryRun` and a `logLevel` | `workflow_dispatch` with `dryRun` |
+| [`renovate.yaml`](.github/workflows/renovate.yaml) | Weekly self-hosted Renovate run on [renovate.json](renovate.json); `workflow_dispatch` takes a `dryRun` and a `logLevel` | `workflow_dispatch` with `dryRun` |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The
 weekly run is for the external links: a documentation URL dies without any file
@@ -236,13 +236,11 @@ on a fork's pull request. `renovate` writes with a `RENOVATE_TOKEN` secret, a
 token allowed to push branches and open pull requests here: a pull request
 opened with `GITHUB_TOKEN` would not trigger `quality`.
 
-Two bots keep the pins current, each on its own files, since Dependabot has no
-mise ecosystem: [`dependabot.yaml`](.github/dependabot.yaml) bumps the action
-SHA pins and the pre-commit hook revisions, Renovate the tool versions in
-`mise.toml` and `mise.lock`. Pins are SHAs and tags can move, so a bot bumps
-them rather than a person remembering to; grouping folds the minor and patch
-bumps into one pull request per ecosystem, each major gets its own, and
-nothing is automerged.
+Renovate keeps every pin current: the action SHA pins, the pre-commit hook
+revisions, and the tool versions in `mise.toml` and `mise.lock`. Pins are SHAs
+and tags can move, so a bot bumps them rather than a person remembering to;
+grouping folds the minor and patch bumps into one pull request per ecosystem,
+each major gets its own, and nothing is automerged.
 
 ## Submitting a change
 

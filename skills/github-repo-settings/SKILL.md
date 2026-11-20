@@ -34,8 +34,8 @@ repo should have. Two distinct purposes coexist:
   maps to categories. Area and ecosystem labels (`rust`, …) stay out of it and
   never select a category (see `github-pr-conventions`).
   **Without `release.yaml`, none are created**: nothing reads them (see
-  `github-pr-conventions`), so the sync below does not apply. The labels
-  Dependabot creates for its own PRs are its config's business (see the notes).
+  `github-pr-conventions`), so the sync below does not apply. The labels on
+  Renovate's PRs are its config's business (see the notes).
 
 The same concept often has both: `bug` (issue) ↔ `fix` (PR), `enhancement` (issue)
 ↔ `feature` (PR). Inside one changelog category, listing both members of such a
@@ -89,9 +89,10 @@ Notes:
   `feature`/`fix` label (see `github-actions-conventions` for the baseline file).
 - Otherwise, only create the category labels the repo's `release.yaml` actually
   maps; the exclude label only makes sense alongside an `exclude.labels` entry.
-- **Leave the ecosystem labels to Dependabot**, and create the ones a
-  `labels` setting names (`dependency-update-conventions`); creating your own
-  variant gives the repo two labels for one concept.
+- **Create the labels Renovate's config names** (`labels`, `addLabels`;
+  `dependency-update-conventions`), reusing an ecosystem label the repo
+  already has rather than a variant: two labels for one concept split every
+  filter in two.
 - `gh label create --force` upserts, so it is safe to re-run.
 - Deleting a label removes it from every issue/PR it is on and **cannot be
   undone** — it is destructive. Absence from `release.yaml` is **not** a reason to
@@ -173,8 +174,8 @@ Notes:
 ## Turn on a public repository's security features
 
 Every **public** repository has these on: secret scanning with push
-protection, Dependabot vulnerability alerts and security updates, and private
-vulnerability reporting, which the reporting link of its `SECURITY.md`
+protection, Dependabot vulnerability alerts, and private vulnerability
+reporting, which the reporting link of its `SECURITY.md`
 (`security-policy-conventions`) points at. They are free on a public
 repository. Turn them on as soon as a repository is public, or when one is
 found off.
@@ -195,14 +196,17 @@ gh api -X PATCH repos/{owner}/{repo} --input - <<'EOF'
 EOF
 ```
 
-Vulnerability alerts **before** security updates, which need them:
+Vulnerability alerts, which Renovate's `vulnerabilityAlerts` reads:
 
 ```bash
 gh api -X PUT repos/{owner}/{repo}/vulnerability-alerts
 ```
 
+Dependabot security updates **off** — Renovate opens the security PRs, and
+both would open one for the same bump (`dependency-update-conventions`):
+
 ```bash
-gh api -X PUT repos/{owner}/{repo}/automated-security-fixes
+gh api -X DELETE repos/{owner}/{repo}/automated-security-fixes
 ```
 
 Private vulnerability reporting:
@@ -212,7 +216,8 @@ gh api -X PUT repos/{owner}/{repo}/private-vulnerability-reporting
 ```
 
 Verify: both `status` fields read `enabled`, the alerts call succeeds (it
-answers 404 when they are off), and both `enabled` read `true`.
+answers 404 when they are off), security updates read `false` and private
+vulnerability reporting `true`.
 
 ```bash
 gh api repos/{owner}/{repo} --jq .security_and_analysis
@@ -234,9 +239,6 @@ Notes:
 
 - Every call is idempotent: re-running it where the feature is already on
   changes nothing.
-- Security updates open pull requests outside the version-update schedule of
-  `.github/dependabot.yaml`; the rest of that file is
-  `dependency-update-conventions`.
 - Turning one of these off is the user's decision, never the fix for a
   blocked push or a noisy alert: a push that push protection blocks holds a
   secret, and the secret is what gets fixed.

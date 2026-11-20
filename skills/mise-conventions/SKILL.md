@@ -188,11 +188,9 @@ quality:
 
 ## Dependency updates
 
-Dependabot has no `mise` ecosystem, so `mise.toml` and `mise.lock` are
-Renovate's, through its `mise` manager, which bumps both, toolchains included
-(`dependency-update-conventions`). On GitHub, list `mise` in Renovate's
-`enabledManagers` beside whatever Renovate already owns; Dependabot's
-`rust_toolchain` ecosystem has nothing left to watch.
+Renovate's `mise` manager bumps `mise.toml` and `mise.lock` together,
+toolchains included (`dependency-update-conventions`). It is on by default;
+a config with an `enabledManagers` list has to name it.
 
 ## CONTRIBUTING
 

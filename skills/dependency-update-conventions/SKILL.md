@@ -1,84 +1,50 @@
 ---
 name: dependency-update-conventions
 description: >-
-  Dependabot and Renovate configuration and their PRs.
+  Renovate configuration and its PRs; Dependabot version updates are not used.
   TRIGGER when: editing `renovate.json`/`.json5`, `.renovaterc`, a `renovate`
-  key in `package.json`, or `.github/dependabot.yml`/`.yaml`; setting up
-  automated updates; adding a regex manager; triaging or merging bot PRs,
+  key in `package.json`; a repo has `.github/dependabot.yml`/`.yaml`; setting
+  up automated updates; adding a custom manager; triaging or merging bot PRs,
   especially failing ones; user asks about update grouping or scheduling.
   SKIP when: bumping a dependency by hand with no bot involved.
 ---
 
 # Dependency-update conventions
 
-## On GitHub, Dependabot first
+## Renovate, and only Renovate
 
-**Use Dependabot for every ecosystem it supports. Reach for Renovate only for
-what it does not cover.** It is built into the platform: no app to install, no
-token to rotate, no self-hosted runner, and its findings sit next to the
-security alerts for the same repository. A second bot is a second thing to
-configure, debug and explain.
+**Renovate owns every dependency update, on every platform.** One bot, one
+config, one review flow: the same `renovate.json` shape on GitHub and on
+GitLab, custom managers for the version strings no ecosystem knows about
+(a chart version in a catalog, a tool in a `Dockerfile` `ARG`), the `mise`
+manager for `mise.toml` and `mise.lock`, and grouping and scheduling rules
+that apply across all of them. A second bot only adds a second config to keep
+in step and a second place for a bump to come from.
 
-- **Check what Dependabot supports today rather than assuming.** The list
-  grows — read
-  <https://docs.github.com/en/code-security/reference/supply-chain-security/supported-ecosystems-and-repositories>
-  before concluding that something needs Renovate. Answering from memory is
-  how a repo ends up running two bots for one job.
-- **What Renovate is actually for**, once Dependabot has taken its share:
-  - a version string **no manager knows about** — a chart version inside a
-    jsonnet or YAML catalog, a pinned tool version in a `Makefile`, a CI
-    script or a `Dockerfile` `ARG`. That is a custom manager, and Dependabot
-    has no equivalent.
-  - grouping or scheduling rules Dependabot cannot express.
-  - `mise.toml` and `mise.lock`: Dependabot has no mise ecosystem, Renovate's
-    `mise` manager bumps both.
-- **Off GitHub — GitLab, Gitea, self-hosted — Renovate does the whole job.**
-  There is no Dependabot to prefer.
-- **"Dependabot first" is not "Dependabot for as much as possible".** In a repo
-  where Renovate is already required for the bulk — a GitOps repo, where the
-  `argocd`, `helm-values` and `crossplane` managers see chart and image
-  versions Dependabot has no manager for — handing it back one ecosystem it
-  covers coherently buys nothing and splits one review flow in two. The stable
-  split there is **`github-actions` to Dependabot, everything else to
-  Renovate**: Dependabot handles SHA pins and their trailing tag comments
-  natively, which is the one thing worth keeping it for.
+**Dependabot version updates are not used.** A repository that still has a
+`.github/dependabot.yaml` moves over in one PR:
 
-**Never point both bots at the same ecosystem or the same version string.** Two
-PRs for one bump, two lockfile updates that conflict with each other, and
-reviewers who learn to skim. One file may feed both — a `Dockerfile`'s `FROM`
-to Dependabot, its annotated `ARG`s to a Renovate custom manager — as long as
-each string has a single owner. Make the split explicit rather than implicit: give Renovate
-an `enabledManagers` list covering only what Dependabot does not, and say
-where the line is drawn in the config's own `description` (and in
-`CONTRIBUTING.md` if contributors need to know which bot opens what).
+1. Map each Dependabot ecosystem to the Renovate manager that covers it
+   (`github-actions`, `cargo`, `npm`, `pip_requirements`/`pep621`,
+   `dockerfile`, `pre-commit`, …), and carry its groups, cooldown and labels
+   over to `packageRules`, `minimumReleaseAge` and `labels`.
+2. Delete `.github/dependabot.yaml` in the same PR, so no ecosystem has two
+   owners for even one run.
+3. Turn Dependabot **security updates** off: Renovate's `vulnerabilityAlerts`
+   opens the security PRs, and both would open one for the same bump. Leave
+   Dependabot **alerts** on — they are where Renovate reads the advisories
+   from (`github-repo-settings`).
 
-Two ways to draw it, and they are not equivalent:
-
-```json
-{
-  "description": "Dependabot owns cargo, docker and github-actions; Renovate only handles the chart versions in the catalog, which no Dependabot ecosystem sees",
-  "enabledManagers": ["custom.regex"]
-}
-```
-
-```json
-{
-  "github-actions": { "enabled": false }
-}
-```
-
-The **allowlist** is the safer default when Dependabot owns several ecosystems:
-a manager Renovate gains in a future release cannot start racing. The
-**blocklist** is right when Renovate owns everything but one — turning off the
-single overlapping manager states exactly that, and an allowlist would need
-editing every time the repo grows a new file type.
+**Pins stay pins.** The `github-actions` manager bumps a SHA-pinned `uses:`
+together with its trailing `# vX.Y.Z` comment, and the `pre-commit` manager a
+`rev: <sha>  # frozen: <tag>` line — but `pre-commit` is **off by default**
+and must be enabled, or the hook revisions silently stop moving.
 
 ## Never automerge
 
 **No automerge, in any form.** Not `automerge: true`, not an automerge preset
-(`:automergeMinor`, `:automergeDigest`, …), not `platformAutomerge`, not
-`@dependabot merge`, and not a workflow that runs `gh pr merge --auto` on a
-bot PR.
+(`:automergeMinor`, `:automergeDigest`, …), not `platformAutomerge`, and not
+a workflow that runs `gh pr merge --auto` on a bot PR.
 
 The reason is not fear of breakage — it is that **a dependency bump is a
 change to production that nobody read**. Green CI is not a review: it proves
@@ -99,10 +65,9 @@ number of presses down with **grouping and scheduling**, never with automerge:
   on its own, because that one needs the release notes read;
 - **group what must move together** — a different reason, which prevents
   breakage rather than noise; see the next section;
-- `minimumReleaseAge` (Renovate) / `cooldown` (Dependabot) so a release has to
-  survive a few days in the wild before it is proposed;
-- `prConcurrentLimit` / `open-pull-requests-limit` so the queue stays a queue
-  and not a wall.
+- `minimumReleaseAge` so a release has to survive a few days in the wild
+  before it is proposed;
+- `prConcurrentLimit` so the queue stays a queue and not a wall.
 
 ## Group what must move together
 
@@ -131,42 +96,21 @@ dependency graph; that is the whole error.
 
 **The group takes every update type, majors included.** A lockstep family
 breaks on a major exactly as on a minor, and `0.x` families bump the minor for
-a breaking release anyway. Dependabot puts a dependency matching several
-groups in the **most specific** one, whatever the declaration order. An exact
-package name always wins, so a group of exact names needs nothing more. A
-wildcard pattern (`@tanstack/*`) ranks *below* a group with no `patterns` at
-all, such as a patch/minor catch-all: the catch-all takes the package and the
-lockstep group stays empty. List each wildcard family in the catch-all's
-`exclude-patterns`, which is documented and does not depend on that scoring
-(the docs still describe "first match"; see `dependabot/dependabot-core#14576`):
-
-```yaml
-- package-ecosystem: cargo
-  directory: /
-  schedule:
-    interval: weekly
-  groups:
-    # The SDK and exporters only compile against the matching
-    # `opentelemetry` release: bumped one at a time, each PR fails to build.
-    opentelemetry:
-      patterns:
-        - opentelemetry*
-    minor-and-patch:
-      update-types:
-        - minor
-        - patch
-      exclude-patterns:
-        - opentelemetry*
-```
-
-Renovate's `config:recommended` already groups the monorepos it knows
-(`group:monorepos`); add a rule only for a family it misses, and match by file
-(`matchFileNames`) when a member's `depName` is a git URL rather than a
-package name:
+a breaking release anyway. `config:recommended` already groups the monorepos
+it knows (`group:monorepos`); add a rule only for a family it misses, and
+match by file (`matchFileNames`) when a member's `depName` is a git URL rather
+than a package name. Put the lockstep rule **after** the patch/minor
+catch-all: when several `packageRules` match, the later one's `groupName`
+wins.
 
 ```json
 {
   "packageRules": [
+    {
+      "description": "Minor and patch bumps land as one PR; each major gets its own",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "minor and patch"
+    },
     {
       "description": "SDK and exporters only compile against the matching opentelemetry release",
       "matchPackageNames": ["opentelemetry*"],
@@ -213,9 +157,6 @@ often. The dashboard is what turns that into a visible list.
 - `dependencyDashboardApproval: true` for majors is a good pairing with
   no-automerge on a busy repo: the major waits on the dashboard until someone
   ticks it, instead of sitting open as a stale PR.
-- **Dependabot has no equivalent.** Its config failures surface only in the
-  repository's Dependabot run logs, so a broken `dependabot.yaml` is quiet in
-  a way Renovate is not — check the last run after changing it.
 
 ## Renovate configuration
 
@@ -273,7 +214,8 @@ Baseline:
   in git), `bump` or the ecosystem default for a published library (pinning a
   library's ranges pushes the conflict onto its consumers).
 - Schedule off-hours if the repo is noisy, but **never schedule security
-  updates away** — leave `vulnerabilityAlerts` unrestricted.
+  updates away** — leave `vulnerabilityAlerts` unrestricted: with Dependabot
+  security updates off, it is the only thing opening security PRs.
 
 ### Scope the built-in managers before writing a custom one
 
@@ -338,10 +280,9 @@ what the dashboard is for.
 
 ## Running Renovate
 
-On GitHub the choice is the hosted Mend app or a self-hosted run from a
-workflow. **Self-hosted keeps the config, the schedule and the logs in the
-repository**, which is the same argument as everything else here; it is also
-the only option that lets you dry-run on demand.
+**Self-hosted, from the repository's own CI**, not the hosted Mend app: the
+config, the schedule and the logs stay in the repository. It is also the
+only option that lets you dry-run on demand.
 
 A workflow that follows `github-actions-conventions` — SHA-pinned action,
 `concurrency`, least-privilege `permissions`, lowercase step names — plus two
@@ -351,7 +292,8 @@ things specific to Renovate:
   `GITHUB_TOKEN` does not trigger other workflows, so every Renovate PR would
   arrive with no CI on it — which is exactly the check the whole review flow
   rests on. The job's own `permissions` stay `contents: read`: the token does
-  the writing, not the workflow.
+  the writing, not the workflow. A fine-grained token also needs **Dependabot
+  alerts: read**, or `vulnerabilityAlerts` has nothing to act on.
 - **A `workflow_dispatch` `dryRun` input** wired to `RENOVATE_DRY_RUN`, and a
   `logLevel` choice input. This is what makes "dry-run a custom manager before
   merging it" a thing somebody can actually do, rather than advice.
@@ -359,44 +301,20 @@ things specific to Renovate:
 Schedule it (`cron`) rather than running it on push: dependency updates are
 not a property of a commit.
 
-## Dependabot configuration
-
-`.github/dependabot.yaml` (both `.yml` and `.yaml` are read). Block style
-only, per `yaml-conventions`.
-
-- **One entry per ecosystem present in the repo**, plus **`github-actions`
-  always** — that is what keeps the SHA pins and their tag comments fresh
-  (see `github-actions-conventions`).
-- When the repo has `.github/release.yaml`, set `labels` to the same
-  changelog-category label as Renovate's. Set `open-pull-requests-limit` to
-  something a human can actually work through.
-  **`labels`, when set, replaces Dependabot's defaults rather than adding to
-  them**: the `dependencies` label and the per-ecosystem one (`javascript` for
-  npm, `github_actions`, …) disappear unless listed, so list every label
-  wanted. Dependabot silently skips a label the repo lacks: create it
-  (`github-repo-settings`).
-- **`groups`** for patch/minor per ecosystem; majors ungrouped — except
-  lockstep families, grouped whatever the update type and excluded from the
-  catch-all with `exclude-patterns` (see "Group what must move together").
-- **`cooldown`** for the same reason as Renovate's `minimumReleaseAge`.
-- **`commit-message.prefix`** set to the repo's subject prefix (read
-  `git log --oneline`), so a squash-merged bot PR matches the commit style;
-  add `include: scope` only when that style carries a scope.
-- **OCI registries: use a `docker-registry` entry, not `helm-registry`.** The
-  Helm registry type does HTTP Basic auth against a classic chart repository
-  and does not speak OCI — which is the form charts should be referenced in
-  anyway (see `argocd-conventions`).
+On GitLab the same run is a scheduled pipeline job with the token in a masked
+CI/CD variable (`gitlab-ci-conventions`).
 
 **Never:**
 
-- Never enable automerge, in either bot, in any form — including a workflow
-  that merges bot PRs for you.
-- Never run both bots over the same ecosystem or the same version string.
+- Never enable automerge, in any form — including a workflow that merges bot
+  PRs for you.
+- Never add a `.github/dependabot.yaml`, and never leave Dependabot security
+  updates on beside Renovate.
 - Never turn the dependency dashboard off.
 - Never add a custom manager without a `description` quoting the line it
   matches, and never merge one without a dry run.
-- Never write a Renovate config from memory about what Dependabot supports —
-  read the current list.
+- Never leave the `pre-commit` manager off in a repo with a
+  `.pre-commit-config.yaml`.
 - Never take `platformAutomerge: false` for "automerge is off".
 - Never put `commitMessage*` at the top level and assume it applies — manager
   defaults win.

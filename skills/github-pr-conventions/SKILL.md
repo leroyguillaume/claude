@@ -107,9 +107,10 @@ changelog-only or release-plumbing PR.
 
 - **Bot PRs' labels come from the bot's config**, never by hand — see
   `dependency-update-conventions`.
-- **Reuse Dependabot's ecosystem labels** (`rust`, `github_actions`, `docker`,
-  …) verbatim as your area labels rather than a parallel set that means the
-  same thing — see `github-repo-settings`.
+- **Reuse the ecosystem labels the repo already has** (`rust`,
+  `github_actions`, `docker`, …) verbatim as your area labels, in Renovate's
+  config and on hand-written PRs alike, rather than a parallel set that means
+  the same thing — see `github-repo-settings`.
 
 ## When the right label doesn't exist
 

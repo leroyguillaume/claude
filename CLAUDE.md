@@ -473,7 +473,7 @@ the look turns into work of its own, stop looking and decide.
 **Then split the request into topics.** Two tasks are separate topics when
 either could go first, neither needs to know about the other, and each
 delivers on its own: its own answer or its own PR. The look can surface
-topics the request did not name: "clear the dependabot PRs" is one trivial
+topics the request did not name: "clear the Renovate PRs" is one trivial
 topic when every PR is green — list them as ready to merge — plus one per PR
 that fails for a cause of its own.
 

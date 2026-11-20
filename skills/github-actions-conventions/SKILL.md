@@ -43,9 +43,8 @@ is `yaml-conventions`.
   ```
   Resolve it with `git ls-remote --tags https://github.com/<owner>/<repo>
   '<tag>^{}'`.
-- Add **`.github/dependabot.yaml`** with the `github-actions` ecosystem so the
-  SHAs and their tag comments are bumped. The rest of that file is
-  `dependency-update-conventions`.
+- Renovate's `github-actions` manager bumps the SHAs and their tag comments
+  together (`dependency-update-conventions`).
 - Never use a bare branch or tag ref (`@v4`, `@main`, `@stable`).
 
 ## Permissions
