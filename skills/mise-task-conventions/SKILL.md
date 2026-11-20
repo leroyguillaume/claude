@@ -3,23 +3,26 @@ name: mise-task-conventions
 description: >-
   Dev tooling with mise (tool versions, dev env) and Task (`Taskfile.yml`
   entry points).
-  TRIGGER when: creating or editing `mise.toml`, `.mise.toml`, `mise.lock`,
-  `.tool-versions` or `Taskfile.yml`/`.yaml`; scaffolding a project; adding a
-  tool a contributor or CI must install; adding a command contributors run
-  (setup, lint, test, build); a `Makefile` or `justfile` used as a task
-  runner; user asks about mise, Task, pinning dev tools or a task runner.
+  TRIGGER when: creating or editing `mise.toml`, `.mise.toml`, `mise.lock`
+  or `Taskfile.yml`/`.yaml`; a `rust-toolchain.toml`, `.python-version`,
+  `.nvmrc`, `.node-version` or `.tool-versions` (they move into `mise.toml`);
+  scaffolding a project; adding a tool or toolchain a contributor or CI must
+  install; a CI step installing one (`setup-node`, `setup-python`, rustup);
+  adding a command contributors run (setup, lint, test, build); a `Makefile`
+  or `justfile` used as a task runner; user asks about mise, Task, pinning
+  dev tools or a task runner.
   SKIP when: the app's runtime dependencies (`pyproject.toml`, `Cargo.toml`,
-  `package.json`); a version owned by its ecosystem file
-  (`rust-toolchain.toml`, `.python-version`) with no mise file involved.
+  `package.json`).
 ---
 
 # mise and Task conventions
 
 Two files, one job each:
 
-- **`mise.toml`** says *which tools, at which version*, and the development
-  environment. `mise install` from a fresh clone gives a contributor and CI
-  the same binaries.
+- **`mise.toml`** says *which tools, at which version*, toolchains included,
+  and the development environment. `mise install` from a fresh clone gives a
+  contributor and CI the same binaries; mise is the only thing either installs
+  by hand.
 - **`Taskfile.yml`** says *what you run*: `task setup`, `task lint`,
   `task test`. CI calls the same tasks, so "reproduce locally" is always the
   command the pipeline ran.
@@ -45,13 +48,11 @@ min_version = "<mise version this file needs>"
 [tools]
 task = "<latest>"
 pre-commit = "<latest>"
-uv = "<latest>"
 helm = "<latest>"
 
 [settings]
 lockfile = true
 disable_backends = ["asdf", "vfox"]
-idiomatic_version_file_enable_tools = ["node"]
 ```
 
 - **Exact versions, resolved when written.** `"3.54.0"`, never `"3"` or
@@ -74,19 +75,38 @@ idiomatic_version_file_enable_tools = ["node"]
   someone discovers as a cryptic failure.
 - After editing `[tools]`, run `mise fmt` then `mise lock`.
 
-### One pin per tool
+### mise pins everything
 
-A version an ecosystem file already pins stays there; `mise.toml` never
-re-pins it, or the two drift and the dependency bot bumps only one.
+`mise.toml` is the only file that holds a dev tool's version, toolchains
+included. A `rust-toolchain.toml`, `.python-version`, `.nvmrc`,
+`.node-version`, `.terraform-version` or `.tool-versions` found in the repo
+moves into `mise.toml` and is deleted in the same change: two pins drift, and
+the dependency bot bumps one of them.
 
-| Tool | Pinned by | In `mise.toml` |
-| --- | --- | --- |
-| Rust | `rust-toolchain.toml` (`rust-build-conventions`), read by rustup | nothing: rustup stays the installer |
-| Python | `.python-version`, read by uv (`python-conventions`) | `uv` only, never `python` |
-| Node.js | `.nvmrc` (what `setup-node` reads) | `idiomatic_version_file_enable_tools = ["node"]`, no `node` key |
+```toml
+[tools]
+rust = { version = "<latest>", components = ["rustfmt", "clippy"], profile = "minimal" }
+python = "<latest>"
+uv = "<latest>"
+node = "<latest>"
 
-Idiomatic version files are off by default since mise 2025.10; the setting
-above is what makes mise read `.nvmrc`.
+[env]
+UV_PYTHON = { value = "{{ tools.python.path }}", tools = true }
+```
+
+- **Rust**: mise installs rustup when it is missing and sets
+  `RUSTUP_TOOLCHAIN`, which rustup ranks above any `rust-toolchain.toml`.
+  `components` and `profile` carry what the `[toolchain]` table did. The pin
+  is still not the MSRV (`rust-build-conventions`).
+- **Python**: mise installs the interpreter, uv the dependencies
+  (`python-conventions`). `UV_PYTHON` points uv at mise's interpreter;
+  without it uv can pick a Python it downloaded itself.
+- **Node.js**: a `docs/` site or a front end uses the root `node`; no
+  `.nvmrc` beside it.
+- **Container images are the one pin outside mise.** A `Dockerfile` builds
+  from its `FROM` tag (`rust:<version>`, `python:<version>`), which mise does
+  not read: keep that tag on the version `mise.toml` pins, and bump both in
+  the same PR.
 
 ### `mise.lock`
 
@@ -217,9 +237,14 @@ install.
 
 ## CI
 
-The `quality` job (`ci-conventions`) installs the tools with mise, then runs
-the same tasks a contributor runs. Never a second, hand-maintained list of
-`setup-*` actions or `apt-get install` lines.
+Every job that needs a tool installs it with mise: never `setup-node`,
+`setup-python`, a rustup action, `setup-task` or an `apt-get install` of a
+dev tool beside it, which is a second pin of the same version.
+
+**When `Taskfile.yml` exists, CI calls its tasks**, never the commands behind
+them: `task lint`, not `pre-commit run --all-files`. A command changed in the
+Taskfile then changes in CI too. Without a Taskfile, CI runs the commands
+themselves, with the tools mise installed.
 
 GitHub Actions, SHA-pinned (`github-actions-conventions`):
 
@@ -254,27 +279,13 @@ quality:
 ## Dependency updates
 
 Dependabot has no `mise` ecosystem, so `mise.toml` and `mise.lock` are
-Renovate's, through its `mise` manager, which bumps both
+Renovate's, through its `mise` manager, which bumps both, toolchains included
 (`dependency-update-conventions`). On GitHub, list `mise` in Renovate's
-`enabledManagers` beside whatever Renovate already owns.
+`enabledManagers` beside whatever Renovate already owns; Dependabot's
+`rust_toolchain` ecosystem has nothing left to watch.
 
 ## CONTRIBUTING
 
-The development setup (`contributing-conventions`) becomes: install mise
-(link its install page), then
-
-```bash
-mise trust
-```
-
-```bash
-mise install
-```
-
-```bash
-task setup
-```
-
-The tooling list is a link to `mise.toml`, not a copy of it. The tests and CI
-sections give `task test` and `task lint` as the commands, and `task --list`
-as where to find the others.
+The setup is `mise trust`, `mise install`, `task setup`, and the tooling list
+is a link to `mise.toml` (`contributing-conventions`). The tests and CI
+sections give `task test` and `task lint`, and `task --list` for the rest.

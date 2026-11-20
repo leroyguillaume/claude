@@ -116,7 +116,7 @@ What the pipeline does is in `starlight-conventions`. On GitHub:
   Pages settings, and the site's `site`/`base` follow it. No `CNAME` file is
   needed with an Actions deployment.
 - Two jobs. `build` checks out with `fetch-depth: 0` (the release tags), runs
-  `actions/setup-node` with `node-version-file: docs/.nvmrc`, `npm ci`, and the
+  `jdx/mise-action` for Node.js (`mise-task-conventions`), `npm ci`, and the
   versioned build, then `actions/upload-pages-artifact` with `path: docs/dist`
   on non-PR runs of the default branch only. `deploy` (`needs: build`, same
   condition) runs `actions/deploy-pages` in `environment: github-pages` with
@@ -146,7 +146,7 @@ What the pipeline does is in `starlight-conventions`. On GitHub:
   events that token triggers.
 - `docs` is `paths`-filtered, so it is never a required check. The site's
   tests run in `quality`, in their own job.
-- No npm cache in `setup-node`: it caches a download.
+- No mise or npm cache: both are downloads.
 
 ## `.github/release.yaml`
 

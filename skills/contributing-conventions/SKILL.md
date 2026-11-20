@@ -46,25 +46,26 @@ mandatory.
 Everything a contributor needs that a *user* does not. The README covers
 running the project; this covers building on it.
 
-- **List the tooling**, and how to get it — the toolchain (`rustup`, `uv`,
-  `node`), the package manager, `pre-commit` itself, and any binary the hooks
-  or tests shell out to (`sqlfluff`, `helm`, `terraform`, `hadolint`,
-  `trivy`). If a hook needs a binary that isn't installed, the contributor
-  discovers it as a cryptic failure — list it here instead. **Link the file
-  that pins a version** (`rust-toolchain.toml`, `.python-version`, a hook's
-  `rev`) rather than copying the number; write one only when nothing in the
-  repo pins it (`pre-commit` 4.x). With a `mise.toml`, that file is the list
-  and the bootstrap is `mise install` then `task setup`
-  (`mise-task-conventions`).
+- **List the tooling**, and how to get it: mise, which installs everything
+  else — the toolchain, `pre-commit`, and any binary the hooks or tests shell
+  out to (`mise-task-conventions`). **Link `mise.toml`** rather than copying
+  its versions. If a hook needs a binary `mise.toml` does not list, the
+  contributor discovers it as a cryptic failure: add it there. A repo without
+  a `mise.toml` yet lists each tool, links the file that pins it, and gets a
+  `mise.toml` proposed.
 - **Give the bootstrap as a copy-pasteable sequence**, in order, from a fresh
   clone:
 
   ```bash
-  uv sync --all-extras
+  mise trust
   ```
 
   ```bash
-  pre-commit install
+  mise install
+  ```
+
+  ```bash
+  task setup
   ```
 
   One command per fenced block, no `$` prompt, no interleaved output.

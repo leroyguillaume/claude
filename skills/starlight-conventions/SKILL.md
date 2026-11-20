@@ -14,7 +14,8 @@ description: >-
 # Starlight conventions
 
 A documentation site is an Astro project in **`docs/`** with its own
-`package.json`, lockfile and `.nvmrc`. `frontend-conventions` applies to its
+`package.json` and lockfile, on the Node.js the root `mise.toml` pins
+(`mise-task-conventions`). `frontend-conventions` applies to its
 TypeScript (strict `tsconfig`, Biome, no `any`), with two adjustments: UI is
 `.astro` components, not React, and `tsc --noEmit` is `astro check`, which also
 checks the content frontmatter.
