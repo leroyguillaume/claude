@@ -1,33 +1,6 @@
-# This directory is Claude Code's runtime home (~/.claude): it accumulates
-# credentials, session state, history, caches, plugins, backups and telemetry.
-# This repo only versions a handful of config files, so ignore everything by
-# default and explicitly allow back what belongs in the repo. Anything Claude
-# Code writes here in the future stays ignored without further edits.
-/*
-!/.github/
-!/.gitattributes
-!/.gitignore
-!/.pre-commit-config.yaml
-!/.yamllint.yaml
-!/CLAUDE.md
-!/CONTRIBUTING.md
-!/LICENSE
-!/README.md
-!/Taskfile.yml
-!/mise.lock
-!/mise.toml
-!/renovate.json
-!/skills/
-!/statusline-command.sh
-!/tests/
+# Claude Code mirrors the claude.ai account's skills here when the repository
+# is cloned as ~/.claude/skills
+/synced/
 
-# herdr installs and manages its own hook script here; only ours is versioned
-!/hooks/
-/hooks/*
-!/hooks/herdr-tab-title.sh
-
-# Claude Code mirrors the claude.ai account's skills here on every session
-/skills/synced/
-
-# macOS Finder metadata, at any depth (including allowed-back directories)
+# macOS Finder metadata, at any depth
 .DS_Store

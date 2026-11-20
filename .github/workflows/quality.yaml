@@ -32,30 +32,6 @@ jobs:
       - name: run pre-commit
         run: task lint
 
-  tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-24.04
-          - windows-2025
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: check out the repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: install the tools
-        uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a  # v5.2.10
-        with:
-          cache: false
-          install_args: jq task
-
-      - name: run the script tests
-        run: task test
-
   skills:
     runs-on: ubuntu-24.04
     steps:
@@ -75,6 +51,7 @@ jobs:
       - name: validate the skills with skill-validator and pollen
         uses: groupbees/skill-action@0e139db79d4d635ee7ffc973008e56e0e07da4a1  # v0.1.0
         with:
+          skills-path: .
           skill-validator-version: ${{ steps.skill-validator.outputs.version }}
 
       # `check` only resolves relative links. This one hits the network, which

@@ -3,7 +3,6 @@ min_version = "2026.11.10"
 [tools]
 "github:agent-ecosystem/skill-validator" = "1.8.0"
 "github:groupbees/pollen" = "0.7.0"
-jq = "1.8.2"
 pre-commit = "4.7.0"
 # No Python code here: pre-commit builds its hook environments with it.
 python = "3.13.18"
