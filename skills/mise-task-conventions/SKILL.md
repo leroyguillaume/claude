@@ -174,7 +174,8 @@ tasks:
 - **The standard names**: `setup` (project dependencies and `pre-commit
   install`, never the tools, which are `mise install`'s), `lint` (exactly
   `pre-commit run --all-files`, the gate CI runs), `test` (the whole suite),
-  then `build`, `run`, `docs` when the project has them. A bare `task` lists
+  then `build`, `run`, `docs` when the project has them, and `release` around
+  `scripts/release.sh` (`release-script-conventions`). A bare `task` lists
   them. Namespaces with `:` (`docs:build`) through `includes` when a
   component has a Taskfile of its own.
 - **Every public task has a `desc`**, one line, imperative: `task --list`
@@ -196,6 +197,8 @@ tasks:
   **`preconditions`** with a `msg` for a state it needs (a running cluster, a
   file present), so the failure says what to do.
 - **Never a secret** in the Taskfile, literal or default value.
+- **Never `prompt:` to guard something irreversible**: `task --yes` answers
+  every prompt. The confirmation lives in the script the task calls.
 - Task runs `cmds` through its own embedded POSIX shell interpreter on every
   OS, Windows included. Keep commands to what that shell and the listed tools
   provide; a step that needs `bash` or `pwsh` calls it explicitly, restricted

@@ -37,6 +37,25 @@ writes and maintains the script, and delivers the changes a release will carry
 as pull requests; when asked for a release, it gives the user the command to
 run.
 
+## `task release` is the front door
+
+When the repo has a `Taskfile.yml` (`mise-task-conventions`), a `release` task
+calls the script and adds nothing to it; `CONTRIBUTING.md` and the command
+handed to the user say `task release -- <version>`.
+
+```yaml
+  release:
+    desc: Bump, commit and tag a release, then ask before pushing
+    interactive: true
+    cmds:
+      - scripts/release.sh {{.CLI_ARGS}}
+```
+
+The logic stays in the script. Never a Task `prompt:` in its place: `task
+--yes` answers every prompt, which is the escape hatch the question below
+must not have. `interactive: true` hands the terminal to the script, so its
+own question still reads from a TTY.
+
 ## The version lives in two places, and one tool writes both
 
 - **The tag is what CI publishes from.** `vX.Y.Z` → the image tag, the crate

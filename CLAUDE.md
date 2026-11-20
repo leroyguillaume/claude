@@ -413,7 +413,8 @@ skill.
   holds even when you ship a breaking change — releases are my call. If you
   think a bump is warranted, mention it and wait for confirmation. When the
   repo has a `scripts/release.sh`, hand me its command instead of editing,
-  even if I ask (see `release-script-conventions`).
+  even if I ask — `task release -- <version>` when a `Taskfile.yml` wraps it
+  (see `release-script-conventions`).
 
 ## System packages
 
