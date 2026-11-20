@@ -40,25 +40,56 @@ run_case() {
   output=$(env -i \
     PATH="$work/bin:$PATH" \
     FAKE_HERDR_LOG="$work/log" \
+    XDG_STATE_HOME="$work/state" \
     HERDR_ENV=1 HERDR_PANE_ID=w1:p2 HERDR_TAB_ID=w1:t1 \
     FAKE_PANE_JSON="$(pane_json w1:t3 'CI cassée, PRs ouvertes')" \
     FAKE_TAB_JSON="$(tab_json 3 1)" \
     "$@" "$hook" 2>&1)
   status=$?
   log=$(grep rename "$work/log")
-  if [ "$status" -ne 0 ] || [ -n "$output" ] || [ "$log" != "$expected" ]; then
-    printf 'FAIL %s\n  status: %s\n  output: %s\n  rename: %s\n  wanted: %s\n' \
-      "$name" "$status" "$output" "$log" "$expected"
+  state=$(cat "$state_file" 2>/dev/null)
+  rm -rf "$work/state"
+  if [ "$status" -ne 0 ] || [ -n "$output" ] || [ "$log" != "$expected" ] ||
+    { [ -n "$expected_state" ] && [ "$state" != "$expected_state" ]; }; then
+    printf 'FAIL %s\n  status: %s\n  output: %s\n  rename: %s\n  wanted: %s\n  state: %s\n' \
+      "$name" "$status" "$output" "$log" "$expected" "$state"
     failures=$((failures + 1))
   else
     printf 'ok   %s\n' "$name"
   fi
+  expected_state=
+}
+
+state_file="$work/state/claude/herdr-tab-title/w1_t3"
+expected_state=
+
+# seed_state LABEL SESSION -- as if the hook had named the tab in SESSION.
+seed_state() {
+  mkdir -p "$(dirname "$state_file")"
+  jq -n --arg l "$1" --arg s "$2" '{label: $l, session_id: $s}' >"$state_file"
 }
 
 renamed='tab|rename|w1:t3|CI cassée, PRs ouvertes|'
 stop='{"hook_event_name":"Stop","session_id":"s1"}'
 
-run_case 'renames a lone numeric tab after the title' "$renamed" <<<"$stop"
+expected_state=$(jq -n '{label: "CI cassée, PRs ouvertes", session_id: "s1"}')
+run_case 'renames a lone numeric tab and records it' "$renamed" <<<"$stop"
+seed_state 'Old task' s0
+expected_state=$(jq -n '{label: "CI cassée, PRs ouvertes", session_id: "s1"}')
+run_case 'renames a tab it named for an earlier session' "$renamed" \
+  FAKE_TAB_JSON="$(tab_json 'Old task' 1)" <<<"$stop"
+seed_state 'Old task' s1
+run_case 'keeps the first title within a session' '' \
+  FAKE_TAB_JSON="$(tab_json 'Old task' 1)" <<<"$stop"
+seed_state 'Old task' s0
+run_case 'keeps a label someone chose over one it set' '' \
+  FAKE_TAB_JSON="$(tab_json reviewer 1)" <<<"$stop"
+seed_state 'Old task' s0
+expected_state=$(jq -n '{label: "Old task", session_id: "s0"}')
+run_case 'leaves the record alone while the title is unchanged' '' \
+  FAKE_TAB_JSON="$(tab_json 'CI cassée, PRs ouvertes' 1)" <<<"$stop"
+run_case 'renames a numeric tab without any state directory' "$renamed" \
+  XDG_STATE_HOME= <<<"$stop"
 run_case 'resolves the tab from the pane, not HERDR_TAB_ID' "$renamed" \
   HERDR_TAB_ID=w9:t9 <<<"$stop"
 run_case 'skips outside herdr' '' HERDR_ENV= <<<"$stop"
