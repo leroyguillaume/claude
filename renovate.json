@@ -1,17 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Dependabot owns github-actions and the pre-commit hook revs; Renovate only handles mise.toml and mise.lock, which no Dependabot ecosystem sees",
   "extends": ["config:recommended"],
-  "enabledManagers": ["mise"],
   "timezone": "Europe/Paris",
   "semanticCommits": "disabled",
-  "dependencyDashboard": true,
-  "dependencyDashboardTitle": "Dependency dashboard",
+  "dependencyDashboard": false,
   "prConcurrentLimit": 5,
   "minimumReleaseAge": "3 days",
+  "pre-commit": { "enabled": true },
   "packageRules": [
     {
-      "description": "Subject line `deps: bump <dep> to <version>`, as Dependabot's PRs are prefixed. Set here rather than at the top level because manager defaults win over top-level commitMessage* keys",
+      "description": "Subject line `deps: bump <dep> to <version>`. Set here rather than at the top level because manager defaults win over top-level commitMessage* keys",
       "matchPackageNames": ["*"],
       "commitMessagePrefix": "deps:",
       "commitMessageAction": "bump",
@@ -19,7 +17,20 @@
       "commitMessageExtra": ""
     },
     {
+      "description": "Minor and patch bumps of the action pins land as one PR; each major gets its own",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "github-actions minor and patch"
+    },
+    {
+      "description": "Minor and patch bumps of the hook revisions land as one PR; each major gets its own",
+      "matchManagers": ["pre-commit"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "pre-commit minor and patch"
+    },
+    {
       "description": "Minor and patch bumps of the dev tools land as one PR; each major gets its own",
+      "matchManagers": ["mise"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "mise minor and patch"
     }

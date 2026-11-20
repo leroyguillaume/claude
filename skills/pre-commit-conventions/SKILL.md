@@ -224,8 +224,8 @@ analysis, they stay in pre-commit.
 - **Pin every `rev` to a full commit SHA, with the tag as a comment**; never
   `master`/`main`, never a bare tag: a tag can be moved, and hooks run in CI
   (`ci-conventions`). `pre-commit autoupdate --freeze` writes it as `# frozen: <tag>`, and
-  the dependency bot bumps the SHA and the comment together
-  (`dependency-update-conventions`).
+  Renovate's `pre-commit` manager, once enabled, bumps the SHA and the
+  comment together (`dependency-update-conventions`).
 - **A `rev`, image tag or tool version written into a file is resolved when you
   write it, never from memory.** Look up the upstream's latest release
   (`gh release view -R <owner>/<repo> --json tagName`, or the registry) and

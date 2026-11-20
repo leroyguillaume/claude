@@ -80,7 +80,7 @@ else echo agent; fi
   session ("in a tab") or a sub-agent: that wins over the two rules below.
 - **`herdr` or `hc`, and a non-trivial topic to delegate** — every one when
   the session pilots, otherwise one other than its own; named by the
-  request or surfaced by the look before deciding, such as a dependabot PR
+  request or surfaced by the look before deciding, such as a Renovate PR
   that fails: one visible session per such topic, with
   `herdr-tui-delegation` or `herdr-core-delegation`, without asking.
 - **`herdr` or `hc`, otherwise**: no tab. The session carries its own topic
