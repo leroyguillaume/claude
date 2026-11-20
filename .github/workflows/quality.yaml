@@ -24,18 +24,13 @@ jobs:
       - name: check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: set up Python
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+      - name: install the tools
+        uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a  # v5.2.10
         with:
-          # Minor-pinned: pre-commit builds its hook environments with this
-          # interpreter, so a floating version changes them under a green tree.
-          python-version: "3.13"
-
-      - name: install pre-commit
-        run: python -m pip install --requirement .github/requirements.txt
+          cache: false
 
       - name: run pre-commit
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: task lint
 
   tests:
     strategy:
@@ -52,11 +47,14 @@ jobs:
       - name: check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
+      - name: install the tools
+        uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a  # v5.2.10
+        with:
+          cache: false
+          install_args: jq task
+
       - name: run the script tests
-        run: |
-          for test in tests/*.sh; do
-            "$test"
-          done
+        run: task test
 
   skills:
     runs-on: ubuntu-24.04
@@ -64,14 +62,15 @@ jobs:
       - name: check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      # Dependabot cannot bump a version inside a `run:` line, so read the one it
-      # does bump: the release in the `# frozen: vX.Y.Z` comment of the hook's
-      # `rev` in .pre-commit-config.yaml.
+      - name: install the tools
+        uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a  # v5.2.10
+        with:
+          cache: false
+          install_args: github:agent-ecosystem/skill-validator task
+
       - name: read the pinned skill-validator release
         id: skill-validator
-        run: |
-          version="$(yq '.repos[] | select(.repo == "https://github.com/agent-ecosystem/skill-validator") | .rev | line_comment' .pre-commit-config.yaml)"
-          echo "version=${version#frozen: }" >> "$GITHUB_OUTPUT"
+        run: echo "version=v$(mise current github:agent-ecosystem/skill-validator)" >> "$GITHUB_OUTPUT"
 
       - name: validate the skills with skill-validator and pollen
         uses: groupbees/skill-action@0e139db79d4d635ee7ffc973008e56e0e07da4a1  # v0.1.0
@@ -82,4 +81,4 @@ jobs:
       # is why it lives here and not in a pre-commit hook.
       - name: check the external links
         if: ${{ !cancelled() }}
-        run: skill-validator validate links --emit-annotations skills/
+        run: task links -- --emit-annotations

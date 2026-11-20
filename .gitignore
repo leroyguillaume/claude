@@ -13,6 +13,10 @@
 !/CONTRIBUTING.md
 !/LICENSE
 !/README.md
+!/Taskfile.yml
+!/mise.lock
+!/mise.toml
+!/renovate.json
 !/skills/
 !/statusline-command.sh
 !/tests/

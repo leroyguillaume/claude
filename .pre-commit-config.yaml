@@ -36,18 +36,27 @@ repos:
     hooks:
       - id: actionlint
 
-  - repo: https://github.com/agent-ecosystem/skill-validator
-    rev: 899dba96e0d0d7d964308ac4df9657c68f581347  # frozen: v1.8.0
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: a76b92851fc9eede9f9bc4073eb55202f34eb0df  # frozen: 0.39.0
     hooks:
-      - id: skill-validator
-        args:
-          - check
-          - --strict
-          - skills/
-        files: ^skills/
+      - id: check-taskfile
 
   - repo: local
     hooks:
+      # A local hook rather than the upstream one, so the version comes from
+      # mise.toml like every other tool instead of a second pin in `rev`.
+      - id: skill-validator
+        name: skill-validator
+        entry: skill-validator check --strict skills/
+        language: system
+        files: ^skills/
+        pass_filenames: false
+      - id: mise-fmt
+        name: mise fmt
+        entry: mise fmt
+        language: system
+        files: ^mise\.toml$
+        pass_filenames: false
       - id: no-co-authors
         name: no co-authors in commit message
         entry: '^\s*co-authored-by:|\bgenerated with\b'
