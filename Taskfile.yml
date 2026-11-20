@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+set:
+  - errexit
+  - nounset
+  - pipefail
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: Install the git hooks
+    cmds:
+      - pre-commit install
+
+  lint:
+    desc: Run every pre-commit hook on the whole repository
+    cmds:
+      - pre-commit run --all-files --show-diff-on-failure
+
+  test:
+    desc: Run the script test suites
+    vars:
+      SUITES:
+        sh: echo tests/*.sh
+    cmds:
+      - for:
+          var: SUITES
+        # The glob yields `tests\x.sh` on Windows, and an unquoted backslash is
+        # an escape to the shell that runs the command.
+        cmd: bash '{{toSlash .ITEM}}'
+
+  links:
+    desc: Check the skills' external links, which needs the network
+    cmds:
+      - skill-validator validate links {{.CLI_ARGS}} skills/

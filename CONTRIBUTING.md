@@ -6,54 +6,65 @@ here is almost always a Markdown edit; the exceptions are the status line script
 [statusline-command.sh](statusline-command.sh) and the herdr hook
 [hooks/herdr-tab-title.sh](hooks/herdr-tab-title.sh). Open an issue or a pull request on
 <https://github.com/leroyguillaume/claude>; the short version is
-`pre-commit run --all-files` must be green before you push.
+`task lint` must be green before you push.
 
 See [README.md](README.md#getting-started) for installing and using the skills.
 
 ## Development setup
 
-Four tools are needed beyond `git`:
+[mise](https://mise.jdx.dev/installing-mise.html) is the one tool to install
+beyond `git`, activated in your shell as its install page describes:
 
-- [pre-commit](https://pre-commit.com), at the version pinned in
-  [.github/requirements.txt](.github/requirements.txt) — runs the gate.
-- [skill-validator](https://github.com/agent-ecosystem/skill-validator) —
+```bash
+brew install mise
+```
+
+```bash
+curl https://mise.run | sh
+```
+
+It installs everything else at the versions [mise.toml](mise.toml) pins, with
+their checksums in [mise.lock](mise.lock):
+
+- [pre-commit](https://pre-commit.com) runs the gate, and the Python it
+  builds its hook environments with.
+- [skill-validator](https://github.com/agent-ecosystem/skill-validator)
   validates `skills/*/SKILL.md` structure, links, content and cross-language
   contamination. The hook runs it too, but running it directly gives faster
   feedback and is the only way to check external links (see
-  [Running the tests](#running-the-tests)). Install the version the hook's
-  `rev` pins in [.pre-commit-config.yaml](.pre-commit-config.yaml), which needs
-  a [Go](https://go.dev/doc/install) toolchain.
-- [pollen](https://github.com/groupbees/pollen) — `pollen validate` checks
+  [Running the tests](#running-the-tests)).
+- [pollen](https://github.com/groupbees/pollen): `pollen validate` checks
   that it can deploy every skill, as the CI does (see
   [Continuous integration](#continuous-integration)).
-- [jq](https://jqlang.org/download/) — the hook tests and the status line
-  call it.
+- [jq](https://jqlang.org): the hook tests and the status line call it.
+- [Task](https://taskfile.dev) runs the commands below, defined in
+  [Taskfile.yml](Taskfile.yml); `task --list` shows them.
 
-pre-commit builds two hooks (`actionlint`, `skill-validator`) from source with
-the Go on `PATH`, and downloads a toolchain of its own when there is none.
+pre-commit builds the `actionlint` hook from source with the Go on `PATH`, and
+downloads a toolchain of its own when there is none.
+
+From a fresh clone:
 
 ```bash
-pipx install "pre-commit==$(sed -n 's/^pre-commit==//p' .github/requirements.txt)"
+mise trust
 ```
 
 ```bash
-go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@<rev>
+mise install
 ```
-
-Then, from a fresh clone:
 
 ```bash
-pre-commit install
+task setup
 ```
 
-This installs both the `pre-commit` and the `commit-msg` hook types, as
+`task setup` installs both the `pre-commit` and the `commit-msg` hook types, as
 `default_install_hook_types` in the config asks. In an existing clone, re-run
-`pre-commit install` so the `commit-msg` hook type is installed too.
+it so the `commit-msg` hook type is installed too.
 
 The setup is good when this is green:
 
 ```bash
-pre-commit run --all-files
+task lint
 ```
 
 ## Adding or editing a skill
@@ -115,7 +126,11 @@ that a skill is well-formed, not that a client applies it: that feedback only
 exists in the projects using the skills, through their own linters and CI.
 
 Both scripts have a test suite under [tests/](tests/), and a change to a
-script comes with the case that covers it. Each needs only `jq`.
+script comes with the case that covers it. Each needs only `jq`. Run both:
+
+```bash
+task test
+```
 
 [.gitattributes](.gitattributes) checks shell scripts out with LF line
 endings everywhere: Git for Windows converts to CRLF by default, and bash
@@ -123,7 +138,8 @@ then fails on the trailing `\r` of every line.
 
 The herdr hook's suite runs the hook against a fake `herdr` placed first on
 `PATH`, which serves canned JSON and logs every call, so it needs neither
-herdr nor a session; each case covers one condition the hook checks:
+herdr nor a session; each case covers one condition the hook checks. Run it
+alone with:
 
 ```bash
 tests/herdr-tab-title.sh
@@ -131,7 +147,7 @@ tests/herdr-tab-title.sh
 
 The status line's suite pipes it sample payloads of what Claude Code sends,
 with the host's `date` and with a fake that only takes the BSD form, and
-under a comma-decimal locale when one is installed:
+under a comma-decimal locale when one is installed. Run it alone with:
 
 ```bash
 tests/statusline-command.sh
@@ -158,7 +174,7 @@ skill-validator check --strict skills/rust-conventions
 Check the external links, which needs the network:
 
 ```bash
-skill-validator validate links skills/
+task links
 ```
 
 `check` reports four groups — `structure`, `links` (relative ones only),
@@ -174,11 +190,10 @@ failures come up often:
 
 ## Pre-commit hooks
 
-`pre-commit install` is part of the setup above; the hooks must pass before you
-push.
+`task setup` installs the hooks; they must pass before you push.
 
 ```bash
-pre-commit run --all-files
+task lint
 ```
 
 ```bash
@@ -193,7 +208,8 @@ most are formatters or checks that name the file to fix. These need more:
 | `yamllint` | YAML style, per [.yamllint.yaml](.yamllint.yaml), with `--strict` so warning-level rules fail too | Fix the finding; block style only, no `---` opening a file |
 | `shellcheck` | Shell scripts, with [shellcheck](https://www.shellcheck.net) bundled by the hook, nothing to install | Fix the finding it names |
 | `actionlint` | Workflow files are valid | Fix the expression or key it names |
-| `skill-validator` | Skill structure, relative links, content, contamination | See [Running the tests](#running-the-tests) |
+| `skill-validator` | Skill structure, relative links, content, contamination, with the `skill-validator` mise installs | See [Running the tests](#running-the-tests) |
+| `mise-fmt` | `mise.toml` is formatted, with the `mise` on `PATH` | Re-run: it rewrites the file |
 | `no-co-authors` (`commit-msg` stage) | No `Co-Authored-By:` trailer or `Generated with` line in the commit message. Runs on `git commit` only: `pre-commit run --all-files`, and so CI, skips it | Rewrite the message; a commit has one author |
 
 `--no-verify` and `SKIP=` are not the fix. A red hook is a real finding: fix
@@ -205,7 +221,8 @@ somewhere slower.
 
 | Workflow | What it does | Reproduce locally |
 | --- | --- | --- |
-| [`quality.yaml`](.github/workflows/quality.yaml) | `pre-commit` job: `pre-commit run --all-files`. `tests` job: every `tests/*.sh`, on Linux and on Windows under Git Bash, where Claude Code and OpenCode run the scripts. `skills` job: [groupbees/skill-action](https://github.com/groupbees/skill-action) runs `skill-validator check` and `pollen validate` on every skill, then the job checks the external links; skill-validator runs with `--emit-annotations`, so its findings land on their line in the diff | `pre-commit run --all-files`, `tests/herdr-tab-title.sh`, `tests/statusline-command.sh`, `skill-validator check --strict skills/`, `skill-validator validate links skills/` and `pollen validate` on a `pollen.yaml` selecting `skills` (`repo: local`, `recurse: true`) |
+| [`quality.yaml`](.github/workflows/quality.yaml) | Every job installs its tools with mise. `pre-commit` job: `task lint`. `tests` job: `task test`, on Linux and on Windows under Git Bash, where Claude Code and OpenCode run the scripts. `skills` job: [groupbees/skill-action](https://github.com/groupbees/skill-action) runs `skill-validator check` and `pollen validate` on every skill, at the skill-validator version `mise.toml` pins, then `task links`; skill-validator runs with `--emit-annotations`, so its findings land on their line in the diff | `task lint`, `task test`, `skill-validator check --strict skills/`, `task links` and `pollen validate` on a `pollen.yaml` selecting `skills` (`repo: local`, `recurse: true`) |
+| [`renovate.yaml`](.github/workflows/renovate.yaml) | Weekly self-hosted Renovate run on [renovate.json](renovate.json), for `mise.toml` and `mise.lock` only; `workflow_dispatch` takes a `dryRun` and a `logLevel` | `workflow_dispatch` with `dryRun` |
 
 The `pre-commit` and `skills` checks are required to merge into `main`. The
 weekly run is for the external links: a documentation URL dies without any file
@@ -214,15 +231,18 @@ here changing.
 The external-link check is not a pre-commit hook because it needs the network —
 a gate that fails on a train is a gate people learn to bypass.
 
-The workflow needs no secret and only reads the repository, so it runs the same
-on a fork's pull request.
+`quality` needs no secret and only reads the repository, so it runs the same
+on a fork's pull request. `renovate` writes with a `RENOVATE_TOKEN` secret, a
+token allowed to push branches and open pull requests here: a pull request
+opened with `GITHUB_TOKEN` would not trigger `quality`.
 
-[`dependabot.yaml`](.github/dependabot.yaml) keeps the action SHA pins, the
-pre-commit hook revisions and the `pre-commit` version CI installs
-([.github/requirements.txt](.github/requirements.txt)) current. Pins are SHAs
-and tags can move, so a bot bumps them rather than a person remembering to;
-grouping folds the minor and patch bumps into one pull request per
-ecosystem, each major gets its own, and nothing is automerged.
+Two bots keep the pins current, each on its own files, since Dependabot has no
+mise ecosystem: [`dependabot.yaml`](.github/dependabot.yaml) bumps the action
+SHA pins and the pre-commit hook revisions, Renovate the tool versions in
+`mise.toml` and `mise.lock`. Pins are SHAs and tags can move, so a bot bumps
+them rather than a person remembering to; grouping folds the minor and patch
+bumps into one pull request per ecosystem, each major gets its own, and
+nothing is automerged.
 
 ## Submitting a change
 
